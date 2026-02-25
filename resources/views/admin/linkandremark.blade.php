@@ -186,7 +186,7 @@
                         </div>
                         
                         <!-- Category Select -->
-                        <select id="categorySelect" class="touch-target border px-2 sm:px-3 py-1.5 sm:py-1 rounded-lg text-xs sm:text-sm w-full sm:w-auto mt-1.5 sm:mt-0">
+                        <select id="categorySelect" class="hidden touch-target border px-2 sm:px-3 py-1.5 sm:py-1 rounded-lg text-xs sm:text-sm w-full sm:w-auto mt-1.5 sm:mt-0">
                             <option value="">All categories</option>
                             <option value="marketing">Marketing</option>
                             <option value="support">Support</option>
@@ -281,7 +281,31 @@
             <form id="linkForm" class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 p-4 sm:p-5 lg:p-6">
                 <input type="hidden" id="editLinkId">
 
-                <!-- Type Field -->
+               
+
+                <!-- Category Field -->
+                <div class="hidden">
+                    <label class="text-xs sm:text-sm text-gray-700 mb-1 block ">Category</label>
+                    <select id="linkCategory" class="touch-target w-full border px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base">
+                        <option value="marketing">Marketing</option>
+                        <option value="support">Support</option>
+                        <option value="internal">Internal</option>
+                    </select>
+                </div>
+
+                <!-- Title Field (Full Width) -->
+                <div class="lg:col-span-2">
+                    <label class="text-xs sm:text-sm text-gray-700 mb-1 block">Title</label>
+                    <input id="titleInput" class="touch-target w-full border px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base" />
+                </div>
+
+                <!-- URL Field (Full Width) -->  
+                <div class="lg:col-span-2">
+                    <label class="text-xs sm:text-sm text-gray-700 mb-1 block">URL</label>
+                    <input id="urlInput" type="url" placeholder="https://example.com or example.com (https:// will be added automatically)" class="touch-target w-full border px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base" />
+                </div>
+
+                 <!-- Type Field -->
                 <div>
                     <label class="text-xs sm:text-sm text-gray-700 mb-1 block">Type</label>
                     <select id="linkType" class="touch-target w-full border px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base">
@@ -292,28 +316,6 @@
                         <option value="linkedin">LinkedIn</option>
                         <option value="youtube">YouTube</option>
                     </select>
-                </div>
-
-                <!-- Category Field -->
-                <div>
-                    <label class="text-xs sm:text-sm text-gray-700 mb-1 block">Category</label>
-                    <select id="linkCategory" class="touch-target w-full border px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base">
-                        <option value="marketing">Marketing</option>
-                        <option value="support">Support</option>
-                        <option value="internal">Internal</option>
-                    </select>
-                </div>
-
-                <!-- Title Field (Full Width) -->
-                <div class="lg:col-span-2">
-                    <label class="text-xs sm:text-sm text-gray-700 mb-1 block">Title / Username</label>
-                    <input id="titleInput" class="touch-target w-full border px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base" />
-                </div>
-
-                <!-- URL Field (Full Width) -->  
-                <div class="lg:col-span-2">
-                    <label class="text-xs sm:text-sm text-gray-700 mb-1 block">URL</label>
-                    <input id="urlInput" type="url" placeholder="https://example.com or example.com (https:// will be added automatically)" class="touch-target w-full border px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base" />
                 </div>
 
                 <!-- Note Field (Full Width) -->

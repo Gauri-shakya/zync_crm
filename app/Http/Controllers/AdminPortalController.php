@@ -16,7 +16,7 @@ class AdminPortalController extends Controller
 }
 
     /**
-     * Display the admin portal page
+     * Display the leave record page
      */
     public function index()
     {

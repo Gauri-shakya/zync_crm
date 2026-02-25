@@ -34,7 +34,7 @@ class PermissionSeeder extends Seeder
             'notepad',
             'contact',
             'Raise Ticket',
-            'admin portal',
+            'Leave Record',
             'Leave Apply',
             'Project Management',
 

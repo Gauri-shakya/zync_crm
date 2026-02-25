@@ -359,7 +359,7 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
 
     //Admin Portal Routes with Permission Middleware
 
-    Route::middleware('permission:admin portal')->group(function () {
+    Route::middleware('permission:Leave Record')->group(function () {
         Route::get('/adminportal', [AdminPortalController::class, 'index'])->name('adminportal.index');
         Route::prefix('adminportal')->group(function () {
             Route::get('/leaves', [AdminPortalController::class, 'getLeaves'])->name('adminportal.leaves');
@@ -823,7 +823,7 @@ Route::post('/notifications/read', function () {
 
 // TEMPORARY FIX ROUTE
 Route::get('/fix-permissions', function () {
-    $missing = ['admin portal', 'employeeportal', 'project management'];
+    $missing = ['Leave Record', 'employeeportal', 'project management'];
     foreach ($missing as $p) {
         \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $p, 'guard_name' => 'web']);
     }

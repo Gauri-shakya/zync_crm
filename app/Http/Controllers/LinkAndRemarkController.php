@@ -26,7 +26,7 @@ class LinkAndRemarkController extends Controller
     {
         $validated = $request->validate([
             'type' => 'required',
-            'category' => 'required|in:marketing,support,internal',
+            'category' => 'nullable|in:marketing,support,internal',
             'title' => 'required|string|max:255',
             'url' => 'required|url',
             'note' => 'nullable|string',
@@ -51,7 +51,7 @@ class LinkAndRemarkController extends Controller
 
         $validated = $request->validate([
             'type' => 'sometimes|required',
-            'category' => 'sometimes|required|in:marketing,support,internal',
+            'category' => 'sometimes|nullable|in:marketing,support,internal',
             'title' => 'sometimes|required|string|max:255',
             'url' => 'sometimes|required|url',
             'note' => 'sometimes|nullable|string',

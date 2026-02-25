@@ -429,8 +429,8 @@
                         @endcan --}}
 
 
-                          <!-- admin leave protal -->
-                        @can('admin portal')
+                        <!-- admin leave protal -->
+                        @can('Leave Record')
                         <li class="relative">
                             <a href="{{ route('adminportal.index') }}"
                                class="flex w-full items-center gap-2 overflow-hidden p-2 text-left h-8 text-sm rounded-xl mb-1 flex items-center gap-3 px-4 py-3 
@@ -543,7 +543,7 @@
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
-                                <span class="font-medium">Project Management</span>
+                                <span class="font-medium whitespace-nowrap">Project Management</span>
                             </a>
                         </li>
                         @endcan
@@ -821,7 +821,7 @@ if ($crmAccessible) {
     }
 
     
-     if(auth()->user()->can('admin portal')) {
+     if(auth()->user()->can('Leave Record')) {
         $navItems[] = [
             'name' => 'Leave Record',
             'route' => route('adminportal.index'),

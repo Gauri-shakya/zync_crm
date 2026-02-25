@@ -183,11 +183,13 @@ body {
                 <th>Employee ID</th>
                 <th>Employee Name</th>
                 <th>Email</th>
-                <th>Basic Salary</th>
+                <th>Basic Rate</th>
+                <th>Working Days</th>
                 <th>Present Days</th>
                 <th>Absent Days</th>
                 <th>Late Days</th>
                 <th>Half Days</th>
+                <th>Earned Basic</th>
                 <th>Allowances</th>
                 <th>Deductions</th>
                 <th>Overtime</th>
@@ -197,36 +199,70 @@ body {
         </thead>
         <tbody>
             @foreach($salaries as $index => $salary)
+            @php
+                $totalWorkingDays = $salary->employee->company->total_working_days ?? 25;
+                $perDaySalary = ($salary->basic_salary ?? $salary->employee->salary) / ($totalWorkingDays > 0 ? $totalWorkingDays : 1);
+                $earnedBasic = ($salary->total_present_days + $salary->total_late_days) * $perDaySalary + ($salary->total_half_days * 0.5 * $perDaySalary);
+                $calculatedNet = ($earnedBasic + ($salary->total_allowances ?? 0) + ($salary->overtime_amount ?? 0)) - ($salary->total_deductions ?? 0);
+                
+                // Calculate Absent Days dynamically to ensure consistency with Total Working Days
+                $calculatedAbsent = $totalWorkingDays - (($salary->total_present_days ?? 0) + ($salary->total_late_days ?? 0) + ($salary->total_half_days ?? 0));
+            @endphp
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td>{{ $salary->employee->id }}</td>
                 <td>{{ $salary->employee->name }}</td>
                 <td>{{ $salary->employee->email }}</td>
                 <td>{{ '₹'.number_format($salary->basic_salary ?? $salary->employee->salary) }}</td>
+                <td>{{ $totalWorkingDays }}</td>
                 <td>{{ $salary->total_present_days ?? 0 }}</td>
-                <td>{{ $salary->total_absent_days ?? 0 }}</td>
+                <td>{{ $calculatedAbsent > 0 ? $calculatedAbsent : 0 }}</td>
                 <td>{{ $salary->total_late_days ?? 0 }}</td>
                 <td>{{ $salary->total_half_days ?? 0 }}</td>
+                <td>{{ '₹'.number_format($earnedBasic, 2) }}</td>
                 <td>{{ '₹'.number_format($salary->total_allowances ?? 0) }}</td>
                 <td>{{ '₹'.number_format($salary->total_deductions ?? 0) }}</td>
                 <td>{{ '₹'.number_format($salary->overtime_amount ?? 0) }}</td>
-                <td>{{ '₹'.number_format($salary->net_salary ?? 0) }}</td>
-              
+                <td>{{ '₹'.number_format($calculatedNet, 2) }}</td>
             </tr>
             @endforeach
             
             <!-- Totals Row -->
+            @php
+                $totalCalculatedNet = $salaries->reduce(function($carry, $salary) {
+                    $totalWorkingDays = $salary->employee->company->total_working_days ?? 25;
+                    $perDaySalary = ($salary->basic_salary ?? $salary->employee->salary) / ($totalWorkingDays > 0 ? $totalWorkingDays : 1);
+                    $earnedBasic = ($salary->total_present_days + $salary->total_late_days) * $perDaySalary + ($salary->total_half_days * 0.5 * $perDaySalary);
+                    $calculatedNet = ($earnedBasic + ($salary->total_allowances ?? 0) + ($salary->overtime_amount ?? 0)) - ($salary->total_deductions ?? 0);
+                    return $carry + $calculatedNet;
+                }, 0);
+
+                $totalEarned = $salaries->reduce(function($carry, $salary) {
+                    $totalWorkingDays = $salary->employee->company->total_working_days ?? 25;
+                    $perDaySalary = ($salary->basic_salary ?? $salary->employee->salary) / ($totalWorkingDays > 0 ? $totalWorkingDays : 1);
+                    $earnedBasic = ($salary->total_present_days + $salary->total_late_days) * $perDaySalary + ($salary->total_half_days * 0.5 * $perDaySalary);
+                    return $carry + $earnedBasic;
+                }, 0);
+
+                $totalCalculatedAbsent = $salaries->reduce(function($carry, $salary) {
+                    $totalWorkingDays = $salary->employee->company->total_working_days ?? 25;
+                    $absent = $totalWorkingDays - (($salary->total_present_days ?? 0) + ($salary->total_late_days ?? 0) + ($salary->total_half_days ?? 0));
+                    return $carry + ($absent > 0 ? $absent : 0);
+                }, 0);
+            @endphp
             <tr class="total-row">
                 <td colspan="4" style="text-align: right;"><strong>Totals:</strong></td>
                 <td>₹{{ number_format($salaries->sum('basic_salary')) }}</td>
+                <td>--</td>
                 <td>{{ $salaries->sum('total_present_days') }}</td>
-                <td>{{ $salaries->sum('total_absent_days') }}</td>
+                <td>{{ $totalCalculatedAbsent }}</td>
                 <td>{{ $salaries->sum('total_late_days') }}</td>
                 <td>{{ $salaries->sum('total_half_days') }}</td>
+                <td>₹{{ number_format($totalEarned, 2) }}</td>
                 <td>₹{{ number_format($salaries->sum('total_allowances')) }}</td>
                 <td>₹{{ number_format($salaries->sum('total_deductions')) }}</td>
                 <td>₹{{ number_format($salaries->sum('overtime_amount')) }}</td>
-                <td>₹{{ number_format($salaries->sum('net_salary')) }}</td>
+                <td>₹{{ number_format($totalCalculatedNet, 2) }}</td>
             </tr>
         </tbody>
     </table>

@@ -43,6 +43,22 @@
     
     <div class="info-section">
         <h3>Attendance Summary</h3>
+        @php
+            $totalWorkingDays = $salary->employee->company->total_working_days ?? 25;
+            $perDaySalary = $salary->basic_salary / ($totalWorkingDays > 0 ? $totalWorkingDays : 1);
+            $earnedBasic = ($salary->total_present_days + $salary->total_late_days) * $perDaySalary + ($salary->total_half_days * 0.5 * $perDaySalary);
+            $totalAllowances = $salary->total_allowances ?? 0;
+            $totalDeductions = $salary->total_deductions ?? 0;
+            $overtime = $salary->overtime_amount ?? 0;
+            $calculatedNet = ($earnedBasic + $totalAllowances + $overtime) - $totalDeductions;
+            
+            // Calculate Absent Days dynamically to ensure consistency with Total Working Days
+            $calculatedAbsent = $totalWorkingDays - ($salary->total_present_days + $salary->total_late_days + $salary->total_half_days);
+        @endphp
+        <div class="info-row">
+            <div class="info-label">Total Working Days:</div>
+            <div>{{ number_format($totalWorkingDays, 2) }}</div>
+        </div>
         <div class="info-row">
             <div class="info-label">Present Days:</div>
             <div>{{ $salary->total_present_days }}</div>
@@ -57,11 +73,11 @@
         </div>
         <div class="info-row">
             <div class="info-label">Absent Days:</div>
-            <div>{{ $salary->total_absent_days }}</div>
+            <div>{{ $calculatedAbsent > 0 ? $calculatedAbsent : 0 }}</div>
         </div>
         <div class="info-row">
             <div class="info-label">Per Day Salary:</div>
-            <div>₹{{ number_format($salary->per_day_salary, 2) }}</div>
+            <div>₹{{ number_format($perDaySalary, 2) }}</div>
         </div>
     </div>
     
@@ -74,8 +90,12 @@
         </thead>
         <tbody>
             <tr>
-                <td>Basic Salary</td>
+                <td>Basic Salary (Fixed Rate)</td>
                 <td>{{ number_format($salary->basic_salary, 2) }}</td>
+            </tr>
+            <tr>
+                <td><strong>Earned Basic Salary</strong></td>
+                <td><strong>{{ number_format($earnedBasic, 2) }}</strong></td>
             </tr>
             
             @foreach($salary->details as $detail)
@@ -108,7 +128,7 @@
             
             <tr class="total-row" style="background-color: #e8f4fd;">
                 <td><strong>NET SALARY</strong></td>
-                <td><strong>₹{{ number_format($salary->net_salary, 2) }}</strong></td>
+                <td><strong>₹{{ number_format($calculatedNet, 2) }}</strong></td>
             </tr>
         </tbody>
     </table>

@@ -437,8 +437,11 @@
                                 <div class="text-sm font-semibold text-gray-900">
                                     ₹{{ number_format($salary->basic_salary) }}
                                 </div>
+                                @php
+                                    $actualPerDay = $salary->basic_salary / ($workingDays > 0 ? $workingDays : 1);
+                                @endphp
                                 <div class="text-xs text-gray-500">
-                                    ₹{{ number_format($salary->per_day_salary, 2) }}/day
+                                    ₹{{ number_format($actualPerDay, 2) }}/day
                                 </div>
                             </td>
                             
