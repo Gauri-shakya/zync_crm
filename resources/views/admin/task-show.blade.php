@@ -123,7 +123,7 @@
                         <i class="fas fa-arrow-left mr-2"></i> Back
                     </a>
                     @if(auth()->user()->hasRole('admin') || $task->users->contains(auth()->user()->id) || ($task->role && auth()->user()->hasRole($task->role->name)))
-                    <a href="{{ route('tasks.edit', $task->id) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <a href="{{ route('tasks.edit', $task->id) }}" class="hidden inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         <i class="fas fa-edit mr-2"></i> Edit Task
                     </a>
                     @endif
@@ -195,7 +195,83 @@
                         </div>
                     </div>
 
-                    <!-- Comments / Activity could go here in future -->
+                    <!-- Task Messages / Comments -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden card-hover fade-in" style="animation-delay: 0.2s;">
+                        <div class="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                            <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                                <i class="fas fa-comments text-indigo-500 mr-3 text-2xl"></i> Task Discussions
+                            </h3>
+                            <span class="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full text-xs font-bold uppercase tracking-wider">
+                                {{ $task->comments->count() }} Messages
+                            </span>
+                        </div>
+
+                        <!-- Messages List -->
+                        <div id="comments-container" class="p-6 space-y-6 max-h-[500px] overflow-y-auto bg-gray-50/30" data-last-id="{{ $task->comments->last() ? $task->comments->last()->id : 0 }}">
+                            @forelse($task->comments as $comment)
+                                <div class="flex {{ $comment->user_id === auth()->id() ? 'justify-end' : 'justify-start' }} group" data-comment-id="{{ $comment->id }}">
+                                    <div class="flex flex-col max-w-[85%] {{ $comment->user_id === auth()->id() ? 'items-end' : 'items-start' }}">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            @if($comment->user_id !== auth()->id())
+                                                <span class="text-xs font-bold text-gray-700">{{ $comment->user->name }}</span>
+                                            @endif
+                                            <span class="text-[10px] text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
+                                        </div>
+                                        
+                                        <div class="relative p-4 rounded-2xl shadow-sm {{ $comment->user_id === auth()->id() ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none' }}">
+                                            <p class="text-sm leading-relaxed whitespace-pre-wrap">{{ $comment->comment }}</p>
+                                            
+                                            @if($comment->attachments && count($comment->attachments) > 0)
+                                                <div class="mt-3 pt-3 border-t {{ $comment->user_id === auth()->id() ? 'border-indigo-500/50' : 'border-gray-100' }} space-y-2">
+                                                    @foreach($comment->attachments as $file)
+                                                        <a href="{{ Storage::url($file) }}" target="_blank" class="flex items-center p-2 rounded-lg text-xs {{ $comment->user_id === auth()->id() ? 'bg-indigo-700/50 hover:bg-indigo-800/50 text-indigo-100' : 'bg-gray-50 hover:bg-gray-100 text-indigo-600' }} transition truncate">
+                                                            <i class="fas fa-paperclip mr-2"></i>
+                                                            {{ basename($file) }}
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div id="no-comments-message" class="text-center py-12">
+                                    <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-300">
+                                        <i class="fas fa-comment-dots text-3xl"></i>
+                                    </div>
+                                    <h4 class="text-gray-900 font-bold mb-1">No messages yet</h4>
+                                    <p class="text-gray-500 text-sm">Start a conversation about this task below.</p>
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <!-- Message Form -->
+                        <div class="p-6 bg-white border-t border-gray-100">
+                            <form id="comment-form" action="{{ route('tasks.comments.store', $task->id) }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <div class="relative group">
+                                    <textarea name="comment" rows="3" required
+                                        class="block w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none text-sm placeholder:text-gray-400"
+                                        placeholder="Type your message here..."></textarea>
+                                    
+                                    <div class="flex items-center justify-between mt-4">
+                                        <div class="flex items-center space-x-2">
+                                            <label class="cursor-pointer inline-flex items-center px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 transition group-hover:border-indigo-200">
+                                                <i class="fas fa-paperclip mr-2 text-indigo-500"></i> Attach Files
+                                                <input type="file" name="attachments[]" multiple class="hidden" id="comment-files">
+                                            </label>
+                                            <span id="file-count" class="text-[10px] text-gray-400 hidden italic"></span>
+                                        </div>
+                                        
+                                        <button type="submit" id="submit-comment" class="inline-flex items-center px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-600/20 transition-all active:scale-95">
+                                            <span class="mr-2">Send Message</span>
+                                            <i class="fas fa-paper-plane text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Right Column: Sidebar -->
@@ -336,6 +412,137 @@
                 </div>
             </div>
         </main>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const commentForm = document.getElementById('comment-form');
+                const commentsContainer = document.getElementById('comments-container');
+                const fileInput = document.getElementById('comment-files');
+                const fileCount = document.getElementById('file-count');
+                const noCommentsMessage = document.getElementById('no-comments-message');
+                const taskId = "{{ $task->id }}";
+                const currentUserId = {{ auth()->id() }};
+                
+                // Handle file count display
+                fileInput.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        fileCount.textContent = `${this.files.length} file(s) selected`;
+                        fileCount.classList.remove('hidden');
+                    } else {
+                        fileCount.classList.add('hidden');
+                    }
+                });
+
+                // AJAX Form Submission
+                commentForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const submitBtn = document.getElementById('submit-comment');
+                    const originalBtnContent = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Sending...';
+
+                    const formData = new FormData(this);
+                    
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.reset();
+                            fileCount.classList.add('hidden');
+                            appendMessage(data.comment, data.formatted_date, true);
+                            if (noCommentsMessage) noCommentsMessage.remove();
+                            
+                            // Scroll to bottom
+                            commentsContainer.scrollTop = commentsContainer.scrollHeight;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error))
+                    .finally(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnContent;
+                    });
+                });
+
+                // Polling for new messages
+                function pollMessages() {
+                    const lastId = commentsContainer.dataset.lastId;
+                    
+                    fetch(`{{ route('tasks.comments.fetch-new', $task->id) }}?last_id=${lastId}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.comments && data.comments.length > 0) {
+                            data.comments.forEach(comment => {
+                                // Only append if it's not our own message (already appended by AJAX)
+                                if (!document.querySelector(`[data-comment-id="${comment.id}"]`)) {
+                                    appendMessage(comment, comment.formatted_date, comment.is_me);
+                                    if (noCommentsMessage) noCommentsMessage.remove();
+                                }
+                            });
+                            
+                            // Update last ID
+                            const newLastId = data.comments[data.comments.length - 1].id;
+                            commentsContainer.dataset.lastId = newLastId;
+                            
+                            // Scroll to bottom if new messages added
+                            commentsContainer.scrollTop = commentsContainer.scrollHeight;
+                        }
+                    })
+                    .catch(error => console.error('Polling Error:', error));
+                }
+
+                function appendMessage(comment, formattedDate, isMe) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `flex ${isMe ? 'justify-end' : 'justify-start'} group`;
+                    messageDiv.dataset.commentId = comment.id;
+
+                    let attachmentsHtml = '';
+                    if (comment.attachments && comment.attachments.length > 0) {
+                        attachmentsHtml = `
+                            <div class="mt-3 pt-3 border-t ${isMe ? 'border-indigo-500/50' : 'border-gray-100'} space-y-2">
+                                ${comment.attachments.map(file => `
+                                    <a href="/storage/${file}" target="_blank" class="flex items-center p-2 rounded-lg text-xs ${isMe ? 'bg-indigo-700/50 hover:bg-indigo-800/50 text-indigo-100' : 'bg-gray-50 hover:bg-gray-100 text-indigo-600'} transition truncate">
+                                        <i class="fas fa-paperclip mr-2"></i>
+                                        ${file.split('/').pop()}
+                                    </a>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+
+                    messageDiv.innerHTML = `
+                        <div class="flex flex-col max-w-[85%] ${isMe ? 'items-end' : 'items-start'}">
+                            <div class="flex items-center space-x-2 mb-1">
+                                ${!isMe ? `<span class="text-xs font-bold text-gray-700">${comment.user_name || comment.user.name}</span>` : ''}
+                                <span class="text-[10px] text-gray-400">${formattedDate}</span>
+                            </div>
+                            <div class="relative p-4 rounded-2xl shadow-sm ${isMe ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'}">
+                                <p class="text-sm leading-relaxed whitespace-pre-wrap">${comment.comment}</p>
+                                ${attachmentsHtml}
+                            </div>
+                        </div>
+                    `;
+                    
+                    commentsContainer.appendChild(messageDiv);
+                }
+
+                // Initial scroll to bottom
+                commentsContainer.scrollTop = commentsContainer.scrollHeight;
+
+                // Start polling every 5 seconds
+                setInterval(pollMessages, 5000);
+            });
+        </script>
     </body>
 
     </html>

@@ -13,11 +13,36 @@ use App\Models\Role;
 
 class TaskController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::with('users', 'role', 'assigner.roles')->recent()->get();
-        $users = User::with('roles')->where('company_id', Auth::user()->company_id)->get();
-        $roles = Role::forCompany(Auth::user()->company_id)->get();
+        $filterDate = $request->input('filter_date', \Carbon\Carbon::today()->format('Y-m-d'));
+        $authUser = Auth::user();
+
+        $query = Task::with('users', 'role', 'assigner.roles')
+            ->where('company_id', $authUser->company_id)
+            ->whereDate('due_date', $filterDate);
+
+        // Visibility Logic:
+        // 1. Admins see everything in their company
+        // 2. Regular users only see tasks they CREATED (assigned_by)
+        // 3. Regular users only see tasks ASSIGNED to them (individual or via role/team)
+        if (!$authUser->hasRole('admin')) {
+            $query->where(function ($q) use ($authUser) {
+                $q->where('assigned_by', $authUser->id) // Created by me
+                  ->orWhereHas('users', function ($u) use ($authUser) {
+                      $u->where('users.id', $authUser->id); // Assigned to me individually
+                  })
+                  ->orWhere(function ($r) use ($authUser) {
+                      $r->where('assigned_to_team', true)
+                        ->where('assigned_role_id', '!=', null)
+                        ->whereIn('assigned_role_id', $authUser->roles->pluck('id')); // Assigned to my team
+                  });
+            });
+        }
+
+        $tasks = $query->recent()->get();
+        $users = User::with('roles')->where('company_id', $authUser->company_id)->get();
+        $roles = Role::forCompany($authUser->company_id)->get();
 
         // Calculate stats
         $totalTasks = $tasks->count();
@@ -39,7 +64,7 @@ class TaskController extends Controller
 
     public function show(Task $task)
     {
-        $this->authorize('manage', $task);
+        $this->authorize('view', $task);
 
         $task->load('users', 'role', 'assigner.roles');
         return view('admin.task-show', compact('task'));
@@ -157,7 +182,7 @@ class TaskController extends Controller
             'category' => 'nullable|string',
             'priority' => 'sometimes|required|in:Low,Medium,High',
             'status' => 'sometimes|required|in:Pending,In Progress,Completed',
-            'due_date' => 'nullable|date|after_or_equal:today',
+            'due_date' => 'nullable|date', // Removed after_or_equal:today for updates
             'assigned_type' => 'sometimes|required|in:individual,team',
             'attachments.*' => 'file|mimes:pdf,jpg,png,doc|max:10240',
             'remove_attachments' => 'sometimes|array',
@@ -202,14 +227,17 @@ class TaskController extends Controller
         }
 
         // Update core fields
-        $task->update(array_filter([
-            'title' => $validated['title'] ?? $task->title,
-            'description' => $validated['description'] ?? $task->description,
-            'category' => $validated['category'] ?? $task->category,
-            'priority' => $validated['priority'] ?? $task->priority,
-            'status' => $validated['status'] ?? $task->status,
-            'due_date' => $validated['due_date'] ?? $task->due_date,
-        ]));
+        $updateData = [];
+        if (isset($validated['title'])) $updateData['title'] = $validated['title'];
+        if (isset($validated['description'])) $updateData['description'] = $validated['description'];
+        if (isset($validated['category'])) $updateData['category'] = $validated['category'];
+        if (isset($validated['priority'])) $updateData['priority'] = $validated['priority'];
+        if (isset($validated['status'])) $updateData['status'] = $validated['status'];
+        if (isset($validated['due_date'])) $updateData['due_date'] = $validated['due_date'];
+
+        if (!empty($updateData)) {
+            $task->update($updateData);
+        }
 
         // Append new attachments
         if ($request->hasFile('attachments')) {
@@ -220,19 +248,18 @@ class TaskController extends Controller
             $task->update(['attachments' => $existingAttachments]);
         }
 
-        // Re-handle assignment if type provided
-        if (isset($validated['assigned_type'])) {
-            // Clear existing assignments (assume methods handle this)
-            $task->users()->detach();
-            $task->role()->dissociate();
-            $task->update(['assigned_to_team' => $assignedType === 'team']);
-
-            if ($assignedType === 'individual') {
-                $userIds = $validated['assigned_users'];
-                $task->assignToUsers($userIds);
-            } else {
-                $roleId = $validated['assigned_role'];
-                $task->assignToTeam($roleId);
+        // Re-handle assignment if users or roles are provided
+        if ($assignedType === 'individual' && isset($validated['assigned_users'])) {
+            $task->assignToUsers($validated['assigned_users']);
+        } elseif ($assignedType === 'team' && isset($validated['assigned_role'])) {
+            $task->assignToTeam($validated['assigned_role']);
+        } elseif (isset($validated['assigned_type']) && $validated['assigned_type'] !== ($task->assigned_to_team ? 'team' : 'individual')) {
+            // Type changed but specific users/roles might not be in $validated if validation is loose
+            // This is a fallback
+            if ($validated['assigned_type'] === 'individual' && $request->has('assigned_users')) {
+                $task->assignToUsers($request->input('assigned_users'));
+            } elseif ($validated['assigned_type'] === 'team' && $request->has('assigned_role')) {
+                $task->assignToTeam($request->input('assigned_role'));
             }
         }
 
@@ -249,10 +276,8 @@ class TaskController extends Controller
     }
     public function destroy(Task $task)
     {
-        if (!auth()->user()->hasRole('admin')) {
-        abort(403);
-    }
         $this->authorize('manage', $task);
+        
         // Clean up attachments
         if ($task->attachments) {
             foreach ($task->attachments as $attachment) {

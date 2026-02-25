@@ -313,6 +313,10 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
         Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
         Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
         Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+        
+        // Task Comments/Messages
+        Route::post('/tasks/{task}/comments', [App\Http\Controllers\TaskCommentController::class, 'store'])->name('tasks.comments.store');
+        Route::get('/tasks/{task}/comments/new', [App\Http\Controllers\TaskCommentController::class, 'fetchNew'])->name('tasks.comments.fetch-new');
     });
 
 

@@ -779,12 +779,22 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">Task Management</h2>
-                        <p class="text-gray-600 mt-1">Manage and track all your team tasks in one place</p>
+                        <p class="text-gray-600 mt-1">Showing tasks for: <span class="font-semibold text-indigo-600">{{ request('filter_date') ? \Carbon\Carbon::parse(request('filter_date'))->format('d/m/Y') : \Carbon\Carbon::today()->format('d/m/Y') }}</span></p>
                     </div>
-                    <button id="addTaskBtn" class="btn-primary w-full md:w-auto">
-                        <i class="fas fa-plus mr-2"></i>
-                        Add New Task
-                    </button>
+                    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                        <form method="GET" action="{{ route('tasks.index') }}" class="flex items-center gap-2">
+                            <input type="date" name="filter_date" value="{{ request('filter_date', \Carbon\Carbon::today()->format('Y-m-d')) }}" 
+                                   class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 text-sm bg-white"
+                                   onchange="this.form.submit()">
+                            @if(request('filter_date') && request('filter_date') != \Carbon\Carbon::today()->format('Y-m-d'))
+                                <a href="{{ route('tasks.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Today</a>
+                            @endif
+                        </form>
+                        <button id="addTaskBtn" class="btn-primary">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add New Task
+                        </button>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6 mb-8">
                     <div class="bg-white rounded-xl shadow-sm p-2 md:p-6 border border-gray-200">
@@ -1013,29 +1023,30 @@
                                         </td>
                                         <td class="py-4 px-4" data-label="Actions">
                                           <div class="flex items-center space-x-2 actions-mobile hidden md:flex">
+                                            @can('manage', $task)
+                                                <button
+                                                    class="edit-task text-indigo-600 hover:text-indigo-800 p-2 hover:bg-indigo-50 rounded-lg"
+                                                    data-task-id="{{ $task->id }}" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            @endcan
 
-    <button
-        class="edit-task text-indigo-600 hover:text-indigo-800 p-2 hover:bg-indigo-50 rounded-lg"
-        data-task-id="{{ $task->id }}" title="Edit">
-        <i class="fas fa-edit"></i>
-    </button>
+                                            @can('view', $task)
+                                                <button
+                                                    class="view-task text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-lg"
+                                                    data-task-id="{{ $task->id }}" title="View">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            @endcan
 
-    <button
-        class="view-task text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-lg"
-        data-task-id="{{ $task->id }}" title="View">
-        <i class="fas fa-eye"></i>
-    </button>
-
-    @role('admin')
-        <button
-            class="delete-task text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg"
-            data-task-id="{{ $task->id }}" title="Delete">
-            <i class="fas fa-trash"></i>
-        </button>
-    @endrole
-
-</div>
-
+                                            @can('manage', $task)
+                                                <button
+                                                    class="delete-task text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg"
+                                                    data-task-id="{{ $task->id }}" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            @endcan
+                                          </div>
                                         </td>
                                     </tr>
                                 @empty
