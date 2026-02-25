@@ -1,0 +1,32 @@
+[
+    {
+        "title": "Republic Day",
+        "date": "2026-01-26",
+        "category": "National Holiday",
+        "description": "Indian Republic Day"
+    },
+    {
+        "title": "Independence Day",
+        "date": "2026-08-15",
+        "category": "National Holiday",
+        "description": "Indian Independence Day"
+    },
+    {
+        "title": "Gandhi Jayanti",
+        "date": "2026-10-02",
+        "category": "National Holiday",
+        "description": "Birth anniversary of Mahatma Gandhi"
+    },
+    {
+        "title": "Christmas",
+        "date": "2026-12-25",
+        "category": "Indian Festival",
+        "description": "Christian festival celebrating the birth of Jesus"
+    },
+    {
+        "title": "New Year",
+        "date": "2026-01-01",
+        "category": "Global Festival",
+        "description": "Festival of new beginnings"
+    }
+]

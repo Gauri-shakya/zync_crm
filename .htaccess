@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Force HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteRule ^ https://powderblue-chimpanzee-845156.hostingersite.com%{REQUEST_URI} [L,R=301]
+
+    # Redirect www to non-www
+    RewriteCond %{HTTP_HOST} ^www\.powderblue-chimpanzee-845156\.hostingersite\.com$ [NC]
+    RewriteRule ^ https://powderblue-chimpanzee-845156.hostingersite.com%{REQUEST_URI} [L,R=301]
+
+    # Send all requests to Laravel public folder
+    RewriteCond %{REQUEST_URI} !^/public
+    RewriteRule ^(.*)$ /public/$1 [L]
+</IfModule>
