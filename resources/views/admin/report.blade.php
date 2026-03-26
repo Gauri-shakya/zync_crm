@@ -21,12 +21,11 @@
                 </div>
             </div>
         </div>
-        <!-- Stats Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="gradient-card rounded-2xl p-6 shadow-card">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-500">Total Reports</p>
+                        <p class="text-sm font-medium text-gray-500">Today's Reports</p>
                         <p id="totalReportsCount" class="text-2xl font-bold text-gray-800 mt-1">0</p>
                         <div class="progress-bar mt-2">
                             <div class="progress-fill" style="width: 85%"></div>
@@ -83,40 +82,60 @@
         <!-- Reports Table -->
         <div class="bg-white rounded-2xl shadow-card overflow-hidden">
             <div class="px-6 py-5 border-b border-gray-100">
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <!-- Left: Title + Active Filters -->
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900">Recent Reports</h2>
-                        <!-- Active Filters Bar -->
-                        <div id="activeFiltersBar" class="mt-2 flex flex-wrap items-center gap-2 hidden">
-                            <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Active Filters:</span>
-                            <div id="activeFilterChips" class="flex flex-wrap gap-2"></div>
+                <div class="flex flex-col space-y-4">
+                    <!-- Top Row: Title + Search -->
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">Recent Reports</h2>
+                            <!-- Active Filters Bar -->
+                            <div id="activeFiltersBar" class="mt-2 flex flex-wrap items-center gap-2 hidden">
+                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Applied:</span>
+                                <div id="activeFilterChips" class="flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Search Bar -->
+                        <div class="relative w-full md:w-72">
+                            <input type="text" id="searchInput" placeholder="Search reports..." class="pill-input input-focus w-full bg-gray-50/50">
+                            <i class="fas fa-search absolute left-4 top-2.5 text-gray-400 text-sm"></i>
                         </div>
                     </div>
-                    <!-- Right: Inline Filters -->
-                    <div class="flex flex-col lg:flex-row lg:items-center gap-3 w-full lg:w-auto">
-                        <!-- Search -->
-                        <div class="relative w-full lg:w-56">
-                            <input type="text" id="searchInput" placeholder="Search reports..." class="pill-input input-focus w-full bg-white">
-                            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i>
-                        </div>
-                        <!-- Status + Date Range + Buttons -->
-                        <div class="flex flex-wrap items-center gap-2">
-                            <select id="statusFilter" class="px-3 py-2 rounded-full border border-gray-200 text-sm input-focus bg-white">
-                                <option value="all">All Status</option>
-                                <option value="completed">Completed</option>
-                                <option value="inprogress">In Progress</option>
-                                <option value="pending">Pending</option>
-                            </select>
-                            <div class="flex items-center gap-1">
-                                <input type="date" id="startDate" class="px-3 py-2 rounded-full border border-gray-200 text-xs input-focus bg-white">
-                                <span class="text-xs text-gray-400">to</span>
-                                <input type="date" id="endDate" class="px-3 py-2 rounded-full border border-gray-200 text-xs input-focus bg-white">
+
+                    <!-- Bottom Row: All Filters -->
+                    <div class="flex flex-col lg:flex-row lg:items-center gap-3 bg-gray-50/50 p-3 rounded-2xl border border-gray-100">
+                        <div class="flex flex-col sm:flex-row flex-wrap items-center gap-2 flex-1 w-full">
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <i class="fas fa-filter text-gray-400 text-xs ml-1 hidden sm:block"></i>
+                                <select id="statusFilter" class="w-full sm:w-auto px-4 py-2 rounded-xl border border-gray-200 text-sm input-focus bg-white min-w-[130px]">
+                                    <option value="all">All Status</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="inprogress">In Progress</option>
+                                    <option value="pending">Pending</option>
+                                </select>
                             </div>
-                            <button id="applyFilter" class="px-3 py-2 text-xs bg-indigo-600 text-white rounded-full hover:bg-indigo-700 smooth-transition font-medium">
+
+                            <select id="roleFilter" class="w-full sm:w-auto px-4 py-2 rounded-xl border border-gray-200 text-sm input-focus bg-white min-w-[130px]">
+                                <option value="all">All Roles</option>
+                                <!-- Roles will be populated here -->
+                            </select>
+
+                            <div class="h-8 w-px bg-gray-200 mx-1 hidden lg:block"></div>
+
+                            <div class="flex items-center justify-between sm:justify-start gap-2 bg-white px-3 py-1.5 rounded-xl border border-gray-200 w-full sm:w-auto">
+                                <div class="flex items-center gap-2">
+                                    <i class="far fa-calendar-alt text-gray-400 text-xs"></i>
+                                    <input type="date" id="startDate" class="border-none p-0 text-xs focus:ring-0 bg-transparent w-full sm:w-28">
+                                </div>
+                                <span class="text-xs text-gray-400 font-bold px-1">→</span>
+                                <input type="date" id="endDate" class="border-none p-0 text-xs focus:ring-0 bg-transparent w-full sm:w-28">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 w-full lg:w-auto">
+                            <button id="applyFilter" class="flex-1 lg:flex-none px-6 py-2 text-sm bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 smooth-transition font-semibold shadow-sm">
                                 Apply
                             </button>
-                            <button id="resetFilter" class="px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded-full border border-gray-200 hover:bg-gray-200 smooth-transition font-medium">
+                            <button id="resetFilter" class="flex-1 lg:flex-none px-6 py-2 text-sm bg-white text-gray-700 rounded-xl border border-gray-200 hover:bg-gray-50 smooth-transition font-semibold shadow-sm">
                                 Clear
                             </button>
                         </div>
@@ -692,6 +711,7 @@
     const reportsPerPage = 5;
     let currentFilters = {
         status: 'all',
+        role: 'all',
         startDate: '',
         endDate: '',
         search: ''
@@ -708,6 +728,7 @@
     function initializeApp() {
         setupEventListeners();
         loadReports();
+        loadRoles(); // Added this
         updateStatsCards();
         renderActiveFilters();
       
@@ -717,6 +738,61 @@
       
         addTask('tasksContainer');
     }
+    
+    // Add loadRoles function
+    async function loadRoles() {
+        try {
+            const response = await fetch('/employeeportal/employeeportal/roles', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const contentType = response.headers.get("content-type");
+            if (response.ok && contentType && contentType.indexOf("application/json") !== -1) {
+                const data = await response.json();
+                populateRolesDropdown(data.roles);
+            } else {
+                // Try original path as fallback
+                const fallbackResponse = await fetch('/employeeportal/roles', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                const fallbackContentType = fallbackResponse.headers.get("content-type");
+                if (fallbackResponse.ok && fallbackContentType && fallbackContentType.indexOf("application/json") !== -1) {
+                    const data = await fallbackResponse.json();
+                    populateRolesDropdown(data.roles);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading roles:', error);
+        }
+    }
+
+    function populateRolesDropdown(roles) {
+        const roleFilter = document.getElementById('roleFilter');
+        if (roles) {
+            // Clear existing options except the first one
+            while (roleFilter.options.length > 1) {
+                roleFilter.remove(1);
+            }
+            roles.forEach(role => {
+                // Exclude 'admin' and 'client' roles from the filter
+                const roleName = role.name.toLowerCase();
+                if (roleName !== 'admin' && roleName !== 'client') {
+                    const option = document.createElement('option');
+                    option.value = role.name;
+                    option.textContent = role.name;
+                    roleFilter.appendChild(option);
+                }
+            });
+        }
+    }
+
     function setupEventListeners() {
         // Navigation
         document.getElementById('createReportBtn').addEventListener('click', () => showPage('create-report'));
@@ -766,6 +842,7 @@
         document.getElementById('applyFilter').addEventListener('click', applyFilters);
         document.getElementById('resetFilter').addEventListener('click', resetFilters);
         document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        document.getElementById('roleFilter').addEventListener('change', applyFilters);
         document.getElementById('startDate').addEventListener('change', applyFilters);
         document.getElementById('endDate').addEventListener('change', applyFilters);
       
@@ -824,6 +901,7 @@
         try {
             const params = new URLSearchParams();
             if (currentFilters.status !== 'all') params.append('status', currentFilters.status);
+            if (currentFilters.role !== 'all') params.append('role', currentFilters.role);
             if (currentFilters.startDate) params.append('start_date', currentFilters.startDate);
             if (currentFilters.endDate) params.append('end_date', currentFilters.endDate);
             if (currentFilters.search) params.append('search', currentFilters.search);
@@ -956,11 +1034,13 @@
     }
     function applyFilters() {
         const statusFilter = document.getElementById('statusFilter').value;
+        const roleFilter = document.getElementById('roleFilter').value;
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
       
         currentFilters = {
             status: statusFilter,
+            role: roleFilter,
             startDate: startDate,
             endDate: endDate,
             search: document.getElementById('searchInput').value
@@ -970,12 +1050,14 @@
     }
     function resetFilters() {
         document.getElementById('statusFilter').value = 'all';
+        document.getElementById('roleFilter').value = 'all';
         document.getElementById('startDate').value = '';
         document.getElementById('endDate').value = '';
         document.getElementById('searchInput').value = '';
       
         currentFilters = {
             status: 'all',
+            role: 'all',
             startDate: '',
             endDate: '',
             search: ''
@@ -988,6 +1070,9 @@
         if (type === 'status') {
             currentFilters.status = 'all';
             document.getElementById('statusFilter').value = 'all';
+        } else if (type === 'role') {
+            currentFilters.role = 'all';
+            document.getElementById('roleFilter').value = 'all';
         } else if (type === 'date') {
             currentFilters.startDate = '';
             currentFilters.endDate = '';
@@ -1010,36 +1095,44 @@
         const chipsContainer = document.getElementById('activeFilterChips');
         chipsContainer.innerHTML = '';
         const chips = [];
-        if (currentFilters.status !== 'all') {
-            const statusText = getStatusText(currentFilters.status);
-            chips.push({ type: 'status', label: `Status: ${statusText}` });
-        }
-        if (currentFilters.startDate || currentFilters.endDate) {
-            let label = 'Date: ';
-            if (currentFilters.startDate && currentFilters.endDate) {
-                label += `${currentFilters.startDate} → ${currentFilters.endDate}`;
-            } else if (currentFilters.startDate) {
-                label += `From ${currentFilters.startDate}`;
-            } else if (currentFilters.endDate) {
-                label += `Until ${currentFilters.endDate}`;
+
+        // If no filters are active, show "Today" chip
+        if (currentFilters.status === 'all' && currentFilters.role === 'all' && !currentFilters.startDate && !currentFilters.endDate && !currentFilters.search) {
+            const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            chips.push({ type: 'default', label: `Today (${today})` });
+        } else {
+            if (currentFilters.status !== 'all') {
+                const statusText = getStatusText(currentFilters.status);
+                chips.push({ type: 'status', label: `Status: ${statusText}` });
             }
-            chips.push({ type: 'date', label });
+            if (currentFilters.role !== 'all') {
+                chips.push({ type: 'role', label: `Role: ${currentFilters.role}` });
+            }
+            if (currentFilters.startDate || currentFilters.endDate) {
+                let label = 'Date: ';
+                if (currentFilters.startDate && currentFilters.endDate) {
+                    label += `${currentFilters.startDate} → ${currentFilters.endDate}`;
+                } else if (currentFilters.startDate) {
+                    label += `From ${currentFilters.startDate}`;
+                } else if (currentFilters.endDate) {
+                    label += `Until ${currentFilters.endDate}`;
+                }
+                chips.push({ type: 'date', label });
+            }
+            if (currentFilters.search) {
+                chips.push({ type: 'search', label: `Search: ${currentFilters.search}` });
+            }
         }
-        if (currentFilters.search) {
-            chips.push({ type: 'search', label: `Search: ${currentFilters.search}` });
-        }
-        if (chips.length === 0) {
-            bar.classList.add('hidden');
-            return;
-        }
+
         chips.forEach(chip => {
             const div = document.createElement('div');
             div.className = 'filter-chip';
             div.innerHTML = `
                 <span>${chip.label}</span>
+                ${chip.type !== 'default' ? `
                 <button type="button" class="filter-chip-remove" data-filter="${chip.type}">
                     <i class="fas fa-times"></i>
-                </button>
+                </button>` : ''}
             `;
             chipsContainer.appendChild(div);
         });

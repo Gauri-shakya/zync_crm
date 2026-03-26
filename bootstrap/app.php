@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->redirectTo(
+            guests: '/loginshow',
+            users: '/dashboard'
+        );
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
@@ -22,24 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->render(function (Throwable $e, Request $request) {
-            if ($request->is('api/*')) {
-                return null;
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $e->getMessage()], 401);
             }
 
-            if (config('app.debug')) {
-                return null;
-            }
-
-            $statusCode = 500;
-            if ($e instanceof HttpException) {
-                $statusCode = $e->getStatusCode();
-            }
-
-            if ($statusCode === 500) {
-                return response()->view('errors.500', ['exception' => $e], 500);
-            }
-
-            return null;
+            return redirect()->guest(route('login.show'));
         });
     })->create();

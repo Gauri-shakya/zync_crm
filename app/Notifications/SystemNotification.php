@@ -3,11 +3,9 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class SystemNotification extends Notification implements ShouldBroadcast
+class SystemNotification extends Notification
 {
     use Queueable;
 
@@ -17,16 +15,11 @@ class SystemNotification extends Notification implements ShouldBroadcast
 
     public function via($notifiable)
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
     public function toDatabase($notifiable)
     {
         return $this->data;
-    }
-
-    public function toBroadcast($notifiable)
-    {
-        return new BroadcastMessage($this->data);
     }
 }

@@ -38,4 +38,20 @@ class TaskPolicy
         // ONLY the creator or Admin can edit/delete
         return $authUser->id === $task->assigned_by || $authUser->hasRole('admin');
     }
+
+    /**
+     * Determine if the user can update the task status.
+     */
+    public function updateStatus(User $authUser, Task $task)
+    {
+        if ($authUser->company_id !== $task->company_id) {
+            return false;
+        }
+
+        // Creator, Admin, or Assigned users can update status
+        return $authUser->id === $task->assigned_by || 
+               $authUser->hasRole('admin') || 
+               $task->users->contains($authUser->id) ||
+               ($task->role && $authUser->roles->contains($task->role->id));
+    }
 }

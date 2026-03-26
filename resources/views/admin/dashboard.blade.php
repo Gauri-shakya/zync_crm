@@ -1,10 +1,6 @@
 @extends('components.layout')
 
-
-
 @section('content')
-
-
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
@@ -19,8 +15,8 @@
         <!-- Stats Cards - Mobile optimized grid -->
         <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 px-2 sm:px-3 md:px-0">
             <!-- Revenue Card -->
-            <div class="fade-in bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div class="absolute top-0 right-0 w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 transform translate-x-3 -translate-y-3 sm:translate-x-4 sm:-translate-y-4 md:translate-x-5 md:-translate-y-5 lg:translate-x-6 lg:-translate-y-6 bg-green-500 rounded-full opacity-10"></div>
+            <div onclick="openSidebar('users')" class="cursor-pointer fade-in bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+                <div class="absolute top-0 right-0 w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 transform translate-x-3 -translate-y-3 sm:translate-x-4 sm:-translate-y-4 md:translate-x-5 md:-translate-y-5 lg:translate-x-6 lg:-translate-y-6 bg-green-500 rounded-full opacity-10 group-hover:scale-110 transition-transform"></div>
                 <div class="flex justify-between items-start">
                     <div class="flex-1 pr-2">
                         <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Users</p>
@@ -33,7 +29,7 @@
                             <span class="text-xs text-gray-500 ml-1">vs last month</span>
                         </div>
                     </div>
-                    <div class="p-3 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-100 shadow-sm ml-2 flex-shrink-0">
+                    <div class="p-3 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-100 shadow-sm ml-2 flex-shrink-0 group-hover:scale-110 transition-transform">
                         <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
@@ -42,8 +38,8 @@
             </div>
 
             <!-- Active Clients Card -->
-            <div class="fade-in bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div class="absolute top-0 right-0 w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 transform translate-x-3 -translate-y-3 sm:translate-x-4 sm:-translate-y-4 md:translate-x-5 md:-translate-y-5 lg:translate-x-6 lg:-translate-y-6 bg-blue-500 rounded-full opacity-10"></div>
+            <div onclick="openSidebar('attendance')" class="cursor-pointer fade-in bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+                <div class="absolute top-0 right-0 w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 transform translate-x-3 -translate-y-3 sm:translate-x-4 sm:-translate-y-4 md:translate-x-5 md:-translate-y-5 lg:translate-x-6 lg:-translate-y-6 bg-blue-500 rounded-full opacity-10 group-hover:scale-110 transition-transform"></div>
                 <div class="flex justify-between items-start">
                     <div class="flex-1 pr-2">
                         <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Present Today</p>
@@ -56,7 +52,7 @@
                             <span class="text-xs text-gray-500 ml-1">vs yesterday</span>
                         </div>
                     </div>
-                    <div class="p-3 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-100 shadow-sm ml-2 flex-shrink-0">
+                    <div class="p-3 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-100 shadow-sm ml-2 flex-shrink-0 group-hover:scale-110 transition-transform">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -65,8 +61,8 @@
             </div>
 
             <!-- Campaigns Card (Total Clients) -->
-            <div class="fade-in bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div class="absolute top-0 right-0 w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 transform translate-x-3 -translate-y-3 sm:translate-x-4 sm:-translate-y-4 md:translate-x-5 md:-translate-y-5 lg:translate-x-6 lg:-translate-y-6 bg-purple-500 rounded-full opacity-10"></div>
+            <div onclick="openSidebar('clients')" class="cursor-pointer fade-in bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+                <div class="absolute top-0 right-0 w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 transform translate-x-3 -translate-y-3 sm:translate-x-4 sm:-translate-y-4 md:translate-x-5 md:-translate-y-5 lg:translate-x-6 lg:-translate-y-6 bg-purple-500 rounded-full opacity-10 group-hover:scale-110 transition-transform"></div>
                 <div class="flex justify-between items-start">
                     <div class="flex-1 pr-2">
                         <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Clients</p>
@@ -79,7 +75,7 @@
                             <span class="text-xs text-gray-500 ml-1">vs last month</span>
                         </div>
                     </div>
-                    <div class="p-3 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-100 shadow-sm ml-2 flex-shrink-0">
+                    <div class="p-3 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-100 shadow-sm ml-2 flex-shrink-0 group-hover:scale-110 transition-transform">
                         <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 0h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
@@ -88,8 +84,8 @@
             </div>
 
             <!-- ROI Card (Total Contacts) -->
-            <div class="fade-in bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div class="absolute top-0 right-0 w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 transform translate-x-3 -translate-y-3 sm:translate-x-4 sm:-translate-y-4 md:translate-x-5 md:-translate-y-5 lg:translate-x-6 lg:-translate-y-6 bg-orange-500 rounded-full opacity-10"></div>
+            <div onclick="openSidebar('contacts')" class="cursor-pointer fade-in bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+                <div class="absolute top-0 right-0 w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 transform translate-x-3 -translate-y-3 sm:translate-x-4 sm:-translate-y-4 md:translate-x-5 md:-translate-y-5 lg:translate-x-6 lg:-translate-y-6 bg-orange-500 rounded-full opacity-10 group-hover:scale-110 transition-transform"></div>
                 <div class="flex justify-between items-start">
                     <div class="flex-1 pr-2">
                         <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Contacts</p>
@@ -102,7 +98,7 @@
                             <span class="text-xs text-gray-500 ml-1">vs last month</span>
                         </div>
                     </div>
-                    <div class="p-3 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-100 shadow-sm ml-2 flex-shrink-0">
+                    <div class="p-3 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-100 shadow-sm ml-2 flex-shrink-0 group-hover:scale-110 transition-transform">
                         <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
@@ -176,9 +172,176 @@
     </div>
 </div>
 
+<!-- Right Sidebar (Drawer) -->
+<div id="statsSidebar" class="fixed inset-0 z-[100] invisible transition-all duration-300">
+    <!-- Backdrop -->
+    <div id="sidebarBackdrop" class="absolute inset-0 bg-gray-900/0 transition-all duration-300 cursor-pointer" onclick="closeSidebar()"></div>
+    
+    <!-- Sidebar Content -->
+    <div id="sidebarContent" class="absolute top-0 right-0 h-full w-full sm:w-[400px] md:w-[450px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+        <!-- Header -->
+        <div class="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
+            <div>
+                <h3 id="sidebarTitle" class="text-lg sm:text-xl font-bold text-gray-900">Details</h3>
+                <p id="sidebarSubtitle" class="text-xs sm:text-sm text-gray-500 mt-1">Viewing summary information</p>
+            </div>
+            <button onclick="closeSidebar()" class="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div id="sidebarBody" class="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50/50">
+            <div id="sidebarLoading" class="hidden flex flex-col items-center justify-center h-full space-y-3">
+                <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-sm text-gray-500">Loading information...</p>
+            </div>
+            <div id="sidebarData" class="space-y-4">
+                <!-- Data will be injected here -->
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 sm:p-6 border-t border-gray-100 bg-white sticky bottom-0">
+            <button onclick="closeSidebar()" class="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors">
+                Close Panel
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Chart.js CDN + initialization -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // Injected data for sidebar
+    const dashboardData = {
+        users: @json($usersList),
+        attendance: @json($attendanceList),
+        clients: @json($clientsList),
+        contacts: @json($contactsList)
+    };
+
+    // Sidebar logic
+    function openSidebar(type) {
+        const sidebar = document.getElementById('statsSidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        const content = document.getElementById('sidebarContent');
+        const title = document.getElementById('sidebarTitle');
+        const subtitle = document.getElementById('sidebarSubtitle');
+        const dataArea = document.getElementById('sidebarData');
+        const loading = document.getElementById('sidebarLoading');
+
+        // Show sidebar container and backdrop
+        sidebar.classList.remove('invisible');
+        backdrop.classList.replace('bg-gray-900/0', 'bg-gray-900/50');
+        
+        // Slight delay for smooth backdrop fade before content slides
+        setTimeout(() => {
+            content.classList.remove('translate-x-full');
+        }, 50);
+
+        // Update titles based on type
+        let info = {
+            'users': { title: 'User Directory', subtitle: 'Manage active system users' },
+            'attendance': { title: 'Today\'s Attendance', subtitle: 'List of users present today' },
+            'clients': { title: 'Client Portfolio', subtitle: 'Manage your current client list' },
+            'contacts': { title: 'Contact List', subtitle: 'Viewing all system contacts' }
+        };
+
+        if (info[type]) {
+            title.textContent = info[type].title;
+            subtitle.textContent = info[type].subtitle;
+        }
+
+        // Simulate data loading
+        dataArea.innerHTML = '';
+        loading.classList.remove('hidden');
+
+        setTimeout(() => {
+            loading.classList.add('hidden');
+            
+            // Fetch data from injected dashboardData
+            let items = [];
+            if (type === 'users') {
+                items = dashboardData.users.map(u => ({
+                    name: u.name,
+                    info: u.role || u.email,
+                    status: 'Active'
+                }));
+            } else if (type === 'attendance') {
+                items = dashboardData.attendance.map(a => ({
+                    name: a.employee ? a.employee.name : 'Unknown',
+                    info: `In: ${a.punch_in}`,
+                    status: 'Present'
+                }));
+            } else if (type === 'clients') {
+                items = dashboardData.clients.map(c => ({
+                    name: c.company_name,
+                    info: c.industry || 'No industry specified',
+                    status: c.status || 'Active'
+                }));
+            } else if (type === 'contacts') {
+                items = dashboardData.contacts.map(c => ({
+                    name: c.name,
+                    info: c.phone || c.email || 'No contact info',
+                    status: 'Contacted'
+                }));
+            }
+
+            // If no items found
+            if (items.length === 0) {
+                dataArea.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12 text-center">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-medium text-gray-900">No data found</p>
+                        <p class="text-xs text-gray-500 mt-1">There are no records to display in this list.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Inject items
+            items.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `p-4 bg-white rounded-xl border border-gray-100 shadow-sm animate-fadeIn opacity-0`;
+                itemDiv.style.animationDelay = `${index * 0.05}s`;
+                itemDiv.style.animationFillMode = 'forwards';
+                
+                itemDiv.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="min-w-0 flex-1 pr-4">
+                            <p class="text-sm font-bold text-gray-900 truncate">${item.name}</p>
+                            <p class="text-xs text-gray-500 mt-0.5 truncate">${item.info}</p>
+                        </div>
+                        <span class="px-2 py-1 text-[10px] font-bold rounded-full ${item.status === 'Online' || item.status === 'Present' || item.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'} uppercase whitespace-nowrap">
+                            ${item.status}
+                        </span>
+                    </div>
+                `;
+                dataArea.appendChild(itemDiv);
+            });
+        }, 600);
+    }
+
+    function closeSidebar() {
+        const sidebar = document.getElementById('statsSidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        const content = document.getElementById('sidebarContent');
+
+        content.classList.add('translate-x-full');
+        backdrop.classList.replace('bg-gray-900/50', 'bg-gray-900/0');
+        
+        setTimeout(() => {
+            sidebar.classList.add('invisible');
+        }, 300);
+    }
+
     // Prevent zoom on mobile
     document.addEventListener('touchstart', function(event) {
         if (event.touches.length > 1) {
@@ -366,6 +529,14 @@
                 });
             }
 
+            // Helper functions for chart font sizes
+            function getChartFontSize() {
+                return window.innerWidth < 640 ? 10 : 11;
+            }
+            function getTooltipFontSize() {
+                return window.innerWidth < 640 ? 11 : 12;
+            }
+
             // Update chart font sizes on window resize
             let resizeTimer;
             window.addEventListener('resize', function() {
@@ -378,12 +549,16 @@
                     Chart.defaults.plugins.tooltip.bodyFont.size = tooltipFontSize;
                     Chart.defaults.plugins.tooltip.titleFont.size = tooltipFontSize;
                     
-                    // Update existing charts if any
-                    Chart.instances.forEach((chart) => {
-                        chart.options.plugins.tooltip.titleFont.size = tooltipFontSize;
-                        chart.options.plugins.tooltip.bodyFont.size = tooltipFontSize;
-                        chart.options.scales.x.ticks.font.size = chartFontSize;
-                        chart.options.scales.y.ticks.font.size = chartFontSize;
+                    // Update existing charts if any (Chart.js v3+ uses Chart.instances object)
+                    Object.values(Chart.instances).forEach((chart) => {
+                        if (chart.options.plugins && chart.options.plugins.tooltip) {
+                            chart.options.plugins.tooltip.titleFont.size = tooltipFontSize;
+                            chart.options.plugins.tooltip.bodyFont.size = tooltipFontSize;
+                        }
+                        if (chart.options.scales) {
+                            if (chart.options.scales.x && chart.options.scales.x.ticks) chart.options.scales.x.ticks.font.size = chartFontSize;
+                            if (chart.options.scales.y && chart.options.scales.y.ticks) chart.options.scales.y.ticks.font.size = chartFontSize;
+                        }
                         chart.update('none');
                     });
                 }, 250);
@@ -392,7 +567,7 @@
             // Handle orientation change
             window.addEventListener('orientationchange', function() {
                 setTimeout(function() {
-                    Chart.instances.forEach((chart) => {
+                    Object.values(Chart.instances).forEach((chart) => {
                         chart.resize();
                     });
                 }, 300);
@@ -577,6 +752,10 @@
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-fadeIn {
+        animation: fadeIn 0.4s ease-out;
     }
     
     /* Improve readability on small screens */

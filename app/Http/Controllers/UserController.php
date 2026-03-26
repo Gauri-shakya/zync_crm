@@ -15,8 +15,15 @@ class UserController extends Controller
     // List all users
     public function index()
 {
-    $users = User::where('company_id', auth()->user()->company_id)->get();
-    return view('admin.user.users', compact('users'));
+    $companyId = auth()->user()->company_id;
+    $users = User::where('company_id', $companyId)->get();
+    
+    // Check if any non-client roles exist for this company
+    $hasNonClientRoles = Role::forCompany($companyId)
+        ->whereRaw('LOWER(name) <> ?', ['client'])
+        ->exists();
+
+    return view('admin.user.users', compact('users', 'hasNonClientRoles'));
 }
 
 
@@ -44,7 +51,9 @@ class UserController extends Controller
         }
 
         $roles = $rolesQuery->get();
-        return view('admin.user.addusers', compact('roles'));
+        $permissions = \Spatie\Permission\Models\Permission::all(); // Fetch all permissions using the correct Spatie class
+        
+        return view('admin.user.addusers', compact('roles', 'permissions'));
     }
 
     // Store new user

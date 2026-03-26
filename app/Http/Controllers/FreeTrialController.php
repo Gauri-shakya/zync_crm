@@ -33,6 +33,7 @@ class FreeTrialController extends Controller
         'company_email'  => 'required|email|unique:companies,email',
         'phone'          => 'required|string|max:20',
         'gstin'          => 'nullable|string|max:20|unique:companies,gstin',
+        'logo'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
 
         // Bank
         'bank_name'      => 'nullable|string|max:255',
@@ -47,6 +48,11 @@ class FreeTrialController extends Controller
 
    DB::transaction(function () use ($request) {
 
+    $logoPath = null;
+    if ($request->hasFile('logo')) {
+        $logoPath = $request->file('logo')->store('logos', 'public');
+    }
+
     // Company
     $company = Company::create([
         'name'           => $request->company_name,
@@ -55,10 +61,11 @@ class FreeTrialController extends Controller
         'email'          => $request->company_email,
         'phone'          => $request->phone,
         'gstin'          => $request->gstin,
+        'logo'           => $logoPath,
         'bank_name'      => $request->bank_name,
         'account_number' => $request->account_number,
         'ifsc_code'      => $request->ifsc_code,
-        'trial_ends_at'  => now()->addDays(30),
+        'trial_ends_at'  => now()->addDays(15),
         'is_paid'        => false,
         'status'         => 'active',
     ]);

@@ -156,6 +156,7 @@
                     opacity: 0;
                     transition: opacity 0.2s;
                     pointer-events: none;
+                    user-select: none;
                 }
                 .editable-block {
                     position: relative; /* Ensure relative positioning */
@@ -178,6 +179,7 @@
                     cursor: pointer;
                     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
                     transition: all 0.2s;
+                    user-select: none;
                 }
                 .insert-block-btn:hover {
                     background: #6366f1;
@@ -283,7 +285,7 @@
                 }
             </style>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
                 <!-- Left Sidebar: Templates -->
                 <div class="lg:col-span-3">
@@ -410,9 +412,9 @@
                                 <div class="h-6 w-px bg-gray-200"></div>
                                 <select onchange="formatBlock(this.value)" class="bg-gray-50 border-gray-200 rounded-lg text-xs text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent py-2 pl-2 pr-6 shadow-sm hover:bg-white transition-colors cursor-pointer font-medium h-8">
                                     <option value="p">Normal Text</option>
-                                    <option value="h1">Heading 1</option>
-                                    <option value="h2">Heading 2</option>
-                                    <option value="h3">Heading 3</option>
+                                    <option class="text-lg font-bold" value="h1">Heading 1</option>
+                                    <option class="text-sm font-bold" value="h2">Heading 2</option>
+                                    <option class="text-md font-bold" value="h3">Heading 3</option>
                                 </select>
 
                                 <!-- Alignment -->
@@ -745,6 +747,7 @@
                     font-size: 12px;
                     font-weight: 600;
                     z-index: 10;
+                    user-select: none;
                 }
 
                 .editable-block:hover .delete-block-btn {
@@ -1762,9 +1765,7 @@
                         <div class="insert-menu-item" onclick="insertNewBlock('heading')">
                             <i class="fa-solid fa-heading"></i> Heading
                         </div>
-                        <div class="insert-menu-item" onclick="insertNewBlock('field')">
-                            <i class="fa-solid fa-code"></i> Field Placeholder
-                        </div>
+                        
                         <div class="insert-menu-item" onclick="insertNewBlock('divider')">
                             <i class="fa-solid fa-minus"></i> Divider
                         </div>
@@ -1820,14 +1821,6 @@
                                 </div>
                             </div>
                         `;
-                    } else if (type === 'field') {
-                         newContent = `
-                            <div class="pdf-section">
-                                <div style="color: #374151; padding: 10px; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db;" contenteditable="true">
-                                    <p><strong>Field:</strong> @{{Field Name}}</p>
-                                </div>
-                            </div>
-                        `;
                     } else if (type === 'divider') {
                         newContent = `
                             <div class="pdf-section">
@@ -1844,13 +1837,15 @@
                     
                     const deleteBtn = document.createElement('button');
                     deleteBtn.className = 'delete-block-btn';
+                    deleteBtn.setAttribute('contenteditable', 'false');
                     deleteBtn.innerHTML = '<span>×</span> Delete';
                     deleteBtn.setAttribute('onclick', `deleteBlock('${newBlockId}')`);
                     
                     const insertWrap = document.createElement('div');
                     insertWrap.className = 'insert-block-wrap';
+                    insertWrap.setAttribute('contenteditable', 'false');
                     insertWrap.innerHTML = `
-                        <button class="insert-block-btn" onclick="openInsertMenu(this, '${newBlockId}')" title="Insert New Block">
+                        <button class="insert-block-btn" onclick="openInsertMenu(this, '${newBlockId}')" title="Insert New Block" contenteditable="false">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     `;
@@ -1903,13 +1898,15 @@
 
                         const deleteBtn = document.createElement('button');
                         deleteBtn.className = 'delete-block-btn';
+                        deleteBtn.setAttribute('contenteditable', 'false');
                         deleteBtn.innerHTML = '<span>×</span> Delete';
                         deleteBtn.setAttribute('onclick', `deleteBlock('${blockId}')`);
 
                         const insertWrap = document.createElement('div');
                         insertWrap.className = 'insert-block-wrap';
+                        insertWrap.setAttribute('contenteditable', 'false');
                         insertWrap.innerHTML = `
-                            <button class="insert-block-btn" onclick="openInsertMenu(this, '${blockId}')" title="Insert New Block">
+                            <button class="insert-block-btn" onclick="openInsertMenu(this, '${blockId}')" title="Insert New Block" contenteditable="false">
                                 <i class="fa-solid fa-plus"></i>
                             </button>
                         `;
@@ -2243,7 +2240,7 @@
 
                     document.getElementById('proposalCardsView').classList.add('hidden');
                     fullEditorView.classList.remove('hidden');
-                    document.getElementById('uploadModal').classList.add('hidden');
+                    closeModal('uploadModal'); // Use closeModal to restore body scroll
 
                     // Show formatting toolbar
                     showFormattingToolbar();
@@ -2255,14 +2252,14 @@
                     proposalContent.innerHTML = `
                                                                                                     <div class="pdf-export-container" >
                                                                                                         <div style="text-align: center; padding: 40px 0;">
-                                                                                                            <h1 contenteditable="true" style="font-size: 36px; font-weight: bold; color: #1f2937; margin-bottom: 20px;">Custom Proposal - ${file.name.split('.').slice(0, -1).join('.')}</h1>
-                                                                                                            <p style="font-size: 20px; color: #374151; margin-bottom: 15px;">Prepared for <span id="clientName" class="editable-client-name" contenteditable="true" style="font-weight: bold; color: #6366f1;">Client Name</span></p>
+                                                                                                            <h1 style="font-size: 36px; font-weight: bold; color: #1f2937; margin-bottom: 20px;">Custom Proposal - ${file.name.split('.').slice(0, -1).join('.')}</h1>
+                                                                                                            <p style="font-size: 20px; color: #374151; margin-bottom: 15px;">Prepared for <span id="clientName" class="editable-client-name" style="font-weight: bold; color: #6366f1;">Client Name</span></p>
                                                                                                             <p style="font-size: 18px; color: #6b7280;">Date: <span style="font-weight: bold;">${today}</span></p>
-                                                                                                            <div contenteditable="true" style="margin-top: 40px; text-align: left;">
+                                                                                                            <div style="margin-top: 40px; text-align: left;">
                                                                                                                 ${wrappedContent}
                                                                                                             </div>
                                                                                                         </div>
-                                                                                                                                                                                                                            </div >
+                                                                                                    </div >
                                                                                                     `;
 
                     currentProposal = {
@@ -2507,6 +2504,10 @@
                     const deleteButtons = element.querySelectorAll('.delete-block-btn');
                     deleteButtons.forEach(btn => btn.remove());
 
+                    // Remove insert block wraps
+                    const insertWraps = element.querySelectorAll('.insert-block-wrap');
+                    insertWraps.forEach(wrap => wrap.remove());
+
                     // Remove contenteditable attributes
                     const editableElements = element.querySelectorAll('[contenteditable="true"]');
                     editableElements.forEach(el => {
@@ -2626,6 +2627,14 @@
                     // Remove edit icons and other non-printable elements
                     const editIcons = element.querySelectorAll('.edit-icon');
                     editIcons.forEach(icon => icon.remove());
+
+                    // Remove delete buttons
+                    const deleteButtons = element.querySelectorAll('.delete-block-btn');
+                    deleteButtons.forEach(btn => btn.remove());
+
+                    // Remove insert block wraps
+                    const insertWraps = element.querySelectorAll('.insert-block-wrap');
+                    insertWraps.forEach(wrap => wrap.remove());
 
                     // Remove contenteditable attributes for PDF
                     const editableElements = element.querySelectorAll('[contenteditable="true"]');

@@ -27,7 +27,7 @@
                            id="name"
                            value="{{ old('name') }}"
                            class="w-full px-4 py-2.5 border {{ $errors->has('name') ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors"
-                           placeholder="John Doe"
+                           placeholder="Enter full name"
                            required>
                     @error('name')
                         <p class="mt-1.5 text-sm text-red-600 flex items-center">
@@ -50,7 +50,7 @@
                            id="email"
                            value="{{ old('email') }}"
                            class="w-full px-4 py-2.5 border {{ $errors->has('email') ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors"
-                           placeholder="john@example.com"
+                           placeholder="Enter email address"
                            required>
                     @error('email')
                         <p class="mt-1.5 text-sm text-red-600 flex items-center">
@@ -84,14 +84,20 @@
 
 
                 <div class="mb-8">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">
-                        <svg class="inline w-4 h-4 mr-1 -mt-0.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                        </svg>
-                        Assign Role
-                    </label>
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <svg class="inline w-4 h-4 mr-1 -mt-0.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                            Assign Role
+                        </label>
+                        <button type="button" onclick="document.getElementById('quickRoleModal').classList.remove('hidden')" 
+                                class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                            <i class="fas fa-plus-circle"></i> Create New Role
+                        </button>
+                    </div>
                     <div class="space-y-3">
-                        @foreach ($roles as $role)
+                        @forelse ($roles as $role)
                             <label for="role_{{ $role->id }}" class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
                                 <input type="radio"
                                        id="role_{{ $role->id }}"
@@ -108,7 +114,11 @@
                                     @else {{ ucfirst($role->name) }} @endif
                                 </span>
                             </label>
-                        @endforeach
+                        @empty
+                            <div class="text-center py-4 bg-amber-50 rounded-xl border border-amber-100">
+                                <p class="text-xs font-bold text-amber-700">No roles available. Please create one first.</p>
+                            </div>
+                        @endforelse
                     </div>
                     @error('roles')
                         <p class="mt-2 text-sm text-red-600 flex items-center">
@@ -185,4 +195,63 @@
         </div>
     </div>
 </div>
+
+<!-- Quick Create Role Modal -->
+<div id="quickRoleModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in">
+        <div class="px-8 py-6 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+            <div>
+                <h3 class="text-xl font-black text-gray-900">Quick Role Creation</h3>
+                <p class="text-xs font-medium text-gray-500 mt-0.5">Define a new role and permissions instantly</p>
+            </div>
+            <button onclick="document.getElementById('quickRoleModal').classList.add('hidden')" class="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-all">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form action="{{ route('roles.store') }}" method="POST" class="p-8">
+            @csrf
+            <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Role Identity</label>
+                    <input type="text" name="name" required
+                           class="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                           placeholder="e.g., Manager, Support, Accountant">
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-3 block">Assign Core Permissions</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                        @foreach ($permissions as $permission)
+                            <label class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 hover:bg-white hover:border-indigo-200 transition-all cursor-pointer group">
+                                <input type="checkbox" name="permissions[]" value="{{ $permission->name }}" class="w-5 h-5 text-indigo-600 border-gray-200 rounded-lg focus:ring-indigo-500/20">
+                                <span class="text-xs font-bold text-gray-600 group-hover:text-gray-900 transition-colors">{{ ucwords(str_replace(['-', '_'], ' ', $permission->name)) }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('quickRoleModal').classList.add('hidden')"
+                        class="px-6 py-3 text-sm font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest transition-colors">Cancel</button>
+                <button type="submit"
+                        class="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/10 active:scale-95">
+                    Save Role
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+</style>
+
 @endsection

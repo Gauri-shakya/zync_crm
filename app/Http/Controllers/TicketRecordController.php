@@ -30,6 +30,9 @@ class TicketRecordController extends Controller
         if ($request->has('priority') && $request->priority !== 'all') {
             $query->where('priority', $request->priority);
         }
+        if ($request->has('issue') && $request->issue !== 'all') {
+            $query->whereJsonContains('issue_permissions', $request->issue);
+        }
 
         $tickets = $query->orderBy('created_at', 'desc')->paginate(15);
 

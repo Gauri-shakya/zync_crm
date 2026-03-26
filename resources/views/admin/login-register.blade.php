@@ -5,7 +5,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Social Cults CRM</title>
+    <title>Login | ZynCRM</title>
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon_io/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon_io/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon_io/favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ asset('favicon_io/site.webmanifest') }}">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -69,12 +76,12 @@
         <div class="p-8 pb-6">
             <!-- Company Logo -->
             <div class="logo-container">
-                <img src="https://socialcults.com/images/client/logo.png" 
-                     alt="Social Cults CRM" 
+                <img src="{{ asset('assets/logo.png') }}" 
+                     alt="ZynCRM" 
                      class="company-logo">
             </div>
             
-            <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">Social Cults CRM</h1>
+            <!--<h1 class="text-2xl font-bold text-center text-gray-800 mb-2"> ZynCRM</h1>-->
             <p class="text-gray-600 text-center mb-8">Sign in to access your dashboard</p>
             
             <!-- Success Message -->
@@ -88,6 +95,15 @@
             @endif
             
             <!-- Error Messages -->
+            @if(session('error'))
+                <div class="mb-6 p-4 bg-red-50 border border-red-500 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                        <p class="text-red-700 text-sm">{{ session('error') }}</p>
+                    </div>
+                </div>
+            @endif
+
             @if($errors->any())
                 <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                     <div class="flex items-center">
@@ -189,14 +205,14 @@
         <div class="bg-gray-50 px-8 py-5 border-t border-gray-200">
             <div class="text-center">
                 <p class="text-gray-600 text-sm">
-                    © {{ date('Y') }} Social Cults CRM. All rights reserved.
+                    © {{ date('Y') }} ZynCRM. All rights reserved.
                 </p>
                 <p class="text-gray-500 text-xs mt-2">
-                    <a href="https://socialcults.com" class="text-indigo-600 hover:text-indigo-800 font-medium" target="_blank">
+                    <a href="https://zyncrm.in" class="text-indigo-600 hover:text-indigo-800 font-medium" target="_blank">
                         Visit our website
                     </a>
                     <span class="mx-2">•</span>
-                    <a href="mailto:support@socialcults.com" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                    <a href="mailto:support@zyncrm.com" class="text-indigo-600 hover:text-indigo-800 font-medium">
                         Contact Support
                     </a>
                 </p>

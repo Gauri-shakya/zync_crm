@@ -113,8 +113,8 @@
                     </div>
 
                     <!-- Stats Grid -->
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                        <div class="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-xl shadow-blue-900/5 hover:-translate-y-1 transition-transform group">
+                    <!-- <div class="grid grid-cols-2 gap-4 sm:gap-6">
+                        <div class="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-xl shadow-blue-900/5 hover:-translate-y-1 transition-transform group cursor-pointer" onclick="currentFilter = 'all'; document.getElementById('section-title').textContent = 'All Canvas'; loadNotes();">
                             <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-primary-600 mb-4 group-hover:scale-110 transition-transform">
                                 <i class="fas fa-sticky-note text-lg"></i>
                             </div>
@@ -124,27 +124,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-xl shadow-emerald-900/5 hover:-translate-y-1 transition-transform group">
-                            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-success mb-4 group-hover:scale-110 transition-transform">
-                                <i class="fas fa-user text-lg"></i>
-                            </div>
-                            <div class="space-y-1">
-                                <h3 class="text-2xl font-black text-gray-900 tracking-tight" id="my-notes-count">0</h3>
-                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Personal</p>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-xl shadow-purple-900/5 hover:-translate-y-1 transition-transform group">
-                            <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-4 group-hover:scale-110 transition-transform">
-                                <i class="fas fa-users text-lg"></i>
-                            </div>
-                            <div class="space-y-1">
-                                <h3 class="text-2xl font-black text-gray-900 tracking-tight" id="team-notes-count">0</h3>
-                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Collaborative</p>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-xl shadow-yellow-900/5 hover:-translate-y-1 transition-transform group">
+                        <div class="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-xl shadow-yellow-900/5 hover:-translate-y-1 transition-transform group cursor-pointer" onclick="currentFilter = 'pinned'; document.getElementById('section-title').textContent = 'Pinned Canvas'; loadNotes();">
                             <div class="w-12 h-12 bg-yellow-50 rounded-2xl flex items-center justify-center text-warning mb-4 group-hover:scale-110 transition-transform">
                                 <i class="fas fa-thumbtack text-lg"></i>
                             </div>
@@ -153,7 +133,7 @@
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Pinned</p>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Filters -->
                     <div class="flex flex-wrap items-center gap-4 bg-white p-4 rounded-[2rem] border border-gray-100 shadow-sm">
@@ -166,13 +146,6 @@
                             <option value="idea">Idea</option>
                             <option value="campaign">Campaign</option>
                             <option value="personal">Personal</option>
-                        </select>
-
-                        <select id="filter-visibility" class="bg-gray-50 border-none rounded-xl px-4 py-2 text-xs font-bold text-gray-600 focus:ring-2 focus:ring-primary-500 outline-none cursor-pointer">
-                            <option value="all">All Visibility</option>
-                            <option value="private">Private</option>
-                            <option value="team">Team</option>
-                            <option value="public">Public</option>
                         </select>
 
                         <select id="filter-date" class="bg-gray-50 border-none rounded-xl px-4 py-2 text-xs font-bold text-gray-600 focus:ring-2 focus:ring-primary-500 outline-none cursor-pointer">
@@ -190,6 +163,7 @@
 
                         <div class="ml-auto flex items-center gap-4">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" id="notes-count-text">Synchronizing...</p>
+                            <h2 id="section-title" class="hidden">All Notes</h2>
                             <button id="clear-filters" class="text-xs font-black text-gray-400 hover:text-primary-600 uppercase tracking-widest transition-colors">
                                 Reset
                             </button>
@@ -307,51 +281,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Visibility -->
+                                <!-- Pin -->
                                 <div class="space-y-6">
-                                    <div class="space-y-1.5">
-                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Privacy Level</label>
-                                        <div class="grid grid-cols-1 gap-3">
-                                            <label class="relative flex items-center p-4 rounded-2xl bg-gray-50 border border-gray-100 cursor-pointer hover:border-primary-200 transition-all group">
-                                                <input type="radio" name="visibility" value="private" class="w-4 h-4 text-primary-600 focus:ring-primary-500" checked>
-                                                <div class="ml-4">
-                                                    <p class="text-sm font-bold text-gray-900">Private Canvas</p>
-                                                    <p class="text-[10px] text-gray-500">Only you can access this entry</p>
-                                                </div>
-                                            </label>
-                                            <label class="relative flex items-center p-4 rounded-2xl bg-gray-50 border border-gray-100 cursor-pointer hover:border-primary-200 transition-all group">
-                                                <input type="radio" name="visibility" value="team" class="w-4 h-4 text-primary-600 focus:ring-primary-500">
-                                                <div class="ml-4">
-                                                    <p class="text-sm font-bold text-gray-900">Team Collaboration</p>
-                                                    <p class="text-[10px] text-gray-500">Shared with designated team members</p>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <div id="team-selection-container" class="hidden space-y-3 p-4 rounded-2xl bg-blue-50 border border-blue-100 animate-fade-in">
-                                        <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1">Select Teams</p>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <!-- These would typically be populated from the database -->
-                                            <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-white transition-colors cursor-pointer">
-                                                <input type="checkbox" value="development" class="w-4 h-4 rounded text-blue-600">
-                                                <span class="text-xs font-bold text-gray-700">Development</span>
-                                            </label>
-                                            <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-white transition-colors cursor-pointer">
-                                                <input type="checkbox" value="marketing" class="w-4 h-4 rounded text-blue-600">
-                                                <span class="text-xs font-bold text-gray-700">Marketing</span>
-                                            </label>
-                                            <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-white transition-colors cursor-pointer">
-                                                <input type="checkbox" value="sales" class="w-4 h-4 rounded text-blue-600">
-                                                <span class="text-xs font-bold text-gray-700">Sales</span>
-                                            </label>
-                                            <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-white transition-colors cursor-pointer">
-                                                <input type="checkbox" value="management" class="w-4 h-4 rounded text-blue-600">
-                                                <span class="text-xs font-bold text-gray-700">Management</span>
-                                            </label>
-                                        </div>
-                                    </div>
-
                                     <div class="flex items-center gap-3 p-4 rounded-2xl bg-primary-50 border border-primary-100">
                                         <input type="checkbox" id="note-pinned" class="w-5 h-5 rounded-lg text-primary-600 focus:ring-primary-500 cursor-pointer">
                                         <label for="note-pinned" class="text-sm font-bold text-primary-700 cursor-pointer">Pin to Dashboard</label>
@@ -488,9 +419,6 @@
             const filterCategory = document.getElementById('filter-category');
             if (filterCategory) filterCategory.addEventListener('change', loadNotes);
             
-            const filterVisibility = document.getElementById('filter-visibility');
-            if (filterVisibility) filterVisibility.addEventListener('change', loadNotes);
-            
             const filterSort = document.getElementById('filter-sort');
             if (filterSort) filterSort.addEventListener('change', loadNotes);
             
@@ -531,18 +459,6 @@
                     }
                 });
             }
-
-            // Visibility radio buttons
-            document.querySelectorAll('input[name="visibility"]').forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    const teamContainer = document.getElementById('team-selection-container');
-                    if (e.target.value === 'team') {
-                        teamContainer.classList.remove('hidden');
-                    } else {
-                        teamContainer.classList.add('hidden');
-                    }
-                });
-            });
 
             // Setup "Other" option listeners
             const otherFields = ['note-category', 'related-client', 'related-project', 'related-task'];
@@ -691,8 +607,6 @@
                 // Load statistics from database
                 function loadStats() {
                     const totalNotesEl = document.getElementById('total-notes');
-                    const myNotesCountEl = document.getElementById('my-notes-count');
-                    const teamNotesCountEl = document.getElementById('team-notes-count');
                     const pinnedNotesCountEl = document.getElementById('pinned-notes-count');
 
                     fetch('/api/notes/stats')
@@ -704,8 +618,6 @@
                         })
                         .then(data => {
                             if (totalNotesEl) totalNotesEl.textContent = data.total || 0;
-                            if (myNotesCountEl) myNotesCountEl.textContent = data.my_notes || 0;
-                            if (teamNotesCountEl) teamNotesCountEl.textContent = data.team_notes || 0;
                             if (pinnedNotesCountEl) pinnedNotesCountEl.textContent = data.pinned || 0;
                             
                             const recentNotesCountEl = document.getElementById('recent-notes-count');
@@ -733,7 +645,6 @@
                     const params = new URLSearchParams({
                         filter: currentFilter,
                         category: document.getElementById('filter-category').value,
-                        visibility: document.getElementById('filter-visibility').value,
                         date: document.getElementById('filter-date').value,
                         sort_by: document.getElementById('filter-sort').value === 'oldest' ? 'created_at' :
                             document.getElementById('filter-sort').value === 'title' ? 'title' :
@@ -801,7 +712,6 @@
                     noteDiv.className = 'note-card bg-white rounded-[2rem] border border-gray-100 p-6 flex flex-col justify-between group cursor-pointer';
                     noteDiv.dataset.id = note.id;
 
-                    const visibilityInfo = getVisibilityInfo(note.visibility);
                     const categoryName = getCategoryName(note.category);
 
                     // Truncate content
@@ -823,9 +733,6 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     ${note.pinned ? '<i class="fas fa-thumbtack text-warning text-xs"></i>' : ''}
-                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-md ${visibilityInfo.color.replace('bg-', 'bg-opacity-10 ')}">
-                                        ${note.visibility.toUpperCase()}
-                                    </span>
                                 </div>
                             </div>
 
@@ -902,7 +809,6 @@
                     const detailContent = document.getElementById('note-detail-content');
                     if (!detailContent) return;
 
-                    const visibilityInfo = getVisibilityInfo(note.visibility);
                     const categoryName = getCategoryName(note.category);
 
                     detailContent.innerHTML = `
@@ -921,10 +827,6 @@
                                         <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100">
                                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Classification</p>
                                             <p class="text-sm font-bold text-gray-900">${categoryName}</p>
-                                        </div>
-                                        <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Visibility</p>
-                                            <p class="text-sm font-bold text-gray-900">${note.visibility.toUpperCase()}</p>
                                         </div>
                                         <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100">
                                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Last Sync</p>
@@ -992,18 +894,6 @@
                     const nc = document.getElementById('note-category');
                     if (nc) nc.value = 'client';
 
-                    const vp = document.getElementById('visibility-private');
-                    if (vp) vp.checked = true;
-
-                    // Hide team selection
-                    const tsc = document.getElementById('team-selection-container');
-                    if (tsc) tsc.classList.add('hidden');
-
-                    // Uncheck all team checkboxes
-                    document.querySelectorAll('#team-selection-container input[type="checkbox"]').forEach(cb => {
-                        cb.checked = false;
-                    });
-
                     // Hide dashboard and detail view, show add/edit view
                     const dv = document.getElementById('dashboard-view');
                     const ndv = document.getElementById('note-detail-view');
@@ -1070,33 +960,6 @@
                             setSelectWithOther('related-client', note.related_client);
                             setSelectWithOther('related-project', note.related_project);
                             setSelectWithOther('related-task', note.related_task);
-
-                            // Set visibility
-                            const visRadio = document.querySelector(`input[name="visibility"][value="${note.visibility || 'private'}"]`);
-                            if (visRadio) visRadio.checked = true;
-
-                            // Show/hide team selection based on visibility
-                            const tsc = document.getElementById('team-selection-container');
-                            if (note.visibility === 'team') {
-                                if (tsc) tsc.classList.remove('hidden');
-                                // Check teams (parse from JSON if needed)
-                                let teams = note.teams;
-                                if (typeof teams === 'string') {
-                                    try {
-                                        teams = JSON.parse(teams);
-                                    } catch (e) {
-                                        teams = [];
-                                    }
-                                }
-                                if (teams) {
-                                    teams.forEach(team => {
-                                        const checkbox = document.getElementById(`team-${team}`);
-                                        if (checkbox) checkbox.checked = true;
-                                    });
-                                }
-                            } else {
-                                if (tsc) tsc.classList.add('hidden');
-                            }
 
                             // Clear errors
                             clearFormErrors();
@@ -1224,9 +1087,6 @@
                         if (categoryOtherEl) category = categoryOtherEl.value.trim();
                     }
                     
-                    const visibilityEl = document.querySelector('input[name="visibility"]:checked');
-                    const visibility = visibilityEl ? visibilityEl.value : 'private';
-                    
                     const pinnedEl = document.getElementById('note-pinned');
                     const pinned = pinnedEl ? pinnedEl.checked : false;
                     
@@ -1249,14 +1109,6 @@
                     if (relatedTask === 'other') {
                         const relatedTaskOtherEl = document.getElementById('related-task-other');
                         if (relatedTaskOtherEl) relatedTask = relatedTaskOtherEl.value.trim();
-                    }
-
-                    // Get selected teams if visibility is team
-                    let selectedTeams = [];
-                    if (visibility === 'team') {
-                        document.querySelectorAll('#team-selection-container input[type="checkbox"]:checked').forEach(checkbox => {
-                            selectedTeams.push(checkbox.value);
-                        });
                     }
 
                     // Validate required fields
@@ -1301,9 +1153,7 @@
                         title,
                         content,
                         category,
-                        visibility,
                         tags: selectedTags,
-                        teams: selectedTeams,
                         related_client: relatedClient || null,
                         related_project: relatedProject || null,
                         related_task: relatedTask || null,
@@ -1428,14 +1278,23 @@
 
                 // Clear all filters
                 function clearFilters() {
-                    document.getElementById('filter-category').value = 'all';
-                    document.getElementById('filter-visibility').value = 'all';
-                    document.getElementById('filter-date').value = 'all';
-                    document.getElementById('filter-sort').value = 'created_at';
-                    document.getElementById('global-search').value = '';
+                    const filterCategory = document.getElementById('filter-category');
+                    if (filterCategory) filterCategory.value = 'all';
+
+                    const filterDate = document.getElementById('filter-date');
+                    if (filterDate) filterDate.value = 'all';
+
+                    const filterSort = document.getElementById('filter-sort');
+                    if (filterSort) filterSort.value = 'created_at';
+
+                    const globalSearch = document.getElementById('global-search');
+                    if (globalSearch) globalSearch.value = '';
+
                     selectedTags = [];
                     currentFilter = 'all';
-                    document.getElementById('section-title').textContent = 'All Notes';
+
+                    const sectionTitle = document.getElementById('section-title');
+                    if (sectionTitle) sectionTitle.textContent = 'All Notes';
 
                     loadNotes();
                 }
@@ -1473,15 +1332,6 @@
                         personal: 'Personal'
                     };
                     return names[category] || category;
-                }
-
-                function getVisibilityInfo(visibility) {
-                    const info = {
-                        private: { icon: 'fa-lock', color: 'bg-gray-100 text-gray-800' },
-                        team: { icon: 'fa-users', color: 'bg-blue-100 text-blue-800' },
-                        public: { icon: 'fa-globe', color: 'bg-green-100 text-green-800' }
-                    };
-                    return info[visibility] || info.private;
                 }
 
                 function formatDate(dateString) {

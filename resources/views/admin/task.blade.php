@@ -1023,13 +1023,13 @@
                                         </td>
                                         <td class="py-4 px-4" data-label="Actions">
                                           <div class="flex items-center space-x-2 actions-mobile hidden md:flex">
-                                            @can('manage', $task)
+                                            @if(auth()->user()->hasRole('admin') || auth()->id() === $task->assigned_by)
                                                 <button
                                                     class="edit-task text-indigo-600 hover:text-indigo-800 p-2 hover:bg-indigo-50 rounded-lg"
                                                     data-task-id="{{ $task->id }}" title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                            @endcan
+                                            @endif
 
                                             @can('view', $task)
                                                 <button
@@ -1039,13 +1039,13 @@
                                                 </button>
                                             @endcan
 
-                                            @can('manage', $task)
+                                            @if(auth()->user()->hasRole('admin') || auth()->id() === $task->assigned_by)
                                                 <button
                                                     class="delete-task text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg"
                                                     data-task-id="{{ $task->id }}" title="Delete">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
-                                            @endcan
+                                            @endif
                                           </div>
                                         </td>
                                     </tr>

@@ -13,7 +13,7 @@ class MyAttendanceController extends Controller
 {
     // const OFFICE_LAT = 28.618711;
     // const OFFICE_LON = 77.389686;
-    const ALLOWED_DISTANCE_KM = 1;
+    const ALLOWED_DISTANCE_KM = 0.5;
 
     private function formatDuration($seconds)
     {
@@ -285,10 +285,8 @@ class MyAttendanceController extends Controller
         try {
             $defaultLocation = 'Location not available';
             $employee = Auth::user(); // Added this to get company details
-            // Check if location fields exist in database
-            $hasLocationFields = Schema::hasColumn('my_attendances', 'latitude');
 
-            if (!$request->latitude || !$request->longitude || !$hasLocationFields) {
+            if (!$request->latitude || !$request->longitude) {
                 return [
                     'location' => $request->location ?? $defaultLocation,
                     'latitude' => null,
@@ -342,12 +340,9 @@ class MyAttendanceController extends Controller
     public function punchIn(Request $request)
     {
         try {
-
-            //        if (!$this->isMobileRequest($request)) {
-            //     return response()->json([
-            //         'error' => 'Punching allowed only from mobile devices!'
-            //     ], 403);
-            // }
+            if (!$this->isMobileRequest($request)) {
+                return response()->json(['error' => 'Punching allowed only from mobile devices'], 403);
+            }
 
 
             Log::info('Punch In Request:', $request->all());
@@ -373,6 +368,9 @@ class MyAttendanceController extends Controller
 
             // Process location data with fallback
             $locationData = $this->processLocationData($request);
+            if (!$locationData['is_within_range']) {
+                return response()->json(['error' => 'Out of allowed range (500m)'], 403);
+            }
 
             // Create or update record without location fields first
             if (!$existing) {
@@ -440,6 +438,13 @@ class MyAttendanceController extends Controller
     public function punchOut(Request $request)
     {
         try {
+            if (!$this->isMobileRequest($request)) {
+                return response()->json(['error' => 'Punching allowed only from mobile devices'], 403);
+            }
+            $locationData = $this->processLocationData($request);
+            if (!$locationData['is_within_range']) {
+                return response()->json(['error' => 'Out of allowed range (500m)'], 403);
+            }
             $employee = Auth::user();
             if (!$employee) {
                 return response()->json(['error' => 'Authentication required.'], 401);
@@ -501,13 +506,13 @@ class MyAttendanceController extends Controller
     public function lunchStart(Request $request)
     {
         try {
-
-
-            //         if (!$this->isMobileRequest($request)) {
-//     return response()->json([
-//         'error' => 'Punching allowed only from mobile devices!'
-//     ], 403);
-// }
+            if (!$this->isMobileRequest($request)) {
+                return response()->json(['error' => 'Punching allowed only from mobile devices'], 403);
+            }
+            $locationData = $this->processLocationData($request);
+            if (!$locationData['is_within_range']) {
+                return response()->json(['error' => 'Out of allowed range (500m)'], 403);
+            }
 
             $employee = Auth::user();
             if (!$employee) {
@@ -529,7 +534,6 @@ class MyAttendanceController extends Controller
             }
 
             $lunchTime = Carbon::now('Asia/Kolkata');
-            $locationData = $this->processLocationData($request);
 
             $updateData = [
                 'lunch_start' => $lunchTime->format('H:i:s'),
@@ -563,14 +567,13 @@ class MyAttendanceController extends Controller
     public function lunchEnd(Request $request)
     {
         try {
-
-            //         if (!$this->isMobileRequest($request)) {
-//     return response()->json([
-//         'error' => 'Punching allowed only from mobile devices!'
-//     ], 403);
-// }
-
-
+            if (!$this->isMobileRequest($request)) {
+                return response()->json(['error' => 'Punching allowed only from mobile devices'], 403);
+            }
+            $locationData = $this->processLocationData($request);
+            if (!$locationData['is_within_range']) {
+                return response()->json(['error' => 'Out of allowed range (500m)'], 403);
+            }
 
             $employee = Auth::user();
             if (!$employee) {
@@ -588,7 +591,6 @@ class MyAttendanceController extends Controller
             }
 
             $lunchTime = Carbon::now('Asia/Kolkata');
-            $locationData = $this->processLocationData($request);
 
             $updateData = [
                 'lunch_end' => $lunchTime->format('H:i:s'),
@@ -701,9 +703,22 @@ class MyAttendanceController extends Controller
     // }
 
 
+    private function isMobileRequest(Request $request)
+    {
+        $agent = $request->header('User-Agent', '');
+        return preg_match('/Android|iPhone|iPod/i', $agent) === 1;
+    }
+
     public function breakIn(Request $request)
     {
         try {
+            if (!$this->isMobileRequest($request)) {
+                return response()->json(['error' => 'Punching allowed only from mobile devices'], 403);
+            }
+            $locationData = $this->processLocationData($request);
+            if (!$locationData['is_within_range']) {
+                return response()->json(['error' => 'Out of allowed range (500m)'], 403);
+            }
             $employee = Auth::user();
             if (!$employee) {
                 return response()->json(['error' => 'Authentication required.'], 401);
@@ -732,8 +747,6 @@ class MyAttendanceController extends Controller
 
             $breakTime = Carbon::now('Asia/Kolkata');
 
-            // Process location data
-            $locationData = $this->processLocationData($request);
 
             // Create a new break record
             $break = $attendance->breaks()->create([
@@ -771,6 +784,13 @@ class MyAttendanceController extends Controller
     public function breakOut(Request $request)
     {
         try {
+            if (!$this->isMobileRequest($request)) {
+                return response()->json(['error' => 'Punching allowed only from mobile devices'], 403);
+            }
+            $locationData = $this->processLocationData($request);
+            if (!$locationData['is_within_range']) {
+                return response()->json(['error' => 'Out of allowed range (500m)'], 403);
+            }
             $employee = Auth::user();
             if (!$employee) {
                 return response()->json(['error' => 'Authentication required.'], 401);
@@ -805,8 +825,6 @@ class MyAttendanceController extends Controller
             // Calculate break duration in seconds using timestamp
             $breakSeconds = max(0, $breakOutTime->timestamp - $breakInTime->timestamp);
 
-            // Process location data
-            $locationData = $this->processLocationData($request);
 
             // Update the break record
             $activeBreak->update([

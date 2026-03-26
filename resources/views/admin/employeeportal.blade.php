@@ -339,16 +339,6 @@
                         <span class="text-gray-500" id="mobileFilterSummary">All</span>
                     </div>
                 </div>
-                <!-- Leaves List -->
-                <div id="leavesList">
-                    <div class="text-center py-12">
-                        <div class="animate-pulse">
-                            <i class="fas fa-calendar-alt text-gray-300 text-4xl mb-4"></i>
-                            <h3 class="text-lg font-medium text-gray-700 mb-2">Loading leave applications...</h3>
-                            <p class="text-gray-500 text-sm">Please wait while we load your leave records</p>
-                        </div>
-                    </div>
-                </div>
                 <!-- Desktop Table -->
                 <div id="desktopTable" class="desktop-only table-container">
                     <table class="min-w-full">
@@ -365,6 +355,16 @@
                         </thead>
                         <tbody id="leavesTableBody" class="mb-8"></tbody>
                     </table>
+                </div>
+                <!-- Leaves List -->
+                <div id="leavesList">
+                    <div class="text-center py-12">
+                        <div class="animate-pulse">
+                            <i class="fas fa-calendar-alt text-gray-300 text-4xl mb-4"></i>
+                            <h3 class="text-lg font-medium text-gray-700 mb-2">Loading leave applications...</h3>
+                            <p class="text-gray-500 text-sm">Please wait while we load your leave records</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

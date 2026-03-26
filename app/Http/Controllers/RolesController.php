@@ -53,18 +53,22 @@ public function index()
 
        $companyId = Auth::user()->company_id;
 
-$role = Role::createForCompany(
-    ['name' => $request->name],
-    $companyId
-);
+        $role = Role::createForCompany(
+            ['name' => $request->name],
+            $companyId
+        );
 
 
         $role->syncPermissions($request->permissions ?? []);
         app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
+        if ($request->has('redirect_to')) {
+            return redirect($request->redirect_to)->with('success', 'Role "' . $role->name . '" created successfully!');
+        }
+
         return redirect()
             ->route('roles')
-            ->with('error', 'Role name already exists!');
+            ->with('success', 'Role created successfully!');
     }
 
 

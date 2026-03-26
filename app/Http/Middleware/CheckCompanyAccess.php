@@ -17,15 +17,17 @@ class CheckCompanyAccess
         $user = Auth::user();
         $company = $user->company;
 
-        // No company → logout
-        if (!$company) {
+        // No company or Deactivated company → logout
+        if (!$company || $company->status === 'deactive') {
             Auth::logout();
-            return redirect()->route('login');
+            $message = !$company ? 'Company not found.' : 'Your company account has been deactivated. Please contact support.';
+            return redirect()->route('login.show')->with('error', $message);
         }
 
         // 🔒 TRIAL EXPIRED & NOT PAID
         if (
             !$company->is_paid &&
+            $company->trial_ends_at && 
             now()->greaterThan($company->trial_ends_at)
         ) {
 

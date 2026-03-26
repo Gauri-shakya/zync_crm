@@ -115,7 +115,9 @@
         <!-- Page Title and Actions -->
         <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-12 gap-6">
             <div>
-                <h1 class="text-4xl sm:text-5xl font-black text-gray-900 tracking-tight mb-4">Contacts</h1>
+                <h2 class="text-4xl text-gray-900 tracking-tight mb-4 font-bold">
+                    Contacts
+                </h2>
                 <div class="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400">
                     <span class="w-2 h-2 rounded-full bg-blue-500"></span>
                     CRM
@@ -134,7 +136,7 @@
         </div>
 
         <!-- Filters and Stats Bar -->
-        <div class="bg-white rounded-[2.5rem] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] border border-gray-50 p-4 sm:p-6 mb-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="bg-white rounded-[1rem] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] border border-gray-50 p-4 sm:p-6 mb-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div class="flex items-center gap-8">
                 <div class="flex flex-col">
                     <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Database</span>
@@ -489,7 +491,7 @@
                             <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-8">
                                 <i class="fas fa-users text-blue-200 text-4xl"></i>
                             </div>
-                            <h3 class="text-2xl font-black text-gray-900 mb-3 tracking-tight">Database Empty</h3>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3 tracking-tight">Database Empty</h3>
                             <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-10">Start building your network today</p>
                             <button id="addFirstContact" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-xl">
                                 <i class="fas fa-plus mr-3"></i> Add Your First Contact

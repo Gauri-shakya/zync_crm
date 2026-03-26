@@ -9,119 +9,14 @@
     
     @if(isset($companyDetailsMissing) && $companyDetailsMissing)
     <!-- Setup Mode: Only show styles and the setup form -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-    <style>
-        .shadow-custom { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        @keyframes bounce-subtle {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
-        }
-        .animate-bounce-subtle {
-            animation: bounce-subtle 3s infinite ease-in-out;
-        }
-        #map {
-            height: 300px;
-            width: 100%;
-            border-radius: 1rem;
-            margin-top: 1rem;
-            border: 1px solid #e5e7eb;
-            z-index: 1;
-        }
-        /* Leaflet search bar styling */
-        .leaflet-control-geocoder {
-            border-radius: 0.75rem !important;
-            border: 1px solid #e5e7eb !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-        }
-        .leaflet-control-geocoder-form input {
-            padding: 8px 12px !important;
-            font-family: inherit !important;
-            border-radius: 0.5rem !important;
-        }
-    </style>
-    
-    <div id="company-details-modal" class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div class="sm:mx-auto sm:w-full sm:max-w-2xl">
-            <div class="flex justify-center">
-                <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <i class="fas fa-building text-indigo-600 text-xl"></i>
-                </div>
-            </div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Complete Setup
-            </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                {{ $company->name ?? 'Your Company' }}
-            </p>
-        </div>
-
-        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
-            <div class="bg-white py-8 px-4 shadow-2xl sm:rounded-xl sm:px-10 border border-gray-100">
-                <form id="company-details-form" class="space-y-6">
-                    
-                    <!-- Location Section -->
-                    <div class="space-y-4">
-                        <label class="block text-sm font-bold text-gray-700"> Office Location </label>
-                        
-                        <p class="text-xs text-gray-500 italic">Search for your address or click/drag the marker on the map to set your office location.</p>
-
-                        <div id="map" class="shadow-inner"></div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="relative rounded-xl shadow-sm">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-400 text-xs font-black uppercase tracking-widest">Lat</span>
-                                </div>
-                                <input type="text" id="details_latitude" name="latitude" value="{{ $company->latitude ?? '' }}" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-12 py-3 sm:text-sm border border-gray-200 rounded-xl transition-all font-bold text-gray-700" placeholder="0.0000" readonly required>
-                            </div>
-                            <div class="relative rounded-xl shadow-sm">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-400 text-xs font-black uppercase tracking-widest">Lng</span>
-                                </div>
-                                <input type="text" id="details_longitude" name="longitude" value="{{ $company->longitude ?? '' }}" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-12 py-3 sm:text-sm border border-gray-200 rounded-xl transition-all font-bold text-gray-700" placeholder="0.0000" readonly required>
-                            </div>
-                        </div>
-                        
-                        <button type="button" id="get-location-btn" class="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-indigo-100 rounded-xl text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 focus:outline-none transition-all duration-200">
-                            <i class="fas fa-location-crosshairs"></i> Use My Current GPS Location
-                        </button>
-                        
-                        <p id="location-error" class="mt-2 text-sm text-red-600 hidden"></p>
-                    </div>
-
-                    <!-- Working Days & Times -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label for="total_working_days" class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2"> Working Days </label>
-                            <div class="relative">
-                                <input type="number" step="0.5" name="total_working_days" id="total_working_days" value="{{ $company->total_working_days ?? '' }}" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full px-4 py-3 sm:text-sm border border-gray-200 rounded-xl font-bold text-gray-700" placeholder="e.g. 26" required>
-                            </div>
-                        </div>
-                        <div>
-                            <label for="office_start_time" class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2"> Start Time </label>
-                            <input type="time" name="office_start_time" id="office_start_time" value="{{ $company->office_start_time ?? '' }}" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full px-4 py-3 sm:text-sm border border-gray-200 rounded-xl font-bold text-gray-700" required>
-                        </div>
-                        <div>
-                            <label for="office_end_time" class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2"> End Time </label>
-                            <input type="time" name="office_end_time" id="office_end_time" value="{{ $company->office_end_time ?? '' }}" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full px-4 py-3 sm:text-sm border border-gray-200 rounded-xl font-bold text-gray-700" required>
-                        </div>
-                    </div>
-
-                    <div class="pt-4">
-                        <button type="submit" class="w-full flex justify-center py-4 px-6 border border-transparent rounded-2xl shadow-xl text-sm font-black uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0">
-                            Complete Setup & Dashboard
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    @include('admin.partials.attendance-setup')
     @else
     <!-- Dashboard Mode: Show standard styles and content -->
+    <div id="setup-container" class="hidden">
+        @include('admin.partials.attendance-setup', ['isEdit' => true])
+    </div>
+
+    <div id="dashboard-container">
     <style>
         @media (max-width: 640px) {
             .container-padding {
@@ -443,10 +338,15 @@
                     <h2 class="text-xl md:text-2xl font-bold text-gray-800">Employee Attendance</h2>
                     <p class="text-sm md:text-base text-gray-600">By: Employee / My Attendance</p>
                 </div>
-                <div class="text-left md:text-right">
-                    <p class="text-sm md:text-base text-gray-600" id="current-date">Loading date...</p>
-                    <p class="text-sm md:text-base text-gray-800 font-medium">Punch In: <span
-                            id="current-punch-time">--:--</span></p>
+                <div class="flex flex-col md:items-end gap-3">
+                    <button onclick="toggleSetupMode(true)" class="flex items-center gap-2 px-4 py-2 bg-white border border-indigo-100 rounded-xl text-sm font-bold text-indigo-600 hover:bg-indigo-50 transition-all shadow-sm">
+                        <i class="fas fa-edit"></i> Update Office Details
+                    </button>
+                    <div class="text-left md:text-right">
+                        <p class="text-sm md:text-base text-gray-600" id="current-date">Loading date...</p>
+                        <p class="text-sm md:text-base text-gray-800 font-medium">Punch In: <span
+                                id="current-punch-time">--:--</span></p>
+                    </div>
                 </div>
             </div>
 
@@ -579,63 +479,78 @@
             </div>
 
             <!-- Punch Controls -->
-            <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-gray-100 p-8 mb-8">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-                        <i class="fas fa-fingerprint text-xl"></i>
-                    </div>
-                    <h3 class="text-lg font-black text-gray-900 tracking-tight">Attendance Actions</h3>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <button id="punch-in-btn"
-                        class="group relative overflow-hidden bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg shadow-emerald-200 hover:shadow-emerald-300 hover:-translate-y-0.5 active:translate-y-0 {{ $todayRecord && $todayRecord->punch_in ? 'opacity-50 cursor-not-allowed grayscale' : '' }}"
-                        {{ $todayRecord && $todayRecord->punch_in ? 'disabled' : '' }}>
-                        <div class="flex items-center justify-center gap-3">
-                            <i class="fas fa-sign-in-alt text-xl group-hover:rotate-12 transition-transform"></i>
-                            <span class="tracking-wide uppercase text-sm">Punch In</span>
+            <div id="attendance-actions-container" class="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-gray-100 p-8 mb-8 overflow-hidden">
+                <!-- Overlay for active break -->
+                <div id="attendance-actions-overlay" class="hidden absolute inset-0 bg-white/90 backdrop-blur-xl z-[9999] rounded-3xl flex flex-col items-center justify-center transition-all duration-300 pointer-events-auto">
+                    <div class="bg-white px-8 py-6 rounded-3xl shadow-2xl border border-amber-100 flex flex-col items-center gap-4 transform scale-110">
+                        <div class="h-16 w-16 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 animate-pulse">
+                            <i class="fas fa-pause-circle text-3xl"></i>
                         </div>
-                    </button>
-
-                    <button id="punch-out-btn"
-                        class="group relative overflow-hidden bg-rose-500 hover:bg-rose-600 text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg shadow-rose-200 hover:shadow-rose-300 hover:-translate-y-0.5 active:translate-y-0 {{ !$todayRecord || !$todayRecord->punch_in ? 'opacity-50 cursor-not-allowed grayscale' : '' }}"
-                        {{ !$todayRecord || !$todayRecord->punch_in ? 'disabled' : '' }}>
-                        <div class="flex items-center justify-center gap-3">
-                            <i class="fas fa-sign-out-alt text-xl group-hover:-rotate-12 transition-transform"></i>
-                            <span class="tracking-wide uppercase text-sm">Punch Out</span>
-                        </div>
-                    </button>
-
-                    <button id="break-in-btn"
-                        class="group relative overflow-hidden bg-amber-500 hover:bg-amber-600 text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg shadow-amber-200 hover:shadow-amber-300 hover:-translate-y-0.5 active:translate-y-0">
-                        <div class="flex items-center justify-center gap-3">
-                            <i class="fas fa-pause text-xl group-hover:scale-110 transition-transform"></i>
-                            <span class="tracking-wide uppercase text-sm">Break In</span>
-                        </div>
-                    </button>
-
-                    <button id="break-out-btn"
-                        class="group relative overflow-hidden bg-blue-500 hover:bg-blue-600 text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:-translate-y-0.5 active:translate-y-0">
-                        <div class="flex items-center justify-center gap-3">
-                            <i class="fas fa-play text-xl group-hover:scale-110 transition-transform"></i>
-                            <span class="tracking-wide uppercase text-sm">Break Out</span>
-                        </div>
-                    </button>
-                </div>
-
-                <div class="mt-8 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-rose-500">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div>
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Current Location</p>
-                            <span id="location-display" class="text-sm font-bold text-gray-700 leading-none">
-                                {{ $todayRecord->location ?? 'Location will be captured when you punch in' }}
-                            </span>
+                        <div class="text-center">
+                            <p id="overlay-message" class="text-base font-black text-gray-900 uppercase tracking-widest">Currently on Break</p>
+                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-2">Punch actions are disabled</p>
                         </div>
                     </div>
-                    <div id="distance-display" class="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full uppercase tracking-widest"></div>
+                </div>
+
+                <div class="relative z-0">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                            <i class="fas fa-fingerprint text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-black text-gray-900 tracking-tight">Attendance Actions</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <button id="punch-in-btn"
+                            class="group relative overflow-hidden bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg shadow-emerald-200 hover:shadow-emerald-300 hover:-translate-y-0.5 active:translate-y-0 {{ $todayRecord && $todayRecord->punch_in ? 'opacity-50 cursor-not-allowed grayscale' : '' }}"
+                            {{ $todayRecord && $todayRecord->punch_in ? 'disabled' : '' }}>
+                            <div class="flex items-center justify-center gap-3">
+                                <i class="fas fa-sign-in-alt text-xl group-hover:rotate-12 transition-transform"></i>
+                                <span class="tracking-wide uppercase text-sm">Punch In</span>
+                            </div>
+                        </button>
+
+                        <button id="punch-out-btn"
+                            class="group relative overflow-hidden bg-rose-500 hover:bg-rose-600 text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg shadow-rose-200 hover:shadow-rose-300 hover:-translate-y-0.5 active:translate-y-0 {{ !$todayRecord || !$todayRecord->punch_in ? 'opacity-50 cursor-not-allowed grayscale' : '' }}"
+                            {{ !$todayRecord || !$todayRecord->punch_in ? 'disabled' : '' }}>
+                            <div class="flex items-center justify-center gap-3">
+                                <i class="fas fa-sign-out-alt text-xl group-hover:-rotate-12 transition-transform"></i>
+                                <span class="tracking-wide uppercase text-sm">Punch Out</span>
+                            </div>
+                        </button>
+
+                        <button id="break-in-btn"
+                            class="group relative overflow-hidden bg-amber-500 hover:bg-amber-600 text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg shadow-amber-200 hover:shadow-amber-300 hover:-translate-y-0.5 active:translate-y-0">
+                            <div class="flex items-center justify-center gap-3">
+                                <i class="fas fa-pause text-xl group-hover:scale-110 transition-transform"></i>
+                                <span class="tracking-wide uppercase text-sm">Break In</span>
+                            </div>
+                        </button>
+
+                        <button id="break-out-btn"
+                            class="group relative overflow-hidden bg-blue-500 hover:bg-blue-600 text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:-translate-y-0.5 active:translate-y-0">
+                            <div class="flex items-center justify-center gap-3">
+                                <i class="fas fa-play text-xl group-hover:scale-110 transition-transform"></i>
+                                <span class="tracking-wide uppercase text-sm">Break Out</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="mt-8 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-rose-500">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Current Location</p>
+                                <span id="location-display" class="text-sm font-bold text-gray-700 leading-none">
+                                    {{ $todayRecord->location ?? 'Location will be captured when you punch in' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div id="distance-display" class="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full uppercase tracking-widest"></div>
+                    </div>
                 </div>
             </div>
 
@@ -777,8 +692,28 @@
     </div>
     @endif
     @endif
+    </div>{{-- Close dashboard-container --}}
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
     <script>
+        function toggleSetupMode(show) {
+            const dashboard = document.getElementById('dashboard-container');
+            const setup = document.getElementById('setup-container');
+            if (show) {
+                dashboard.classList.add('hidden');
+                setup.classList.remove('hidden');
+                // Re-initialize map with a small delay to ensure container is visible
+                setTimeout(() => {
+                    if (typeof initMap === 'function') initMap();
+                }, 100);
+            } else {
+                dashboard.classList.remove('hidden');
+                setup.classList.add('hidden');
+            }
+        }
+
     @if(isset($companyDetailsMissing) && $companyDetailsMissing)
         // Setup Mode Script
         document.addEventListener('DOMContentLoaded', function() {
@@ -794,16 +729,26 @@
             const defaultLng = {{ $company->longitude ?? 77.2090 }};
 
             function initMap() {
-                const initialLat = parseFloat(latInput.value) || defaultLat;
-                const initialLng = parseFloat(lngInput.value) || defaultLng;
+                const savedLat = parseFloat(latInput.value);
+                const savedLng = parseFloat(lngInput.value);
                 
-                map = L.map('map').setView([initialLat, initialLng], 15);
+                const currentLat = !isNaN(savedLat) ? savedLat : defaultLat;
+                const currentLng = !isNaN(savedLng) ? savedLng : defaultLng;
+                
+                if (map) {
+                    map.invalidateSize();
+                    map.setView([currentLat, currentLng], 17);
+                    marker.setLatLng([currentLat, currentLng]);
+                    return;
+                }
+
+                map = L.map('map').setView([currentLat, currentLng], 17);
 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(map);
 
-                marker = L.marker([initialLat, initialLng], {
+                marker = L.marker([currentLat, currentLng], {
                     draggable: true
                 }).addTo(map);
 
@@ -828,14 +773,18 @@
                 map.on('click', function(e) {
                     updateMarkerAndInputs(e.latlng.lat, e.latlng.lng);
                 });
+
+                // Final resize after initialization
+                setTimeout(() => map.invalidateSize(), 300);
             }
 
             function updateMarkerAndInputs(lat, lng) {
-                const latFixed = parseFloat(lat).toFixed(6);
-                const lngFixed = parseFloat(lng).toFixed(6);
-                marker.setLatLng([latFixed, lngFixed]);
-                latInput.value = latFixed;
-                lngInput.value = lngFixed;
+                const latVal = parseFloat(lat);
+                const lngVal = parseFloat(lng);
+                
+                marker.setLatLng([latVal, lngVal]);
+                latInput.value = latVal.toFixed(8);
+                lngInput.value = lngVal.toFixed(8);
                 errorMsg.classList.add('hidden');
             }
 
@@ -930,6 +879,129 @@
         });
     @else
         // Dashboard Mode Script
+        // Initialize Setup/Edit script logic for dashboard mode
+        window.initMap = null; // Will be defined below if needed
+
+        (function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('company-details-form');
+                if (!form) return;
+
+                const locationBtn = document.getElementById('get-location-btn');
+                const latInput = document.getElementById('details_latitude');
+                const lngInput = document.getElementById('details_longitude');
+                const errorMsg = document.getElementById('location-error');
+
+                let map, marker;
+                const defaultLat = {{ $company->latitude ?? 28.6139 }};
+                const defaultLng = {{ $company->longitude ?? 77.2090 }};
+
+                window.initMap = function() {
+                    const savedLat = parseFloat(latInput.value);
+                    const savedLng = parseFloat(lngInput.value);
+                    
+                    const currentLat = !isNaN(savedLat) ? savedLat : defaultLat;
+                    const currentLng = !isNaN(savedLng) ? savedLng : defaultLng;
+
+                    if (map) {
+                        map.invalidateSize();
+                        map.setView([currentLat, currentLng], 17);
+                        marker.setLatLng([currentLat, currentLng]);
+                        return;
+                    }
+                    
+                    map = L.map('map').setView([currentLat, currentLng], 17);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(map);
+
+                    marker = L.marker([currentLat, currentLng], {
+                        draggable: true
+                    }).addTo(map);
+
+                    const geocoder = L.Control.geocoder({
+                        defaultMarkGeocode: false,
+                        placeholder: "Search for your office address...",
+                        collapsed: false
+                    }).on('markgeocode', function(e) {
+                        const latlng = e.geocode.center;
+                        map.setView(latlng, 17);
+                        updateMarkerAndInputs(latlng.lat, latlng.lng);
+                    }).addTo(map);
+
+                    marker.on('dragend', function(e) {
+                        const position = marker.getLatLng();
+                        updateMarkerAndInputs(position.lat, position.lng);
+                    });
+
+                    map.on('click', function(e) {
+                        updateMarkerAndInputs(e.latlng.lat, e.latlng.lng);
+                    });
+                    
+                    setTimeout(() => map.invalidateSize(), 300);
+                }
+
+                function updateMarkerAndInputs(lat, lng) {
+                    const latVal = parseFloat(lat);
+                    const lngVal = parseFloat(lng);
+                    
+                    marker.setLatLng([latVal, lngVal]);
+                    latInput.value = latVal.toFixed(8);
+                    lngInput.value = lngVal.toFixed(8);
+                    
+                    if(errorMsg) errorMsg.classList.add('hidden');
+                }
+
+                locationBtn?.addEventListener('click', function() {
+                    if (navigator.geolocation) {
+                        locationBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Getting Location...';
+                        locationBtn.disabled = true;
+
+                        navigator.geolocation.getCurrentPosition(
+                            function(position) {
+                                const lat = position.coords.latitude;
+                                const lng = position.coords.longitude;
+                                map.setView([lat, lng], 17);
+                                updateMarkerAndInputs(lat, lng);
+                                locationBtn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Location Captured';
+                                setTimeout(() => {
+                                    locationBtn.disabled = false;
+                                    locationBtn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Use My Current GPS Location';
+                                }, 2000);
+                            },
+                            function() {
+                                locationBtn.disabled = false;
+                                locationBtn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Retry Location';
+                            }
+                        );
+                    }
+                });
+
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+                    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                    fetch('{{ route("my-attendance.update-company-details") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) window.location.reload();
+                        else alert(result.message || 'Error updating details');
+                    });
+                });
+            });
+        })();
+
         const BREAK_STORAGE_KEY = `active_break_${{{ auth()->id() }}}`;
 
 
@@ -938,7 +1010,7 @@
         // ──────────────────────────────────────────────────────────────────────────────
         const OFFICE_LAT = {{ $company->latitude ?? 0 }};
         const OFFICE_LON = {{ $company->longitude ?? 0 }};
-        const ALLOWED_DISTANCE_KM = 1;
+        const ALLOWED_DISTANCE_KM = 0.5;
         const MAX_BREAK_SECONDS = 3600; // 1 hour maximum break time
 
         // ──────────────────────────────────────────────────────────────────────────────
@@ -991,6 +1063,7 @@
 
             // Break timer specific elements
             activeBreakTimer: document.getElementById('active-break-timer'),
+            actionsOverlay: document.getElementById('attendance-actions-overlay'),
             noActiveBreak: document.getElementById('no-active-break'),
             breakStartTimeEl: document.getElementById('break-start-time'),
             breakTimerDisplay: document.getElementById('break-timer-display'),
@@ -1018,6 +1091,9 @@
             // Initial UI setup
             updateCurrentDateTime();
             updateAttendanceUI();
+            if (!isMobileDevice()) {
+                enforceMobileOnly();
+            }
             updateButtonStates();
             handleResize();
 
@@ -1265,6 +1341,11 @@
         // BREAK ACTIONS
         // ──────────────────────────────────────────────────────────────────────────────
         async function handleBreakIn() {
+            if (!isMobileDevice()) {
+                enforceMobileOnly();
+                alert('Actions are allowed only on mobile devices');
+                return;
+            }
             if (attendanceData.breakRunning) {
                 alert('ℹ️ Break is already in progress!');
                 location.reload();
@@ -1275,8 +1356,14 @@
                 const confirmLocation = await showLocationConfirmation('breakIn');
                 if (!confirmLocation) return;
 
+                updateActionsOverlay(true, 'Starting Break...');
                 const locationData = await getLocation();
                 const postData = createLocationPostData(locationData);
+                if (locationData.error || !locationData.isWithinRange) {
+                    updateActionsOverlay(true, 'Out of Range');
+                    alert(`📍 You are ${locationData.distance}km away from office (allowed: ${ALLOWED_DISTANCE_KM}km).`);
+                    return;
+                }
 
                 const result = await ajaxPost('{{ route("my-attendance.break-in") }}', postData);
 
@@ -1311,17 +1398,22 @@
 
 
         async function handleBreakEndAction(actionType, route) {
+            if (!isMobileDevice()) {
+                enforceMobileOnly();
+                alert('Actions are allowed only on mobile devices');
+                return;
+            }
             try {
                 const confirmLocation = await showLocationConfirmation(actionType);
                 if (!confirmLocation) return;
 
+                updateActionsOverlay(true, 'Ending Break...');
                 const locationData = await getLocation();
 
-                if (!locationData.isWithinRange && !locationData.error) {
-                    const proceed = confirm(
-                        `📍 You are ${locationData.distance}km away from office (allowed: ${ALLOWED_DISTANCE_KM}km).\n\nDo you want to proceed anyway?`
-                    );
-                    if (!proceed) return;
+                if (locationData.error || !locationData.isWithinRange) {
+                    updateActionsOverlay(true, 'Out of Range');
+                    alert(`📍 You are ${locationData.distance}km away from office (allowed: ${ALLOWED_DISTANCE_KM}km).`);
+                    return;
                 }
 
                 const postData = createLocationPostData(locationData);
@@ -1387,6 +1479,11 @@
         // GENERAL ATTENDANCE ACTIONS
         // ──────────────────────────────────────────────────────────────────────────────
         async function handleAttendanceAction(actionType, route) {
+            if (!isMobileDevice()) {
+                enforceMobileOnly();
+                alert('Actions are allowed only on mobile devices');
+                return;
+            }
             const btn = actionType === 'punchIn' ? elements.punchInBtn : elements.punchOutBtn;
             const originalDisabled = btn ? btn.disabled : false;
             
@@ -1394,13 +1491,15 @@
                 const confirmLocation = await showLocationConfirmation(actionType);
                 if (!confirmLocation) return;
 
+                updateActionsOverlay(true, 'Processing action...');
                 if (btn) btn.disabled = true;
 
                 const locationData = await getLocation();
 
-                if (!locationData.isWithinRange && !locationData.error) {
-                    const proceed = confirm(`📍 Location Alert\n\nYou are ${locationData.distance}km away from office (allowed: ${ALLOWED_DISTANCE_KM}km).\n\nProceed with ${actionType.replace(/([A-Z])/g, ' $1').trim()} anyway?`);
-                    if (!proceed) return;
+                if (locationData.error || !locationData.isWithinRange) {
+                    updateActionsOverlay(true, 'Out of Range');
+                    alert(`📍 You are ${locationData.distance}km away from office (allowed: ${ALLOWED_DISTANCE_KM}km).`);
+                    return;
                 }
 
                 const postData = createLocationPostData(locationData);
@@ -1463,6 +1562,19 @@
         // ──────────────────────────────────────────────────────────────────────────────
         function padZero(num) {
             return num.toString().padStart(2, '0');
+        }
+
+        function isMobileDevice() {
+            const ua = navigator.userAgent || '';
+            return /Android|iPhone|iPod/i.test(ua);
+        }
+
+        function enforceMobileOnly() {
+            updateActionsOverlay(true, 'Mobile Only');
+            if (elements.punchInBtn) elements.punchInBtn.disabled = true;
+            if (elements.punchOutBtn) elements.punchOutBtn.disabled = true;
+            if (elements.breakInBtn) elements.breakInBtn.disabled = true;
+            if (elements.breakOutBtn) elements.breakOutBtn.disabled = true;
         }
 
         function createLocationPostData(locationData) {
@@ -1643,8 +1755,30 @@
             return await response.json();
         }
 
+        function updateActionsOverlay(show, message = 'On Break - Actions Disabled') {
+            if (!elements.actionsOverlay) return;
+            
+            const overlayMessageEl = document.getElementById('overlay-message');
+            if (overlayMessageEl) overlayMessageEl.textContent = message;
+            
+            if (show) {
+                elements.actionsOverlay.classList.remove('hidden');
+                elements.actionsOverlay.classList.add('flex');
+            } else {
+                elements.actionsOverlay.classList.add('hidden');
+                elements.actionsOverlay.classList.remove('flex');
+            }
+        }
+
         function updateButtonStates() {
+            if (!isMobileDevice()) {
+                enforceMobileOnly();
+                return;
+            }
             const isBreakActive = attendanceData.breakRunning === true;
+
+            // Handle Actions Overlay
+            updateActionsOverlay(isBreakActive);
 
             // Punch In
             if (elements.punchInBtn) {

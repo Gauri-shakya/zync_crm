@@ -44,6 +44,14 @@
                                     </span>
                                 </div>
                                 <h1 class="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">{{ $ticket->title }}</h1>
+                                
+                                <!-- Response Time Notice -->
+                                <div class="mt-4 flex items-center gap-3 px-4 py-2 bg-amber-50 border border-amber-100 rounded-xl">
+                                    <div class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+                                    <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">
+                                        Expected response time: 24-48 hours from customer care.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>

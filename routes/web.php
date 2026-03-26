@@ -65,6 +65,9 @@ Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
 
+// Public Mobile App download (latest active APK)
+Route::get('/app/download', [\App\Http\Controllers\SuperAdmin\MobileAppController::class, 'download'])->name('app.download');
+
 // Protected routes
 Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
 
@@ -313,6 +316,7 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
         Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
         Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
         Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+        Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
         
         // Task Comments/Messages
         Route::post('/tasks/{task}/comments', [App\Http\Controllers\TaskCommentController::class, 'store'])->name('tasks.comments.store');
@@ -716,9 +720,13 @@ Route::prefix('superadmin')->group(function () {
 
 
         // Settings
-
         Route::get('settings', [SettingsController::class, 'index'])->name('superadmin.settings.index');
         Route::post('settings', [SettingsController::class, 'update'])->name('superadmin.settings.update');
+
+        // Mobile App Management
+        Route::get('mobile-apps', [App\Http\Controllers\SuperAdmin\MobileAppController::class, 'index'])->name('superadmin.mobile-apps.index');
+        Route::post('mobile-apps', [App\Http\Controllers\SuperAdmin\MobileAppController::class, 'store'])->name('superadmin.mobile-apps.store');
+        Route::get('mobile-apps/download', [App\Http\Controllers\SuperAdmin\MobileAppController::class, 'download'])->name('superadmin.mobile-apps.download');
 
 
 
@@ -734,11 +742,6 @@ Route::prefix('superadmin')->group(function () {
 // ***********************************************************************
 // ******************** END SUPERADMIN OF ROUTES FILE ********************
 // ***********************************************************************
-
-
-
-
-
 
 
 
@@ -817,6 +820,31 @@ Route::get('/debug-roles', function () {
 Route::post('/notifications/read', function () {
     auth()->user()->unreadNotifications->markAsRead();
     return response()->json(['success' => true]);
+});
+
+Route::post('/notifications/{id}/read', function ($id) {
+    $notification = auth()->user()->notifications()->findOrFail($id);
+    $notification->markAsRead();
+    return response()->json(['success' => true]);
+});
+
+Route::get('/notifications/fetch', function () {
+    // Get last 10 notifications (both read and unread)
+    $notifications = auth()->user()->notifications()->latest()->take(10)->get()->map(function($n) {
+        return [
+            'id' => $n->id,
+            'title' => $n->data['title'] ?? 'Notification',
+            'message' => $n->data['message'] ?? '',
+            'url' => $n->data['url'] ?? '#',
+            'icon' => $n->data['icon'] ?? 'bell',
+            'time' => $n->created_at->timezone('Asia/Kolkata')->format('h:i A'),
+            'read_at' => $n->read_at
+        ];
+    });
+    return response()->json([
+        'unread_count' => auth()->user()->unreadNotifications->count(),
+        'notifications' => $notifications
+    ]);
 });
 
 

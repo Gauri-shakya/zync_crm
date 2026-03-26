@@ -6,7 +6,7 @@
 <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
     <div>
         <h1 class="text-2xl font-bold text-gray-800">Trial Management</h1>
-        <p class="text-gray-600">Manage all 30-day trial users and conversions</p>
+        <p class="text-gray-600">Manage all 15-day trial users and conversions</p>
     </div>
 </div>
 
@@ -75,7 +75,7 @@
         <!-- <img src="{{ $company->logo_url }}" class="w-8 h-8 rounded-full mr-3"> -->
         <div>
             <p class="font-medium text-gray-800">{{ $company->name }}</p>
-            <p class="text-sm text-gray-500">{{ $company->email }}</p>
+            <p class="text-sm text-gray-500">{{ $company->user->email ?? $company->email }}</p>
         </div>
     </div>
 </td>

@@ -122,8 +122,8 @@
                     <a href="{{ route('tasks.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
                         <i class="fas fa-arrow-left mr-2"></i> Back
                     </a>
-                    @if(auth()->user()->hasRole('admin') || $task->users->contains(auth()->user()->id) || ($task->role && auth()->user()->hasRole($task->role->name)))
-                    <a href="{{ route('tasks.edit', $task->id) }}" class="hidden inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    @if(auth()->user()->hasRole('admin') || auth()->id() === $task->assigned_by)
+                    <a href="{{ route('tasks.edit', $task->id) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         <i class="fas fa-edit mr-2"></i> Edit Task
                     </a>
                     @endif
@@ -285,9 +285,9 @@
                             </h3>
                         </div>
                         <div class="p-5">
-                            <form action="{{ route('tasks.update', $task->id) }}" method="POST">
+                            <form action="{{ route('tasks.update-status', $task->id) }}" method="POST">
                                 @csrf
-                                @method('PUT')
+                                @method('PATCH')
                                 <div class="space-y-4">
                                     <div>
                                         <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Current Status</label>

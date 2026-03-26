@@ -145,25 +145,32 @@ class TaskController extends Controller
                 $task->assignToTeam($roleId);
             }
 
-            // try {
-            //     if (function_exists('notifyCompany')) {
-            //         notifyCompany(auth()->user()->company_id, [
-            //             'title' => 'Task Assigned',
-            //             'message' => 'A new task was assigned',
-            //             'module' => 'task',
-            //             'url' => route('tasks.index'),
-            //             'icon' => 'task',
-            //         ]);
-            //     }
-            // } catch (\Exception $e) {
-            //     \Illuminate\Support\Facades\Log::error('Task Notification Failed: ' . $e->getMessage());
-            // }
+            // Send Notifications to Assigned Users
+            try {
+                $assignerName = Auth::user()->name;
+                $taskTitle = $task->title;
+                $companyId = Auth::user()->company_id;
+
+                foreach ($task->users as $user) {
+                    if ($user->id !== Auth::id()) {
+                        $user->notify(new \App\Notifications\SystemNotification([
+                            'title' => 'New Task Assigned',
+                            'message' => "{$assignerName} assigned a new task: {$taskTitle}",
+                            'module' => 'task',
+                            'url' => route('tasks.show', $task->id),
+                            'icon' => 'tasks',
+                        ]));
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Task Notification Failed: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'success' => true,
                 'task' => $task->load('users', 'role', 'assigner.roles')->toArray()
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Task Creation Error: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
             return response()->json([
                 'success' => false,
@@ -174,7 +181,8 @@ class TaskController extends Controller
 
     public function update(Request $request, Task $task)
     {
-        $this->authorize('manage', $task);
+        try {
+            $this->authorize('manage', $task);
         // Similar validation to store, but allow partial updates
         $rules = [
             'title' => 'sometimes|required|string|max:255',
@@ -263,6 +271,26 @@ class TaskController extends Controller
             }
         }
 
+        // Send Notifications to newly assigned users on update
+        try {
+            $assignerName = Auth::user()->name;
+            $taskTitle = $task->title;
+
+            foreach ($task->users as $user) {
+                if ($user->id !== Auth::id()) {
+                    $user->notify(new \App\Notifications\SystemNotification([
+                        'title' => 'Task Updated/Re-assigned',
+                        'message' => "{$assignerName} updated or re-assigned the task: {$taskTitle}",
+                        'module' => 'task',
+                        'url' => route('tasks.show', $task->id),
+                        'icon' => 'tasks',
+                    ]));
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Task Update Notification Failed: ' . $e->getMessage());
+        }
+
         // Check if this is an AJAX request
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
@@ -273,6 +301,13 @@ class TaskController extends Controller
 
         // Traditional form submission - redirect
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully!');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Task Update Error: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'Server Error: ' . $e->getMessage()
+            ], 500);
+        }
     }
     public function destroy(Task $task)
     {
@@ -292,5 +327,54 @@ class TaskController extends Controller
         $task->delete();
 
         return response()->json(['success' => true, 'message' => 'Task deleted successfully']);
+    }
+
+    public function updateStatus(Request $request, Task $task)
+    {
+        try {
+            $this->authorize('updateStatus', $task);
+
+            $validated = $request->validate([
+                'status' => 'required|in:Pending,In Progress,Completed',
+            ]);
+
+            $task->update(['status' => $validated['status']]);
+
+            // Optional: Send notification on status update
+            try {
+                $assignerName = Auth::user()->name;
+                $taskTitle = $task->title;
+
+                foreach ($task->users as $user) {
+                    if ($user->id !== Auth::id()) {
+                        $user->notify(new \App\Notifications\SystemNotification([
+                            'title' => 'Task Status Updated',
+                            'message' => "{$assignerName} updated the status of task: {$taskTitle} to {$validated['status']}",
+                            'module' => 'task',
+                            'url' => route('tasks.show', $task->id),
+                            'icon' => 'tasks',
+                        ]));
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Task Status Update Notification Failed: ' . $e->getMessage());
+            }
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Task status updated successfully!',
+                    'status' => $task->status
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Task status updated successfully!');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Task Status Update Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Server Error: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

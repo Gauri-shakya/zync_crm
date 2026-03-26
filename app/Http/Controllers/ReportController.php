@@ -28,20 +28,31 @@ class ReportController extends Controller
             $perPage = (int) $request->get('per_page', 5);
             $page = (int) $request->get('page', 1);
 
-            $query = Report::where('company_id', auth()->user()->company_id);
+            $query = Report::with(['user.roles'])->where('company_id', auth()->user()->company_id);
 
+            // Default to today if no date range is provided
+            if (!$request->start_date && !$request->end_date && !$request->search && (!$request->status || $request->status === 'all')) {
+                $query->whereDate('date', Carbon::today());
+            } else {
+                // Filter: date range
+                if ($request->start_date) {
+                    $query->where('date', '>=', $request->start_date);
+                }
+                if ($request->end_date) {
+                    $query->where('date', '<=', $request->end_date);
+                }
+            }
 
             // Filter: status
             if ($request->status && $request->status !== 'all') {
                 $query->where('status', $request->status);
             }
 
-            // Filter: date range
-            if ($request->start_date) {
-                $query->where('date', '>=', $request->start_date);
-            }
-            if ($request->end_date) {
-                $query->where('date', '<=', $request->end_date);
+            // Filter: role
+            if ($request->role && $request->role !== 'all') {
+                $query->whereHas('user.roles', function($q) use ($request) {
+                    $q->where('name', $request->role);
+                });
             }
 
             // Search in summary or tasks JSON
@@ -50,7 +61,10 @@ class ReportController extends Controller
 
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('summary', 'like', "%{$searchTerm}%")
-                      ->orWhere('tasks', 'like', "%{$searchTerm}%");
+                      ->orWhere('tasks', 'like', "%{$searchTerm}%")
+                      ->orWhereHas('user', function($qu) use ($searchTerm) {
+                          $qu->where('name', 'like', "%{$searchTerm}%");
+                      });
                 });
             }
 
@@ -66,7 +80,7 @@ class ReportController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch reports',
+                'message' => 'Failed to fetch reports: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -83,15 +97,17 @@ class ReportController extends Controller
             $startOfWeek = $now->copy()->startOfWeek();
             $endOfWeek = $now->copy()->endOfWeek();
 
-            // Total reports
-            $totalReports = Report::where('user_id', $userId)->count();
+            // Today's reports for the entire company
+            $todayReports = Report::where('company_id', auth()->user()->company_id)
+                ->whereDate('date', Carbon::today())
+                ->count();
 
-            // Reports this week
+            // Reports this week for the user
             $weekReports = Report::where('user_id', $userId)
                 ->whereBetween('date', [$startOfWeek, $endOfWeek])
                 ->count();
 
-            // Reports last 30 days
+            // Reports last 30 days for stats
             $last30 = Report::where('user_id', $userId)
                 ->where('date', '>=', $now->copy()->subDays(30))
                 ->get();
@@ -114,7 +130,7 @@ class ReportController extends Controller
 
             return response()->json([
                 'success' => true,
-                'total_reports' => $totalReports,
+                'total_reports' => $todayReports,
                 'week_reports' => $weekReports,
                 'avg_tasks' => $avgTasks,
                 'productivity' => $productivity,

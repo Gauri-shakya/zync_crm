@@ -150,7 +150,8 @@ class CustomerController extends Controller
             'email' => 'required|email|unique:companies,email,' . $company->id,
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
-            'status' => 'required|in:active,trial,expired,pending,cancelled',
+            'status' => 'required|in:active,deactive',
+            'trial_ends_at' => 'nullable|date',
             'admin_name' => 'nullable|string|max:255',
             'admin_email' => 'nullable|email|unique:users,email,' . ($company->user->id ?? 'NULL'),
         ]);

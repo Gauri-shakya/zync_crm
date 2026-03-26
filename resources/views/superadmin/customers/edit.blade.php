@@ -58,19 +58,22 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
                 <select name="status" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     <option value="active" {{ $customer->status == 'active' ? 'selected' : '' }}>Active</option>
-                    <option value="trial" {{ $customer->status == 'trial' ? 'selected' : '' }}>Trial</option>
-                    <option value="expired" {{ $customer->status == 'expired' ? 'selected' : '' }}>Expired</option>
-                    <option value="pending" {{ $customer->status == 'pending' ? 'selected' : '' }}>Payment Pending</option>
-                    <option value="cancelled" {{ $customer->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    <option value="deactive" {{ $customer->status == 'deactive' ? 'selected' : '' }}>Deactive</option>
                 </select>
                 @error('status')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
+                <p class="text-xs text-gray-500 mt-2">If deactivated, the account will not be allowed to login.</p>
             </div>
 
             <div>
-                 <label class="block text-sm font-medium text-gray-700 mb-2">Trial Ends At</label>
+                 <label class="block text-sm font-medium text-gray-700 mb-2">Trial Ends At (Expiry Date)</label>
                  <input type="datetime-local" name="trial_ends_at" value="{{ $customer->trial_ends_at ? $customer->trial_ends_at->format('Y-m-d\TH:i') : '' }}" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                 <div class="mt-2 space-y-1">
+                    <p class="text-xs text-gray-600 font-medium">Created: <span class="text-gray-900">{{ $customer->created_at->format('M d, Y h:i A') }}</span></p>
+                    <p class="text-xs text-gray-600 font-medium">Expires: <span class="text-gray-900">{{ $customer->trial_ends_at ? $customer->trial_ends_at->format('M d, Y h:i A') : 'N/A' }}</span></p>
+                    <p class="text-xs text-blue-600 font-medium italic">Extending this date will automatically extend account access.</p>
+                 </div>
             </div>
         </div>
         

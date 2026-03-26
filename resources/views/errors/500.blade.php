@@ -10,6 +10,18 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
     </style>
+    @php
+        $msg = isset($exception) && $exception->getMessage() ? $exception->getMessage() : '';
+        $isUnauth = stripos($msg, 'Unauthenticated') !== false;
+    @endphp
+    @if($isUnauth)
+        <script>
+            window.location.replace("{{ url('/loginshow') }}");
+        </script>
+        <noscript>
+            <meta http-equiv="refresh" content="0; url={{ url('/loginshow') }}">
+        </noscript>
+    @endif
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="bg-white p-8 rounded-lg shadow-xl max-w-2xl w-full mx-4 text-center">

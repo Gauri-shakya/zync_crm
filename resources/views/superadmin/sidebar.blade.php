@@ -74,7 +74,13 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('settings.index') }}" class="{{ request()->routeIs('settings.*') ? 'active-menu flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-600 font-medium' : 'menu-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-200' }}">
+                <a href="{{ route('superadmin.mobile-apps.index') }}" class="{{ request()->routeIs('superadmin.mobile-apps.*') ? 'active-menu flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-600 font-medium' : 'menu-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-200' }}">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Mobile App</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('superadmin.settings.index') }}" class="{{ request()->routeIs('superadmin.settings.*') ? 'active-menu flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-600 font-medium' : 'menu-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-200' }}">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
                 </a>

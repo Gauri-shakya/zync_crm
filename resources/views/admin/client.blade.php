@@ -164,21 +164,32 @@
 </div>
 
             <!-- Search and Filter -->
-            <div class="flex flex-col lg:flex-row gap-3 lg:gap-4">
-                <div class="relative flex-1">
+            <div class="flex flex-col lg:flex-row gap-3 lg:gap-4 items-center">
+                <div class="relative flex-1 w-full">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400">
                         <circle cx="11" cy="11" r="8"></circle>
                         <path d="m21 21-4.3-4.3"></path>
                     </svg>
-                    <input id="search-input" class="flex h-10 w-full rounded-md border border-slate-200 px-3 py-2 pl-10 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Search clients..." value="">
+                    <input id="search-input" class="flex h-9 sm:h-10 w-full rounded-md border border-slate-200 px-3 py-2 pl-10 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Search clients..." value="">
                 </div>
+                
+                <!-- View Switcher -->
+                <div class="flex items-center bg-white p-1 rounded-md border border-slate-200 shadow-sm">
+                    <button id="grid-view-btn" class="p-1 sm:p-1.5 rounded-sm transition-all duration-200 bg-indigo-50 text-indigo-600 shadow-sm" title="Grid View">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sm:w-5 sm:h-5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    </button>
+                    <button id="table-view-btn" class="p-1 sm:p-1.5 rounded-sm transition-all duration-200 text-slate-400 hover:text-slate-600" title="Table View">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sm:w-5 sm:h-5"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                </div>
+
                 <div class="w-full lg:w-auto">
-                    <div class="h-10 items-center justify-center rounded-md p-1 bg-white/80 backdrop-blur-sm w-full lg:w-auto grid grid-cols-5 lg:flex">
+                    <div class="h-auto lg:h-10 items-center justify-center rounded-md p-1 bg-white w-full lg:w-auto grid grid-cols-3 sm:grid-cols-5 lg:flex gap-1 border border-slate-200 shadow-sm">
                         <button class="filter-btn active inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-900 shadow-sm" data-status="all">All</button>
-                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-slate-600" data-status="lead">Leads</button>
-                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-slate-600" data-status="qualified">Qualified</button>
-                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-slate-600" data-status="proposal">Proposal</button>
-                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-slate-600" data-status="client">Clients</button>
+                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors" data-status="lead">Leads</button>
+                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors" data-status="qualified">Qualified</button>
+                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors" data-status="proposal">Proposal</button>
+                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors" data-status="client">Clients</button>
                     </div>
                 </div>
             </div>
@@ -238,10 +249,10 @@
 <div class="relative inline-block text-left">
     <!-- Toggle Button -->
     <button
-        id="toggle-client-options-{{ $client->id }}"
+        id="toggle-grid-client-options-{{ $client->id }}"
         aria-expanded="false"
         aria-haspopup="true"
-        onclick="toggleDropdown('{{ $client->id }}')"
+        onclick="toggleDropdown('grid-client-options-menu-{{ $client->id }}')"
         class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 transition"
     >
         <svg xmlns="http://www.w3.org/2000/svg"
@@ -258,11 +269,11 @@
 
 <!-- Dropdown Menu -->
 <div
-    id="client-options-menu-{{ $client->id }}"
-    class="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 hidden"
+    id="grid-client-options-menu-{{ $client->id }}"
+    class="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 hidden"
     role="menu"
     aria-orientation="vertical"
-    aria-labelledby="toggle-client-options-{{ $client->id }}"
+    aria-labelledby="toggle-grid-client-options-{{ $client->id }}"
 >
     <div class="py-1" role="none">
         <a href="{{ route('clients.edit', $client->id) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
@@ -449,6 +460,97 @@
     </div>
     @endforeach
 </div>
+
+<!-- Client Table View -->
+<div id="clients-table-container" class="hidden overflow-x-auto bg-white rounded-lg border border-slate-200 shadow-sm w-full max-w-full relative pb-32">
+    <table class="w-full text-sm text-left text-slate-500 min-w-max table-auto">
+        <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+            <tr>
+                <th scope="col" class="px-4 py-4 font-semibold whitespace-nowrap">Company</th>
+                <th scope="col" class="px-4 py-4 font-semibold hidden md:table-cell whitespace-nowrap">Contact</th>
+                <!-- <th scope="col" class="px-4 py-4 font-semibold whitespace-nowrap">Status</th> -->
+                <th scope="col" class="px-4 py-4 font-semibold hidden lg:table-cell whitespace-nowrap">Priority</th>
+                <th scope="col" class="px-4 py-4 font-semibold hidden sm:table-cell whitespace-nowrap">Follow-up</th>
+                <th scope="col" class="px-4 py-4 font-semibold text-right whitespace-nowrap sticky right-0 bg-slate-50 z-10 border-l border-slate-200">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="clients-table-body">
+            @foreach($clients as $client)
+            <tr class="client-table-row border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200" data-status="{{ $client->status }}">
+                <td class="px-4 py-4">
+                    <div class="flex items-center gap-2">
+                        <div class="flex flex-col min-w-0">
+                            <span class="font-semibold text-slate-900 truncate text-xs sm:text-sm uppercase tracking-tight">{{ $client->company_name }}</span>
+                            <span class="text-[10px] text-slate-500 md:hidden truncate max-w-[120px]">{{ $client->contact_person }}</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-4 py-4 hidden md:table-cell">
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-slate-900 truncate">{{ $client->contact_person }}</span>
+                        <span class="text-xs text-slate-500 truncate">{{ $client->email }}</span>
+                    </div>
+                </td>
+                <!-- <td class="px-4 py-4">
+                    <span class="status-badge px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold capitalize whitespace-nowrap
+                        @if($client->status == 'lead') bg-gray-100 text-gray-700 border-gray-300 border
+                        @elseif($client->status == 'qualified') bg-blue-100 text-blue-700 border-blue-300 border
+                        @elseif($client->status == 'proposal') bg-purple-100 text-purple-700 border-purple-300 border
+                        @elseif($client->status == 'negotiation') bg-yellow-100 text-yellow-700 border-yellow-300 border
+                        @elseif($client->status == 'client') bg-green-100 text-green-700 border-green-300 border
+                        @else bg-red-100 text-red-700 border-red-300 border @endif">
+                        {{ $client->status }}
+                    </span>
+                </td> -->
+                <td class="px-4 py-4 hidden lg:table-cell">
+                    <span class="priority-badge px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize
+                        @if($client->priority == 'low') bg-green-100 text-green-700
+                        @elseif($client->priority == 'medium') bg-yellow-100 text-yellow-700
+                        @else bg-orange-100 text-orange-700 @endif">
+                        {{ $client->priority }}
+                    </span>
+                </td>
+                <td class="px-4 py-4 text-slate-600 hidden sm:table-cell whitespace-nowrap">
+                    {{ $client->next_follow_up ? \Carbon\Carbon::parse($client->next_follow_up)->format('M j, Y') : 'No follow-up' }}
+                </td>
+                <td class="px-4 py-4 text-right sticky right-0 bg-white group-hover:bg-slate-50 transition-colors duration-200 border-l border-slate-100 z-10">
+                    <div class="flex items-center justify-end gap-1 sm:gap-2">
+                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $client->phone) }}" target="_blank" class="p-1.5 text-green-600 hover:bg-green-50 rounded-full transition-colors  sm:inline-flex" title="WhatsApp">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.209-3.553-8.485"/></svg>
+                        </a>
+                        <div class="relative inline-block text-left ">
+                            <button 
+                                id="toggle-table-client-options-{{ $client->id }}"
+                                onclick="toggleDropdown('table-client-options-menu-{{ $client->id }}')" 
+                                class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                            </button>
+                            <div 
+                                id="table-client-options-menu-{{ $client->id }}" 
+                                class="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 hidden"
+                                role="menu"
+                                aria-orientation="vertical"
+                                aria-labelledby="toggle-table-client-options-{{ $client->id }}"
+                            >
+                                <div class="py-1">
+                                    <a href="{{ route('clients.edit', $client->id) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Edit Lead</a>
+                                    @if($client->leadAction)
+                                    <a href="{{ route('myleads.edit', $client->leadAction->id) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Edit Taken Action</a>
+                                    @endif
+                                    @if(auth()->user()->hasRole('admin'))
+                                    <button type="button" onclick="openDeleteModal('{{ $client->id }}', '{{ addslashes($client->company_name) }}', '{{ route('clients.destroy', $client->id) }}')" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Delete Client</button>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
         </div>
     </div>
 
@@ -600,7 +702,7 @@
   
   <!-- ====================== EDIT LEAD MODAL ====================== -->
   <!-- Edit Action Modal -->
-{{-- <div id="editActionModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+<div id="editActionModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 relative">
         <button id="closeEditModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl">
             &times;
@@ -645,7 +747,7 @@
             </button>
         </form>
     </div>
-</div> --}}
+</div>
   <!-- ====================== END EDIT LEAD MODAL ====================== -->
 
 
@@ -840,11 +942,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('search-input');
     const filterBtns = document.querySelectorAll('.filter-btn');
     const clientsContainer = document.getElementById('clients-container');
+    const clientsTableContainer = document.getElementById('clients-table-container');
+    const gridViewBtn = document.getElementById('grid-view-btn');
+    const tableViewBtn = document.getElementById('table-view-btn');
     const successToast = document.getElementById('success-toast');
     const toastMessage = document.getElementById('toast-message');
 
     let currentFilter = 'all';
     let currentSearch = '';
+    let currentView = 'grid';
+
+    // View switching functionality
+    function switchView(view) {
+        currentView = view;
+        if (view === 'grid') {
+            if (clientsContainer) clientsContainer.classList.remove('hidden');
+            if (clientsTableContainer) clientsTableContainer.classList.add('hidden');
+            if (gridViewBtn) gridViewBtn.classList.add('bg-indigo-50', 'text-indigo-600', 'shadow-sm');
+            if (tableViewBtn) {
+                tableViewBtn.classList.remove('bg-indigo-50', 'text-indigo-600', 'shadow-sm');
+                tableViewBtn.classList.add('text-slate-400');
+            }
+        } else {
+            if (clientsContainer) clientsContainer.classList.add('hidden');
+            if (clientsTableContainer) clientsTableContainer.classList.remove('hidden');
+            if (tableViewBtn) tableViewBtn.classList.add('bg-indigo-50', 'text-indigo-600', 'shadow-sm');
+            if (gridViewBtn) {
+                gridViewBtn.classList.remove('bg-indigo-50', 'text-indigo-600', 'shadow-sm');
+                gridViewBtn.classList.add('text-slate-400');
+            }
+        }
+        filterClients(); // Re-apply filter to new view
+    }
+
+    if (gridViewBtn) gridViewBtn.addEventListener('click', () => switchView('grid'));
+    if (tableViewBtn) tableViewBtn.addEventListener('click', () => switchView('table'));
 
     // Show toast notification
     function showToast(message) {
@@ -866,123 +998,140 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Filter and search clients
     function filterClients() {
-        const clientCards = document.querySelectorAll('.client-card');
         const searchTerm = currentSearch.toLowerCase();
         
+        // Filter Grid View
+        const clientCards = document.querySelectorAll('.client-card');
         clientCards.forEach(card => {
             const clientText = card.textContent.toLowerCase();
             const clientStatus = card.getAttribute('data-status');
             const matchesSearch = clientText.includes(searchTerm);
             const matchesFilter = currentFilter === 'all' || clientStatus === currentFilter;
-            
-            if (matchesSearch && matchesFilter) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
+            card.style.display = (matchesSearch && matchesFilter) ? 'block' : 'none';
+        });
+
+        // Filter Table View
+        const clientTableRows = document.querySelectorAll('.client-table-row');
+        clientTableRows.forEach(row => {
+            const clientText = row.textContent.toLowerCase();
+            const clientStatus = row.getAttribute('data-status');
+            const matchesSearch = clientText.includes(searchTerm);
+            const matchesFilter = currentFilter === 'all' || clientStatus === currentFilter;
+            row.style.display = (matchesSearch && matchesFilter) ? 'table-row' : 'none';
         });
     }
 
     // Search functionality
-    searchInput.addEventListener('input', function() {
-        currentSearch = this.value;
-        filterClients();
-    });
-
-    // Filter functionality
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            filterBtns.forEach(b => b.classList.remove('active', 'bg-blue-100', 'text-blue-900', 'shadow-sm'));
-            filterBtns.forEach(b => b.classList.add('text-slate-600'));
-            
-            this.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-sm');
-            this.classList.remove('text-slate-600');
-            
-            currentFilter = this.getAttribute('data-status');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            currentSearch = this.value;
             filterClients();
         });
-    });
+    }
+
+    // Filter functionality
+    if (filterBtns) {
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                filterBtns.forEach(b => b.classList.remove('active', 'bg-blue-100', 'text-blue-900', 'shadow-sm'));
+                filterBtns.forEach(b => b.classList.add('text-slate-600'));
+                
+                this.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-sm');
+                this.classList.remove('text-slate-600');
+                
+                currentFilter = this.getAttribute('data-status');
+                filterClients();
+            });
+        });
+    }
 
     // Open modal for editing client
     // Use event delegation on document (works for dynamic elements)
 
 
     // Open modal for adding new client
-    addClientBtn.addEventListener('click', function() {
-        // Clear form
-        clientForm.reset();
-        document.getElementById('client_id').value = '';
-        
-        // Update modal title and submit button
-        modalTitle.textContent = 'Add New Client';
-        submitBtn.textContent = 'Add Client';
-        
-        // Show modal
-        modal.classList.remove('hidden');
-    });
+    if (addClientBtn) {
+        addClientBtn.addEventListener('click', function() {
+            // Clear form
+            if (clientForm) clientForm.reset();
+            const clientIdField = document.getElementById('client_id');
+            if (clientIdField) clientIdField.value = '';
+            
+            // Update modal title and submit button
+            if (modalTitle) modalTitle.textContent = 'Add New Client';
+            if (submitBtn) submitBtn.textContent = 'Add Client';
+            
+            // Show modal
+            if (modal) modal.classList.remove('hidden');
+        });
+    }
 
     // Close modal
     function closeModal() {
-        modal.classList.add('hidden');
+        if (modal) modal.classList.add('hidden');
     }
 
-    closeModalBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
 
     // Close modal when clicking outside
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-
-    // Form submission
-    clientForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const clientId = formData.get('client_id');
-    const isEditing = clientId !== '';
-    
-    const url = isEditing ? `/clients/${clientId}` : '/clients';
-    
-    // Always send as POST, spoof PUT if editing
-    if (isEditing) {
-        formData.append('_method', 'PUT');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
     }
 
-    fetch(url, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => { throw err; });
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            showToast(data.message);
-            closeModal();
-            setTimeout(() => location.reload(), 1000);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        let msg = 'Operation failed';
-        if (error.errors) {
-            msg = Object.values(error.errors).flat().join(', ');
-        } else if (error.message) {
-            msg = error.message;
-        }
-        showToast('Error: ' + msg);
-    });
-});
+    // Form submission
+    if (clientForm) {
+        clientForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const clientId = formData.get('client_id');
+            const isEditing = clientId !== '';
+            
+            const url = isEditing ? `/clients/${clientId}` : '/clients';
+            
+            // Always send as POST, spoof PUT if editing
+            if (isEditing) {
+                formData.append('_method', 'PUT');
+            }
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message);
+                    closeModal();
+                    setTimeout(() => location.reload(), 1000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                let msg = 'Operation failed';
+                if (error.errors) {
+                    msg = Object.values(error.errors).flat().join(', ');
+                } else if (error.message) {
+                    msg = error.message;
+                }
+                showToast('Error: ' + msg);
+            });
+        });
+    }
 });
 </script>
 
@@ -1123,31 +1272,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
   <script>
-    // Toggle dropdown for specific client
-    function toggleDropdown(clientId) {
-        const menu = document.getElementById(`client-options-menu-${clientId}`);
-        const allMenus = document.querySelectorAll('[id^="client-options-menu-"]');
-
-        // Close all other menus
-        allMenus.forEach(m => {
-            if (m.id !== `client-options-menu-${clientId}`) {
+    // Toggle dropdown for specific client (handles both grid and table views)
+    function toggleDropdown(menuId) {
+        const menu = document.getElementById(menuId);
+        
+        // Close all other menus and reset their z-indexes
+        document.querySelectorAll('[id*="client-options-menu-"]').forEach(m => {
+            if (m.id !== menuId) {
                 m.classList.add('hidden');
+                // Reset z-index of the parent container (td for table, .client-card for grid)
+                const container = m.closest('td') || m.closest('.client-card');
+                if (container) {
+                    container.style.zIndex = '';
+                    container.style.position = '';
+                }
             }
         });
 
         // Toggle this one
         if (menu) {
-            menu.classList.toggle('hidden');
+            const isHidden = menu.classList.toggle('hidden');
+            const container = menu.closest('td') || menu.closest('.client-card');
+            
+            if (container) {
+                if (!isHidden) {
+                    // When opening, bring this row/card to front
+                    container.style.zIndex = '60';
+                    // Ensure it has relative positioning if not already sticky
+                    if (window.getComputedStyle(container).position === 'static') {
+                        container.style.position = 'relative';
+                    }
+                } else {
+                    // When closing, reset z-index
+                    container.style.zIndex = '';
+                    container.style.position = '';
+                }
+            }
         }
     }
 
     // Close dropdown when clicking outside
     document.addEventListener('click', function(event) {
-        document.querySelectorAll('[id^="client-options-menu-"]').forEach(menu => {
+        document.querySelectorAll('[id*="client-options-menu-"]').forEach(menu => {
             const buttonId = menu.getAttribute('aria-labelledby');
             const button = document.getElementById(buttonId);
+            
             if (button && !button.contains(event.target) && !menu.contains(event.target)) {
-                menu.classList.add('hidden');
+                if (!menu.classList.contains('hidden')) {
+                    menu.classList.add('hidden');
+                    const container = menu.closest('td') || menu.closest('.client-card');
+                    if (container) {
+                        container.style.zIndex = '';
+                        container.style.position = '';
+                    }
+                }
             }
         });
     });
@@ -1200,65 +1378,75 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Close edit modal
-    closeEditModal.addEventListener('click', closeEditActionModal);
+    if (closeEditModal) {
+        closeEditModal.addEventListener('click', closeEditActionModal);
+    }
 
     // Click outside to close
-    editActionModal.addEventListener('click', (e) => {
-        if (e.target === editActionModal) closeEditActionModal();
-    });
+    if (editActionModal) {
+        editActionModal.addEventListener('click', (e) => {
+            if (e.target === editActionModal) closeEditActionModal();
+        });
+    }
 
     // ESC key to close
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !editActionModal.classList.contains('hidden')) {
+        if (e.key === 'Escape' && editActionModal && !editActionModal.classList.contains('hidden')) {
             closeEditActionModal();
         }
     });
 
     function closeEditActionModal() {
-        editActionModal.classList.add('hidden');
-        editActionModal.classList.remove('flex');
-        editActionForm.reset();
+        if (editActionModal) {
+            editActionModal.classList.add('hidden');
+            editActionModal.classList.remove('flex');
+        }
+        if (editActionForm) {
+            editActionForm.reset();
+        }
     }
 
     // Handle edit form submission
-    editActionForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        const actionId = document.getElementById('edit_action_id').value;
+    if (editActionForm) {
+        editActionForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const actionId = document.getElementById('edit_action_id').value;
 
-        fetch(this.action, {
-            method: 'POST', // Laravel will handle PUT via _method
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => { throw err; });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showToast(data.message);
-                closeEditActionModal();
-                setTimeout(() => location.reload(), 1000);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            let msg = 'Update failed';
-            if (error.errors) {
-                msg = Object.values(error.errors).flat().join(', ');
-            } else if (error.message) {
-                msg = error.message;
-            }
-            showToast('Error: ' + msg);
+            fetch(this.action, {
+                method: 'POST', // Laravel will handle PUT via _method
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message);
+                    closeEditActionModal();
+                    setTimeout(() => location.reload(), 1000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                let msg = 'Update failed';
+                if (error.errors) {
+                    msg = Object.values(error.errors).flat().join(', ');
+                } else if (error.message) {
+                    msg = error.message;
+                }
+                showToast('Error: ' + msg);
+            });
         });
-    });
+    }
 });
 </script>
 

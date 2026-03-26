@@ -3,7 +3,7 @@
 @section('title', 'Dashboard')
 
 @section('content')
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4 py-4">
 
         <!-- Stats Overview -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
@@ -26,26 +26,34 @@
         </div>
 
         <!-- Issue-Facing Items (Recurring Problems) -->
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 border-l-4 border-blue-600">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 ">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
                     <i class="fas fa-exclamation-triangle text-amber-500"></i>
                     Issue-Facing Items
                 </h3>
-                <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">Top Recurring Issues</span>
+                @if(request('issue'))
+                    <a href="{{ route('ticket.record.index') }}" class="text-xs font-bold text-red-600 hover:text-red-800 flex items-center gap-1 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 transition-colors">
+                        <i class="fas fa-times"></i> Clear Issue Filter: {{ request('issue') }}
+                    </a>
+                @else
+                    <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">Top Recurring Issues</span>
+                @endif
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 @forelse($issueStats as $issue => $count)
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-blue-200 transition-colors">
-                        <span class="text-sm font-medium text-gray-700 truncate pr-2" title="{{ $issue }}">
+                    <a href="{{ route('ticket.record.index', ['issue' => $issue]) }}" 
+                       class="flex items-center justify-between p-3 rounded-lg border transition-all duration-200 
+                       {{ request('issue') == $issue ? 'bg-blue-50 border-blue-500 shadow-sm' : 'bg-gray-50 border-gray-100 hover:border-blue-200 hover:shadow-sm hover:bg-white' }}">
+                        <span class="text-sm font-medium {{ request('issue') == $issue ? 'text-blue-700' : 'text-gray-700' }} truncate pr-2" title="{{ $issue }}">
                             {{ $issue }}
                         </span>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                            <span class="text-xs font-bold {{ request('issue') == $issue ? 'text-white bg-blue-600 border-blue-600' : 'text-blue-600 bg-blue-50 border-blue-100' }} px-2 py-0.5 rounded-full border">
                                 {{ $count }} {{ Str::plural('ticket', $count) }}
                             </span>
                         </div>
-                    </div>
+                    </a>
                 @empty
                     <div class="col-span-full py-4 text-center text-gray-500 italic text-sm">
                         No recurring issues tracked yet.
@@ -57,7 +65,12 @@
         <!-- Filters & List -->
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
             <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                <h2 class="text-lg font-bold text-gray-900">All Support Tickets</h2>
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900">All Support Tickets</h2>
+                    @if(request('issue'))
+                        <p class="text-xs text-blue-600 font-medium mt-1">Filtering by: <span class="bg-blue-50 px-2 py-0.5 rounded border border-blue-100">{{ request('issue') }}</span></p>
+                    @endif
+                </div>
 
                 <div class="flex flex-wrap gap-2 w-full md:w-auto">
                     <select onchange="window.location.href=this.value"
@@ -144,7 +157,7 @@
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $ticket->created_at->format('M d, H:i') }}
+                                                {{ $ticket->created_at->format('M d, Y h:i A') }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <a href="{{ route('ticket.record.show', encrypt($ticket->id)) }}"

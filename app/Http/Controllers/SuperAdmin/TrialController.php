@@ -10,9 +10,9 @@ class TrialController extends Controller
 {
     public function index()
 {
-    // All trial companies (active + expired)
-    $activeTrials = Company::where('is_paid', false)
-        ->orderBy('trial_ends_at', 'asc')
+    // All trial companies (active + expired) sorted by latest creation, with admin user eager loaded
+    $activeTrials = Company::with('user')->where('is_paid', false)
+        ->latest()
         ->paginate(10);
 
     // Stats

@@ -30,38 +30,12 @@ class NoteController extends Controller
         $user = Auth::user();
 
         $query = Note::with('user')
-            ->where('company_id', auth()->user()->company_id)
-            ->where(function ($q) use ($user) {
-
-                if ($user->hasRole('admin')) {
-                    return;
-                }
-
-                $q->whereIn('visibility', ['public', 'team'])
-
-                    ->orWhere(function ($q) use ($user) {
-                        $q->where('visibility', 'private')
-                            ->where('user_id', $user->id);
-                    })
-                    ->orWhere(function ($q) use ($user) {
-                        $q->where('visibility', 'team')
-                            ->whereJsonContains('teams', $user->teams ?? []);
-                    });
-            });
+            ->where('company_id', auth()->user()->company_id);
 
 
         // -------- FILTERS --------
         if ($request->filled('filter') && $request->filter !== 'all') {
             switch ($request->filter) {
-                case 'my':
-                    $query->where('user_id', $user->id);
-                    break;
-
-                case 'team':
-                    $query->where('visibility', 'team')
-                        ->whereJsonContains('teams', $user->teams ?? []);
-                    break;
-
                 case 'pinned':
                     $query->where('pinned', true);
                     break;
@@ -75,11 +49,6 @@ class NoteController extends Controller
         // Category
         if ($request->filled('category') && $request->category !== 'all') {
             $query->where('category', $request->category);
-        }
-
-        // Visibility
-        if ($request->filled('visibility') && $request->visibility !== 'all') {
-            $query->where('visibility', $request->visibility);
         }
 
         // Search
@@ -104,8 +73,6 @@ class NoteController extends Controller
                 'content' => $note->content,
                 'category' => $note->category,
                 'tags' => $note->tags,
-                'visibility' => $note->visibility,
-                'teams' => $note->teams,
                 'related_client' => $note->related_client,
                 'related_project' => $note->related_project,
                 'related_task' => $note->related_task,
@@ -129,28 +96,11 @@ class NoteController extends Controller
     {
         $user = Auth::user();
 
-        $baseQuery = Note::where('company_id', auth()->user()->company_id)
-            ->where(function ($q) use ($user) {
-                if ($user->hasRole('admin'))
-                    return;
-
-                $q->whereIn('visibility', ['public', 'team'])
-
-                    ->orWhere('user_id', $user->id)
-                    ->orWhere(function ($q) use ($user) {
-                        $q->where('visibility', 'team')
-                            ->whereJsonContains('teams', $user->teams ?? []);
-                    });
-            });
+        $baseQuery = Note::where('company_id', auth()->user()->company_id);
 
 
         return response()->json([
             'total' => (clone $baseQuery)->count(),
-            'my_notes' => Note::where('company_id', $user->company_id)
-                ->where('user_id', $user->id)
-                ->count(),
-
-            'team_notes' => (clone $baseQuery)->where('visibility', 'team')->count(),
             'pinned' => (clone $baseQuery)->where('pinned', true)->count(),
             'recent' => (clone $baseQuery)->where('updated_at', '>=', now()->subDays(7))->count(),
         ]);
@@ -166,8 +116,7 @@ class NoteController extends Controller
             ->with('user')
             ->findOrFail($id);
 
-        $this->authorize('manage', $note);
-
+        // $this->authorize('manage', $note);
 
         if (!$this->canViewNote($note)) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -185,9 +134,7 @@ class NoteController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'category' => 'required',
-            'visibility' => 'required|in:private,team,public',
             'tags' => 'nullable|array',
-            'teams' => 'nullable|array',
             'pinned' => 'boolean',
         ]);
 
@@ -199,9 +146,8 @@ class NoteController extends Controller
             'title' => $request->title,
             'content' => $request->content,
             'category' => $request->category,
-            'visibility' => $request->visibility,
+            'visibility' => 'public',
             'tags' => $request->tags,
-            'teams' => $request->teams,
             'related_client' => $request->related_client,
             'related_project' => $request->related_project,
             'related_task' => $request->related_task,
@@ -229,9 +175,7 @@ class NoteController extends Controller
             'title',
             'content',
             'category',
-            'visibility',
             'tags',
-            'teams',
             'related_client',
             'related_project',
             'related_task',
@@ -284,26 +228,8 @@ class NoteController extends Controller
     // =========================
     private function canViewNote(Note $note)
     {
-        $user = Auth::user();
-
-        if ($user->hasRole('admin'))
-            return true;
-
-        if ($note->visibility === 'public')
-            return true;
-
-        if ($note->visibility === 'private' && $note->user_id === $user->id) {
-            return true;
-        }
-
-        if ($note->visibility === 'team') {
-            return count(array_intersect(
-                $user->teams ?? [],
-                $note->teams ?? []
-            )) > 0;
-        }
-
-        return false;
+        // Anyone in the same company can view any note now that team/private features are removed
+        return $note->company_id === auth()->user()->company_id;
     }
 
 }

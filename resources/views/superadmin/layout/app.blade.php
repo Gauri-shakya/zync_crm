@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRM Admin | @yield('title')</title>
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon_io/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon_io/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon_io/favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ asset('favicon_io/site.webmanifest') }}">
     
     <!-- CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -73,6 +79,22 @@
             background-color: #e5e7eb;
             border-radius: 20px;
         }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+        }
+        .status-active { background-color: #dcfce7; color: #166534; }
+        .status-deactive { background-color: #fee2e2; color: #991b1b; }
+        .status-trial { background-color: #dbeafe; color: #1e40af; }
+        .status-expired { background-color: #f3f4f6; color: #374151; }
+        .status-pending { background-color: #fef9c3; color: #854d0e; }
+        .status-suspended { background-color: #fef2f2; color: #991b1b; }
     </style>
     @yield('styles')
 </head>
@@ -90,9 +112,9 @@
                     </div>
                     <div class="flex flex-col">
                         <span class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
-                            SocialCults
+                            ZynCrm
                         </span>
-                        <span class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Admin Panel</span>
+                        <span class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Super Admin</span>
                     </div>
                 </div>
             </div>
@@ -135,6 +157,12 @@
                     Support Desk
                 </a>
 
+                <a href="{{ route('superadmin.mobile-apps.index') }}" 
+                   class="sidebar-item flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-200 group {{ request()->routeIs('superadmin.mobile-apps.*') ? 'active bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                    <i class="fas fa-mobile-alt w-5 {{ request()->routeIs('superadmin.mobile-apps.*') ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }} transition-colors"></i>
+                    Mobile App
+                </a>
+
                 <a href="{{ route('superadmin.settings.index') }}" 
                    class="sidebar-item flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-200 group {{ request()->routeIs('superadmin.settings.*') ? 'active bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
                     <i class="fas fa-cog w-5 {{ request()->routeIs('superadmin.settings.*') ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600' }} transition-colors"></i>
@@ -172,18 +200,18 @@
                 <!-- Right Side -->
                 <div class="flex items-center gap-6">
                     <!-- Search (Optional) -->
-                    <div class="hidden lg:flex items-center bg-slate-100 rounded-full px-4 py-2 border border-slate-200 focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 transition-all w-64">
-                        <i class="fas fa-search text-slate-400 text-sm"></i>
-                        <input type="text" placeholder="Search..." class="bg-transparent border-none text-sm ml-2 w-full focus:outline-none text-slate-600 placeholder-slate-400">
-                    </div>
+                    <!--<div class="hidden lg:flex items-center bg-slate-100 rounded-full px-4 py-2 border border-slate-200 focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 transition-all w-64">-->
+                    <!--    <i class="fas fa-search text-slate-400 text-sm"></i>-->
+                    <!--    <input type="text" placeholder="Search..." class="bg-transparent border-none text-sm ml-2 w-full focus:outline-none text-slate-600 placeholder-slate-400">-->
+                    <!--</div>-->
 
                     <div class="h-8 w-px bg-slate-200"></div>
 
                     <!-- Notifications -->
-                    <button class="relative p-2 text-slate-400 hover:text-blue-600 transition-colors rounded-full hover:bg-blue-50">
-                        <i class="far fa-bell text-xl"></i>
-                        <span class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-                    </button>
+                    <!--<button class="relative p-2 text-slate-400 hover:text-blue-600 transition-colors rounded-full hover:bg-blue-50">-->
+                    <!--    <i class="far fa-bell text-xl"></i>-->
+                    <!--    <span class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>-->
+                    <!--</button>-->
 
                     <!-- Profile -->
                     <div class="flex items-center gap-3 pl-2">

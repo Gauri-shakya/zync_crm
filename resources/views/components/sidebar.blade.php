@@ -14,6 +14,13 @@
         <!-- Sidebar Header -->
     <div class="flex flex-col gap-2 border-b border-slate-200/60 p-6">
     <div class="items-center gap-3">
+        @if(auth()->user()->company && auth()->user()->company->logo)
+            <div class="mb-3">
+                <img src="{{ asset('storage/' . auth()->user()->company->logo) }}" 
+                     alt="{{ auth()->user()->company->name }}" 
+                     class="h-12 w-auto object-contain rounded-lg">
+            </div>
+        @endif
        <div class="text-3xl font-extrabold text-slate-800 tracking-tight">
             {{ auth()->user()->company->name ?? 'Company' }}
         </div>

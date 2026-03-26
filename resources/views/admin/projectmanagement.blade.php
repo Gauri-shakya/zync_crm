@@ -1,6 +1,9 @@
 @extends('components.layout')
 
 @section('content')
+    <!-- Flatpickr for consistent DD/MM/YYYY date formatting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <script>
         tailwind.config = {
@@ -237,16 +240,34 @@
 
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Specialized Team</label>
-                            <select id="project-team"
-                                class="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none appearance-none cursor-pointer"
-                                required>
-                                <option value="">Select Domain</option>
-                                <option value="SMM">Social Media Marketing</option>
-                                <option value="Web">Web Development</option>
-                                <option value="SEO">SEO Optimization</option>
-                                <option value="Ads">Digital Advertising</option>
-                                <option value="Content">Content Strategy</option>
-                            </select>
+                            <div class="relative group/select">
+                                <select id="project-team"
+                                    class="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none appearance-none cursor-pointer"
+                                    required>
+                                    <option value="">Select Domain</option>
+                                    <option value="SMM">Social Media Marketing</option>
+                                    <option value="Web">Web Development</option>
+                                    <option value="SEO">SEO Optimization</option>
+                                    <option value="Ads">Digital Advertising</option>
+                                    <option value="Content">Content Strategy</option>
+                                    <option value="custom" class="font-bold text-primary-600">+ Add Custom Domain</option>
+                                </select>
+                                <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within/select:text-primary-500 transition-colors">
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                            <!-- Custom Domain Input (Hidden by default) -->
+                            <div id="custom-domain-container" class="hidden mt-2 animate-fade-in">
+                                <div class="flex gap-2">
+                                    <input type="text" id="custom-domain-input" 
+                                        class="flex-1 bg-white border border-primary-200 rounded-xl px-4 py-2 text-sm focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none"
+                                        placeholder="Enter custom domain name...">
+                                    <button type="button" id="add-custom-domain-btn"
+                                        class="px-4 py-2 bg-primary-600 text-white rounded-xl text-xs font-bold hover:bg-primary-700 transition-all active:scale-95">
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="space-y-1.5">
@@ -274,16 +295,16 @@
 
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Start Date</label>
-                            <input type="date" id="start-date"
+                            <input type="text" id="start-date"
                                 class="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"
-                                required>
+                                placeholder="DD/MM/YYYY" required>
                         </div>
 
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Target Deadline</label>
-                            <input type="date" id="deadline"
+                            <input type="text" id="deadline"
                                 class="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all outline-none"
-                                required>
+                                placeholder="DD/MM/YYYY" required>
                         </div>
 
                         <div class="space-y-1.5">
@@ -415,15 +436,59 @@
         const completedCountEl = document.getElementById('completed-text');
         const highPriorityCountEl = document.getElementById('high-priority-text');
 
+        // Initialize Flatpickr
+        let startDatePicker, deadlinePicker;
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function () {
+            // Initialize Flatpickr for date inputs
+            const fpConfig = {
+                altInput: true,
+                altFormat: "d/m/Y",
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                disableMobile: "true" // Force flatpickr on mobile for consistent format
+            };
+
+            startDatePicker = flatpickr("#start-date", fpConfig);
+            deadlinePicker = flatpickr("#deadline", fpConfig);
+
+            // Add custom domain listener
+            const teamSelect = document.getElementById('project-team');
+            const customDomainContainer = document.getElementById('custom-domain-container');
+            const customDomainInput = document.getElementById('custom-domain-input');
+            const addCustomDomainBtn = document.getElementById('add-custom-domain-btn');
+
+            teamSelect.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customDomainContainer.classList.remove('hidden');
+                    customDomainInput.focus();
+                } else {
+                    customDomainContainer.classList.add('hidden');
+                }
+            });
+
+            addCustomDomainBtn.addEventListener('click', function() {
+                const newDomain = customDomainInput.value.trim();
+                if (newDomain) {
+                    const option = document.createElement('option');
+                    option.value = newDomain;
+                    option.textContent = newDomain;
+                    // Insert before the custom option
+                    teamSelect.insertBefore(option, teamSelect.lastElementChild);
+                    teamSelect.value = newDomain;
+                    customDomainContainer.classList.add('hidden');
+                    customDomainInput.value = '';
+                }
+            });
+
             // Set default dates for form
             const today = new Date();
             const nextWeek = new Date();
             nextWeek.setDate(today.getDate() + 7);
 
-            if (startDateField) startDateField.value = formatDateForInput(today);
-            if (deadlineField) deadlineField.value = formatDateForInput(nextWeek);
+            if (startDatePicker) startDatePicker.setDate(today);
+            if (deadlinePicker) deadlinePicker.setDate(nextWeek);
 
             // Load initial data
             loadProjects();
@@ -828,6 +893,8 @@
 
             startDateField.value = formatDateForInput(today);
             deadlineField.value = formatDateForInput(nextWeek);
+            if (startDatePicker) startDatePicker.setDate(today);
+            if (deadlinePicker) deadlinePicker.setDate(nextWeek);
             progressSlider.value = 0;
             progressValue.textContent = '0';
             projectBudgetField.value = '';
@@ -860,8 +927,8 @@
                     projectTeamField.value = project.team;
                     projectStatusField.value = project.status;
                     projectPriorityField.value = project.priority;
-                    startDateField.value = toInputDate(project.start_date);
-                    deadlineField.value = toInputDate(project.deadline);
+                    if (startDatePicker) startDatePicker.setDate(project.start_date);
+                    if (deadlinePicker) deadlinePicker.setDate(project.deadline);
                     projectDescriptionField.value = project.description || '';
                     projectBudgetField.value = project.budget || '';
                     progressSlider.value = project.progress;
@@ -1146,8 +1213,11 @@
 
         function formatDate(dateString) {
             if (!dateString) return 'Not set';
-            const options = { month: 'short', day: 'numeric', year: 'numeric' };
-            return new Date(dateString).toLocaleDateString('en-US', options);
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
         }
 
         function toInputDate(value) {

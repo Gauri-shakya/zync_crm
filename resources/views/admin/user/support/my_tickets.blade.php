@@ -7,6 +7,14 @@
             <div class="space-y-1">
                 <h1 class="text-3xl font-black text-gray-900 tracking-tight">Support Center</h1>
                 <p class="text-sm font-medium text-gray-500">Track and manage your inquiries with our expert team</p>
+                
+                <!-- Response Time Notice -->
+                <div class="mt-4 flex items-center gap-3 px-4 py-2 bg-amber-50 border border-amber-100 rounded-xl w-fit">
+                    <div class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+                    <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">
+                        Response Time: 24-48 hours
+                    </p>
+                </div>
             </div>
             <button onclick="document.getElementById('createTicketModal').classList.remove('hidden')"
                 class="group flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-2xl hover:bg-blue-600 font-bold transition-all shadow-xl shadow-gray-900/10 active:scale-95 whitespace-nowrap">
@@ -75,8 +83,9 @@
                                 <td class="px-8 py-6 whitespace-nowrap text-right">
                                     <a href="{{ route('user.support.ticket.show', $ticket->id) }}"
                                         class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all active:scale-95 shadow-lg shadow-gray-900/10">
-                                        Focus Details
-                                        <i class="fas fa-arrow-right text-[8px]"></i>
+                                        <!-- <i class="fas fa-arrow-right text-[8px]"></i> -->
+                                        <i class="fas fa-comment text-[10px]"></i>
+                                        Chat
                                     </a>
                                 </td>
                             </tr>
@@ -200,19 +209,23 @@
 
                     <div class="space-y-1.5">
                         <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Supporting Documentation</label>
-                        <div class="group relative mt-1 flex justify-center px-8 pt-8 pb-10 border-2 border-gray-100 border-dashed rounded-[2rem] bg-gray-50 hover:bg-white hover:border-blue-300 transition-all">
-                            <div class="space-y-2 text-center">
+                        <div id="drop-zone" class="group relative mt-1 flex flex-col items-center justify-center px-8 pt-8 pb-10 border-2 border-gray-100 border-dashed rounded-[2rem] bg-gray-50 hover:bg-white hover:border-blue-300 transition-all cursor-pointer">
+                            <input id="file-upload" name="attachments[]" type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            
+                            <div class="space-y-2 text-center pointer-events-none">
                                 <div class="w-16 h-16 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-blue-500 mx-auto shadow-sm group-hover:scale-110 transition-transform duration-300">
                                     <i class="fas fa-cloud-upload-alt text-2xl"></i>
                                 </div>
                                 <div class="flex text-sm text-gray-600 justify-center">
-                                    <label for="file-upload" class="relative cursor-pointer rounded-md font-black text-blue-600 hover:text-blue-700">
-                                        <span>Click to Upload</span>
-                                        <input id="file-upload" name="attachments[]" type="file" multiple class="sr-only">
-                                    </label>
+                                    <span class="font-black text-blue-600 group-hover:text-blue-700">Click to Upload</span>
                                     <p class="pl-1 font-bold">or drag and drop</p>
                                 </div>
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">PNG, JPG, PDF up to 10MB</p>
+                            </div>
+
+                            <!-- Preview Container -->
+                            <div id="file-preview-container" class="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 w-full hidden relative z-20">
+                                <!-- Previews will be injected here -->
                             </div>
                         </div>
                     </div>
@@ -229,4 +242,66 @@
             </form>
         </div>
     </div>
+
+    <script>
+        const fileInput = document.getElementById('file-upload');
+        const dropZone = document.getElementById('drop-zone');
+        const previewContainer = document.getElementById('file-preview-container');
+
+        // Handle Drag & Drop states
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-blue-500', 'bg-blue-50/50');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-blue-500', 'bg-blue-50/50');
+            }, false);
+        });
+
+        fileInput.addEventListener('change', function(e) {
+            handleFiles(this.files);
+        });
+
+        function handleFiles(files) {
+            previewContainer.innerHTML = '';
+            
+            if (files.length > 0) {
+                previewContainer.classList.remove('hidden');
+                Array.from(files).forEach((file, index) => {
+                    const reader = new FileReader();
+                    const previewWrapper = document.createElement('div');
+                    previewWrapper.className = 'relative group/item aspect-square rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm animate-fade-in';
+                    previewWrapper.style.animationDelay = `${index * 100}ms`;
+
+                    reader.onload = (e) => {
+                        if (file.type.startsWith('image/')) {
+                            previewWrapper.innerHTML = `
+                                <img src="${e.target.result}" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/item:opacity-100 transition-opacity flex items-center justify-center">
+                                    <p class="text-[8px] font-black text-white uppercase tracking-widest px-2 text-center">${file.name}</p>
+                                </div>
+                            `;
+                        } else {
+                            const icon = file.type === 'application/pdf' ? 'fa-file-pdf text-red-500' : 'fa-file text-blue-500';
+                            previewWrapper.innerHTML = `
+                                <div class="w-full h-full flex flex-col items-center justify-center p-4 gap-2">
+                                    <i class="fas ${icon} text-2xl"></i>
+                                    <p class="text-[8px] font-black text-gray-500 uppercase tracking-widest text-center truncate w-full px-2">${file.name}</p>
+                                </div>
+                            `;
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                    previewContainer.appendChild(previewWrapper);
+                });
+            } else {
+                previewContainer.classList.add('hidden');
+            }
+        }
+    </script>
 @endsection

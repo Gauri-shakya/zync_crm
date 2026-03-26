@@ -19,6 +19,26 @@
             </a>
         </div>
 
+        <!-- Role Missing Notice -->
+        @if(!$hasNonClientRoles)
+            <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 mr-3 flex-shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-900">Action Required: Create Roles First</h4>
+                        <p class="text-xs text-amber-700 mt-0.5">You need to create at least one system role (other than client) before you can assign roles to new users.</p>
+                    </div>
+                </div>
+                <a href="{{ route('roles.create') }}" class="text-xs font-bold text-amber-700 bg-white border border-amber-200 px-4 py-2 rounded-lg hover:bg-amber-100 transition-colors shadow-sm">
+                    Create Role Now
+                </a>
+            </div>
+        @endif
+
         <!-- Success Message -->
         @if(session('success'))
             <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center animate-fade-in">

@@ -15,6 +15,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        if (!Auth::check()) {
+            return redirect()->route('login.show');
+        }
+
         $user = Auth::user();
         $companyId = $user->company_id;
 
@@ -104,6 +108,34 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
+        // Detailed lists for sidebar
+        $usersList = User::with('roles')->where('company_id', $companyId)->get(['id', 'name', 'email']);
+        
+        $usersList = $usersList->map(function($user) {
+            return [
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->roles->pluck('name')->first() ?? 'User'
+            ];
+        });
+         
+        $attendanceList = MyAttendance::with('employee')
+            ->where('company_id', $companyId)
+            ->whereDate('date', Carbon::today())
+            ->whereNotNull('punch_in')
+            ->get();
+
+        $attendanceList = $attendanceList->map(function($att) {
+            return [
+                'employee' => $att->employee ? ['name' => $att->employee->name] : null,
+                'punch_in' => $att->punch_in
+            ];
+        });
+
+        $clientsList = Client::where('company_id', $companyId)->get(['company_name', 'industry', 'status']);
+        
+        $contactsList = Contact::where('company_id', $companyId)->get(['name', 'phone', 'email']);
+
         return view('admin.dashboard', compact(
             'totalUsers',
             'presentToday',
@@ -117,7 +149,11 @@ class DashboardController extends Controller
             'userGrowth',
             'clientGrowth',
             'contactGrowth',
-            'attendanceGrowth'
+            'attendanceGrowth',
+            'usersList',
+            'attendanceList',
+            'clientsList',
+            'contactsList'
         ));
     }
 }
