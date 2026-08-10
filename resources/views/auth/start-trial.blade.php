@@ -12,14 +12,16 @@
     <link rel="manifest" href="{{ asset('favicon_io/site.webmanifest') }}">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .slider-container {
-            width: 200%;
+            width: 300%;
             display: flex;
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .step {
-            width: 50%;
+            width: 33.333%;
             padding: 0 12px;
         }
         .form-slide {
@@ -55,17 +57,26 @@
             <!-- Step Indicator -->
             <div class="flex justify-center items-center space-x-4 mb-8">
                 <div class="flex items-center step-indicator" id="step1-indicator">
-                    <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold border-2 border-indigo-600">1</div>
-                    <div class="ml-3 text-sm font-semibold text-gray-800">Company Details</div>
+                    <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold border-2 border-indigo-600 shadow-lg shadow-indigo-200">1</div>
+                    <div class="hidden sm:block ml-3 text-sm font-semibold text-gray-800">Company Details</div>
                 </div>
                 
-                <div class="w-20 h-1 bg-gray-300 rounded-full mx-2">
+                <div class="w-12 sm:w-16 h-1 bg-gray-200 rounded-full">
                     <div class="h-full bg-indigo-600 rounded-full transition-all duration-500" id="progress-bar" style="width: 0%"></div>
                 </div>
                 
                 <div class="flex items-center step-indicator" id="step2-indicator">
                     <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-semibold border-2 border-gray-300">2</div>
-                    <div class="ml-3 text-sm font-medium text-gray-500">Admin Account</div>
+                    <div class="hidden sm:block ml-3 text-sm font-medium text-gray-500">Admin Account</div>
+                </div>
+
+                <div class="w-12 sm:w-16 h-1 bg-gray-200 rounded-full">
+                    <div class="h-full bg-indigo-600 rounded-full transition-all duration-500" id="progress-bar-2" style="width: 0%"></div>
+                </div>
+
+                <div class="flex items-center step-indicator" id="step3-indicator">
+                    <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-semibold border-2 border-gray-300">3</div>
+                    <div class="hidden sm:block ml-3 text-sm font-medium text-gray-500">Finalize</div>
                 </div>
             </div>
         </div>
@@ -97,6 +108,7 @@
 
                 <form method="POST" action="{{ route('trial.store') }}" id="trialForm" enctype="multipart/form-data">
                     @csrf
+                    <input type="hidden" name="selected_plan" value="{{ request('plan', 'plan_basic') }}">
                     
                     <div class="form-slide">
                         <div class="slider-container" id="slider">
@@ -271,13 +283,55 @@
                                         Go Back
                                     </button>
 
-                                    <button type="submit"
+                                    <button type="button"
+                                            id="admin-setup-btn"
+                                            onclick="registerAccount()"
                                             class="w-full sm:w-1/2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group order-1 sm:order-2">
-                                        Start Free Trial
+                                        Create Account
                                         <svg class="w-6 h-6 ml-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                         </svg>
                                     </button>
+                                </div>
+                            </div>
+
+                            {{-- STEP 3: FINALIZE SUBSCRIPTION --}}
+                            <div class="step">
+                                <div class="text-center py-4">
+                                    <div class="h-20 w-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <i class="fas fa-shield-alt text-indigo-600 text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Finalize Subscription</h3>
+                                    <p class="text-gray-500 mb-8">Set up your auto-pay mandate to start your trial</p>
+
+                                    <div class="bg-indigo-50 rounded-2xl p-6 mb-8 text-left border border-indigo-100">
+                                        <div class="flex justify-between items-center mb-4">
+                                            <span class="text-gray-600 font-medium">Selected Plan</span>
+                                            <span id="display-plan-name" class="font-bold text-indigo-700">Basic Plan</span>
+                                        </div>
+                                        <div class="flex justify-between items-center pb-4 border-b border-indigo-100 mb-4">
+                                            <span class="text-gray-600 font-medium">Monthly Amount</span>
+                                            <span id="display-plan-price" class="font-bold text-gray-800">₹1,999</span>
+                                        </div>
+                                        <div class="flex items-start gap-3 bg-white p-4 rounded-xl shadow-sm">
+                                            <div class="flex-shrink-0 mt-0.5">
+                                                <i class="fas fa-info-circle text-blue-500"></i>
+                                            </div>
+                                            <p class="text-xs text-gray-600 leading-relaxed">
+                                                <strong>15-Day Free Trial:</strong> You won't be charged today. Razorpay will verify your account with a small refundable charge (₹1-₹5) to set up the auto-pay mandate.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <button type="button"
+                                            id="rzp-button"
+                                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center mb-4">
+                                        Authorize & Start Trial
+                                    </button>
+                                    
+                                    <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+                                        Secure payment via Razorpay
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -409,7 +463,7 @@
     }
 
     function nextStep() {
-        document.getElementById('slider').style.transform = 'translateX(-50%)';
+        document.getElementById('slider').style.transform = 'translateX(-33.333%)';
         document.getElementById('step1-indicator').classList.remove('text-gray-800');
         document.getElementById('step1-indicator').classList.add('text-gray-600');
         document.getElementById('step2-indicator').classList.remove('text-gray-500');
@@ -422,6 +476,32 @@
         document.querySelector('#step2-indicator .w-10').classList.add('bg-indigo-600', 'border-indigo-600', 'text-white');
         
         document.getElementById('progress-bar').style.width = '100%';
+    }
+
+    function finalizeStep() {
+        document.getElementById('slider').style.transform = 'translateX(-66.666%)';
+        document.getElementById('step2-indicator').classList.remove('text-gray-800');
+        document.getElementById('step2-indicator').classList.add('text-gray-600');
+        document.getElementById('step3-indicator').classList.remove('text-gray-500');
+        document.getElementById('step3-indicator').classList.add('text-gray-800');
+        
+        document.querySelector('#step2-indicator .w-10').classList.remove('bg-indigo-600', 'border-indigo-600', 'text-white');
+        document.querySelector('#step2-indicator .w-10').classList.add('bg-gray-200', 'border-gray-300');
+        
+        document.querySelector('#step3-indicator .w-10').classList.remove('bg-gray-200', 'border-gray-300');
+        document.querySelector('#step3-indicator .w-10').classList.add('bg-indigo-600', 'border-indigo-600', 'text-white');
+        
+        document.getElementById('progress-bar-2').style.width = '100%';
+
+        // Update plan display
+        const plan = document.querySelector('input[name="selected_plan"]').value;
+        document.getElementById('display-plan-name').textContent = plan === 'plan_pro' ? 'Pro Plan' : 'Basic Plan';
+        document.getElementById('display-plan-price').textContent = plan === 'plan_pro' ? '₹4,999' : '₹1,999';
+
+        // Auto-initialize Razorpay button click after a small delay for visual transition
+        setTimeout(() => {
+            document.getElementById('rzp-button').click();
+        }, 800);
     }
 
     function prevStep() {
@@ -438,6 +518,117 @@
         document.querySelector('#step2-indicator .w-10').classList.add('bg-gray-200', 'border-gray-300');
         
         document.getElementById('progress-bar').style.width = '0%';
+    }
+
+    function registerAccount() {
+        const form = document.getElementById('trialForm');
+        const btn = document.getElementById('admin-setup-btn');
+
+        // Basic validation
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const password = document.getElementById('password').value;
+        const confirm = document.getElementById('password_confirmation').value;
+        if (password !== confirm) {
+            alert("Passwords do not match");
+            return;
+        }
+
+        // Just slide to step 3 without creating the account yet
+        finalizeStep();
+    }
+
+    // Razorpay Logic for Step 3
+    document.getElementById('rzp-button').onclick = function(e) {
+        const btn = this;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Initializing...';
+        btn.disabled = true;
+
+        const form = document.getElementById('trialForm');
+        const formData = new FormData(form);
+
+        // Send ALL registration data to create account and subscription simultaneously
+        fetch("{{ route('subscriptions.initiate-trial') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json"
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.errors) {
+                let errorMsg = Object.values(data.errors).flat().join('\n');
+                alert(errorMsg);
+                // Slide back to Step 1 or 2 if validation fails? 
+                // For now, just alert and let user fix
+                btn.innerHTML = 'Authorize & Start Trial';
+                btn.disabled = false;
+                return;
+            }
+
+            if (data.error) throw new Error(data.error);
+
+            const options = {
+                "key": data.razorpay_key,
+                "subscription_id": data.subscription_id,
+                "name": "ZynCRM",
+                "description": "Subscription Authorization",
+                "prefill": {
+                    "name": data.admin_name,
+                    "email": data.admin_email,
+                    "contact": data.company_phone
+                },
+                "handler": function (response) {
+                    verifyMandate(response);
+                },
+                "theme": { "color": "#4f46e5" },
+                "modal": {
+                    "ondismiss": function() {
+                        btn.innerHTML = 'Authorize & Start Trial';
+                        btn.disabled = false;
+                    }
+                }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
+        })
+        .catch(err => {
+            alert("Error: " + err.message);
+            btn.innerHTML = 'Authorize & Start Trial';
+            btn.disabled = false;
+        });
+    };
+
+    function verifyMandate(response) {
+        fetch("{{ route('subscriptions.handle-payment') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                razorpay_subscription_id: response.razorpay_subscription_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = "{{ route('dashboard') }}?trial_started=true";
+            } else {
+                alert("Authorization failed: " + (data.error || "Please try again."));
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("An error occurred during verification. Please refresh and try again.");
+        });
     }
 
     // Form validation

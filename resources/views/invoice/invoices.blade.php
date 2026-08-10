@@ -9,6 +9,7 @@
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <style>
@@ -334,17 +335,85 @@
 
             .terms-item {
                 display: flex;
-                gap: 8px;
+                gap: 12px;
                 align-items: center;
-                margin-bottom: 4px;
+                margin-bottom: 10px;
+                background: white;
+                padding: 8px;
+                border-radius: 8px;
+                border: 1px solid #e2e8f0;
+                transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+                position: relative;
+                z-index: 1;
+            }
+
+            .terms-item:hover {
+                border-color: #cbd5e1;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+
+            .drag-handle {
+                cursor: grab;
+                color: #94a3b8;
+                padding: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #f8fafc;
+                border-radius: 6px;
+                transition: color 0.2s, background 0.2s;
+            }
+
+            .drag-handle:hover {
+                color: #64748b;
+                background: #f1f5f9;
+            }
+
+            .drag-handle:active {
+                cursor: grabbing;
+            }
+
+            /* Sortable.js Classes */
+            .sortable-ghost {
+                opacity: 0.2;
+                background: #e2e8f0 !important;
+                border: 2px dashed #94a3b8 !important;
+                box-shadow: none !important;
+            }
+
+            .sortable-chosen {
+                background: #fff !important;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+                border-color: #3b82f6 !important;
+                z-index: 10;
+            }
+
+            .sortable-drag {
+                opacity: 1 !important;
+                background: #fff !important;
+                cursor: grabbing;
+            }
+
+            /* Prevent text selection during drag */
+            .sorting-active * {
+                user-select: none !important;
+                -webkit-user-select: none !important;
             }
 
             .terms-input {
                 flex: 1;
                 border: 1px solid #e2e8f0;
-                border-radius: 4px;
-                padding: 4px 8px;
-                font-size: 12px;
+                border-radius: 6px;
+                padding: 10px 14px;
+                font-size: 14px;
+                transition: all 0.2s;
+                background: #fff;
+            }
+
+            .terms-input:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
             }
 
             .edit-terms-btn {
@@ -1873,8 +1942,8 @@
                         sideTaxLabel.textContent = 'Tax';
                     } else if (inv.tax_mode === 'cgst') {
                         const half = totals.taxAmount / 2;
-                        previewTaxLabel.textContent = `CGST ${ratePct / 2}% + SGST ${ratePct / 2}%`;
-                        previewTax.textContent = `${money(sym, half)} + ${money(sym, half)}`;
+                        previewTaxLabel.innerHTML  = `CGST ${ratePct / 2}% <br> SGST ${ratePct / 2}%`;
+                        previewTax.innerHTML = `${money(sym, half)} <br> ${money(sym, half)}`;
                         sideTaxLabel.textContent = `GST ${ratePct}% (CGST+SGST)`;
                     } else {
                         previewTaxLabel.textContent = `IGST ${ratePct}%`;
@@ -3084,24 +3153,30 @@
 
                 let html = `
                                 <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                                    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+                                    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl transform transition-all">
                                         <div class="p-6">
-                                            <div class="flex justify-between items-center mb-4">
-                                                <h3 class="text-lg font-semibold text-slate-800">Edit Terms & Conditions</h3>
+                                            <div class="flex justify-between items-center mb-6">
+                                                <div>
+                                                    <h3 class="text-xl font-bold text-slate-800">Edit Terms & Conditions</h3>
+                                                    <p class="text-xs text-slate-500 mt-1">Drag to reorder your terms</p>
+                                                </div>
                                                 <button class="icon-btn secondary-btn" onclick="closeTermsEditor()">
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             </div>
-                                            <div class="space-y-3 mb-6">
-                                                <div id="terms-items">
+                                            <div class="max-h-[60vh] overflow-y-auto pr-2 mb-6 scrollbar-hide">
+                                                <div id="terms-items" class="space-y-2">
                             `;
 
                 terms.forEach((term, index) => {
                     html += `
-                                    <div class="terms-item" data-index="${index}">
+                                    <div class="terms-item group" data-id="${Date.now() + index}">
+                                        <div class="drag-handle">
+                                            <i class="fas fa-grip-vertical"></i>
+                                        </div>
                                         <input type="text" class="terms-input" value="${term}" placeholder="Enter term">
-                                        <button class="icon-btn danger-btn" onclick="removeTerm(${index})">
-                                            <i class="fas fa-trash"></i>
+                                        <button class="icon-btn danger-btn opacity-0 group-hover:opacity-100 transition-opacity" onclick="this.parentElement.remove()">
+                                            <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </div>
                                 `;
@@ -3110,15 +3185,17 @@
                 html += `
                                                 </div>
                                             </div>
-                                            <div class="flex gap-2">
-                                                <button class="action-btn secondary-btn" onclick="addTerm()">
-                                                    <i class="fas fa-plus mr-2"></i> Add Term
-                                                </button>
-                                                <button class="action-btn primary-btn" onclick="saveTermsFromEditor()">
-                                                    <i class="fas fa-save mr-2"></i> Save Terms
-                                                </button>
-                                                <button class="action-btn secondary-btn" onclick="resetTerms()">
-                                                    <i class="fas fa-undo mr-2"></i> Reset to Default
+                                            <div class="flex flex-col sm:flex-row justify-between gap-4 pt-4 border-t border-slate-100">
+                                                <div class="flex gap-2">
+                                                    <button class="action-btn secondary-btn bg-slate-50 border border-slate-200" onclick="addTerm()">
+                                                        <i class="fas fa-plus mr-2"></i> Add Term
+                                                    </button>
+                                                    <button class="action-btn secondary-btn bg-slate-50 border border-slate-200" onclick="resetTerms()">
+                                                        <i class="fas fa-history mr-2"></i> Reset to Default
+                                                    </button>
+                                                </div>
+                                                <button class="action-btn primary-btn shadow-lg shadow-slate-200" onclick="saveTermsFromEditor()">
+                                                    <i class="fas fa-check mr-2"></i> Save Changes
                                                 </button>
                                             </div>
                                         </div>
@@ -3130,6 +3207,22 @@
                 modal.id = 'terms-editor-modal';
                 modal.innerHTML = html;
                 document.body.appendChild(modal);
+
+                // Initialize Sortable
+                new Sortable(document.getElementById('terms-items'), {
+                    handle: '.drag-handle',
+                    animation: 250,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    forceFallback: false,
+                    onStart: function() {
+                        document.body.classList.add('sorting-active');
+                    },
+                    onEnd: function() {
+                        document.body.classList.remove('sorting-active');
+                    }
+                });
             }
             function closeTermsEditor() {
                 const modal = document.getElementById('terms-editor-modal');
@@ -3139,33 +3232,32 @@
                 const container = document.getElementById('terms-items');
                 if (!container) return;
 
-                const index = container.children.length;
                 const div = document.createElement('div');
-                div.className = 'terms-item';
-                div.setAttribute('data-index', index);
+                div.className = 'terms-item group';
+                div.setAttribute('data-id', Date.now());
                 div.innerHTML = `
+                                <div class="drag-handle">
+                                    <i class="fas fa-grip-vertical"></i>
+                                </div>
                                 <input type="text" class="terms-input" placeholder="Enter term">
-                                <button class="icon-btn danger-btn" onclick="removeTerm(${index})">
-                                    <i class="fas fa-trash"></i>
+                                <button class="icon-btn danger-btn opacity-0 group-hover:opacity-100 transition-opacity" onclick="this.parentElement.remove()">
+                                    <i class="fas fa-trash-alt"></i>
                                 </button>
                             `;
                 container.appendChild(div);
+                
+                // Focus the new input
+                div.querySelector('input').focus();
+                
+                // Scroll to bottom
+                container.parentElement.scrollTop = container.parentElement.scrollHeight;
             }
             function removeTerm(index) {
+                // Not needed with the new direct element removal, but keeping for compatibility if called
                 const container = document.getElementById('terms-items');
                 if (!container) return;
-
-                const item = container.querySelector(`[data-index="${index}"]`);
+                const item = container.children[index];
                 if (item) item.remove();
-
-                // Reindex remaining items
-                container.querySelectorAll('.terms-item').forEach((item, idx) => {
-                    item.setAttribute('data-index', idx);
-                    const button = item.querySelector('button');
-                    if (button) {
-                        button.setAttribute('onclick', `removeTerm(${idx})`);
-                    }
-                });
             }
             function saveTermsFromEditor() {
                 const container = document.getElementById('terms-items');
@@ -3173,8 +3265,9 @@
 
                 const terms = [];
                 container.querySelectorAll('.terms-input').forEach(input => {
-                    if (input.value.trim()) {
-                        terms.push(input.value.trim());
+                    const value = input.value.trim();
+                    if (value) {
+                        terms.push(value);
                     }
                 });
 
@@ -3187,7 +3280,7 @@
                 renderTerms();
                 closeTermsEditor();
 
-                showToast('Terms & Conditions saved successfully!', 'success');
+                showToast('Terms & Conditions updated successfully!', 'success');
             }
             function resetTerms() {
                 if (confirm('Reset to default terms?')) {

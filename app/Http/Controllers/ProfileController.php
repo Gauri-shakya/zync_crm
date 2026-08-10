@@ -32,6 +32,7 @@ class ProfileController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'company_name' => 'nullable|string|max:255',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'current_password' => 'nullable|required_with:new_password|current_password',
             'new_password' => 'nullable|confirmed|min:8',
         ]);
@@ -41,11 +42,18 @@ class ProfileController extends Controller
             'email' => $request->email,
         ]);
 
-        // Update Company Name if provided and user has a company
-        if ($request->filled('company_name') && $user->company) {
-            $user->company->update([
-                'name' => $request->company_name,
-            ]);
+        // Update Company Name and Logo if provided and user has a company
+        if ($user->company) {
+            $companyData = [];
+            if ($request->filled('company_name')) {
+                $companyData['name'] = $request->company_name;
+            }
+            if ($request->hasFile('logo')) {
+                $companyData['logo'] = $request->file('logo')->store('logos', 'public');
+            }
+            if (!empty($companyData)) {
+                $user->company->update($companyData);
+            }
         }
 
         // Update Password

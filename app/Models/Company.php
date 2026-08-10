@@ -21,6 +21,7 @@ class Company extends Model
         'account_number',
         'ifsc_code',
         'trial_ends_at',
+        'selected_plan',
         'is_paid',
         'status',
         'hidden_proposal_templates',

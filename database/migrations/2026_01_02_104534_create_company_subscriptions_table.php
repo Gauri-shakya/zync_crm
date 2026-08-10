@@ -17,10 +17,12 @@ return new class extends Migration
 
     $table->string('plan_name'); // Monthly / Yearly
     $table->decimal('amount', 8, 2);
-    $table->date('starts_at');
-    $table->date('ends_at');
+    $table->string('razorpay_subscription_id')->nullable();
+    $table->string('razorpay_payment_id')->nullable();
+    $table->date('starts_at')->nullable();
+    $table->date('ends_at')->nullable();
 
-    $table->enum('status', ['active', 'expired'])->default('active');
+    $table->enum('status', ['active', 'expired', 'pending'])->default('pending');
 
     $table->timestamps();
         });

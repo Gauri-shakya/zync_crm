@@ -47,6 +47,7 @@ use App\Http\Controllers\SuperAdmin\AuthController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketRecordController;
 use App\Http\Controllers\UpgradePlanController;
+use App\Http\Controllers\UserSubscriptionController;
 use App\Http\Middleware\CheckCompanyAccess;
 
 Route::get('/', function () {
@@ -56,6 +57,15 @@ Route::get('/', function () {
 Route::get('/home2', function () {
     return view('admin.home2');
 });
+
+// Subscription routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/subscriptions/checkout', [UserSubscriptionController::class, 'checkout'])->name('subscriptions.checkout');
+    Route::post('/subscriptions/create', [UserSubscriptionController::class, 'createSubscription'])->name('subscriptions.create');
+    Route::post('/subscriptions/handle-payment', [UserSubscriptionController::class, 'handlePayment'])->name('subscriptions.handle-payment');
+});
+Route::post('/subscriptions/initiate-trial', [UserSubscriptionController::class, 'initiateTrial'])->name('subscriptions.initiate-trial');
+Route::post('/subscriptions/webhook', [UserSubscriptionController::class, 'handleWebhook'])->name('subscriptions.webhook');
 
 
 // Public routes
@@ -886,4 +896,18 @@ Route::get('/storage-unlink', function () {
 Route::get('/storage-link', function () {
     Artisan::call('storage:link');
     return 'Storage linked successfully';
+});
+
+
+
+
+Route::get('/all-clear', function () {
+    
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    Artisan::call('optimize:clear');
+
+    return "All caches cleared successfully!";
 });

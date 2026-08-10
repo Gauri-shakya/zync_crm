@@ -427,9 +427,9 @@
 
                     @if($invoice->tax_rate > 0)
                     
-                            <div class="invoice-title">INVOICE</div>
+                            <div class="invoice-title">Tax INVOICE</div>
                         @else
-                            <div class="invoice-title">NO INVOICE</div>
+                            <div class="invoice-title">INVOICE</div>
                         
                     @endif
 
@@ -454,8 +454,11 @@
                             @if($invoice->client_email)
                                 <div>Email: {{ $invoice->client_email }}</div>
                             @endif
+                            <!--@if($invoice->client_address)-->
+                            <!--    <div>{{ nl2br(e($invoice->client_address)) }}</div>-->
+                            <!--@endif-->
                             @if($invoice->client_address)
-                                <div>{{ nl2br(e($invoice->client_address)) }}</div>
+                                <div>{!! nl2br(e($invoice->client_address)) !!}</div>
                             @endif
                         </div>
                     </div>

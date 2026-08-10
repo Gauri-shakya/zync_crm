@@ -16,8 +16,22 @@ class FreeTrialController extends Controller
     /**
      * Show Start Trial Form
      */
-    public function create()
+    public function create(Request $request)
     {
+        // 🔒 AUTH CHECK: Redirect logged-in users to checkout or dashboard
+        if (auth()->check()) {
+            $company = auth()->user()->company;
+            if ($company && $company->status === 'pending') {
+                return redirect()->route('subscriptions.checkout');
+            }
+            return redirect()->route('dashboard');
+        }
+
+        // Require a plan selection before allowing access to start-trial
+        if (!$request->has('plan') || !in_array($request->plan, ['plan_basic', 'plan_pro'])) {
+            return redirect('/#pricing')->with('error', 'Please choose a plan to start your 15-day free trial.');
+        }
+
         return view('auth.start-trial');
     }
 
@@ -25,76 +39,95 @@ class FreeTrialController extends Controller
      * Handle Trial Signup
      */
     public function store(Request $request)
-{
-    $request->validate([
-        // Company
-        'company_name'   => 'required|string|unique:companies,name|max:255',
-        'address'        => 'required|string|max:1000',
-        'company_email'  => 'required|email|unique:companies,email',
-        'phone'          => 'required|string|max:20',
-        'gstin'          => 'nullable|string|max:20|unique:companies,gstin',
-        'logo'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    {
+        try {
+            $request->validate([
+                // Company
+                'company_name'   => 'required|string|unique:companies,name|max:255',
+                'address'        => 'required|string|max:1000',
+                'company_email'  => 'required|email|unique:companies,email',
+                'phone'          => 'required|string|max:20',
+                'gstin'          => 'nullable|string|max:20|unique:companies,gstin',
+                'logo'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
 
-        // Bank
-        'bank_name'      => 'nullable|string|max:255',
-        'account_number' => 'nullable|string|max:30',
-        'ifsc_code'      => 'nullable|string|max:15',
+                // Admin
+                'name'           => 'required|string|max:255',
+                'admin_email'    => 'required|email|unique:users,email',
+                'password'       => 'required|min:4|confirmed',
+            ]);
 
-        // Admin
-        'name'           => 'required|string|max:255',
-        'admin_email'    => 'required|email|unique:users,email',
-        'password'       => 'required|min:4|confirmed',
-    ]);
+            DB::transaction(function () use ($request) {
+                $logoPath = null;
+                if ($request->hasFile('logo')) {
+                    $logoPath = $request->file('logo')->store('logos', 'public');
+                }
 
-   DB::transaction(function () use ($request) {
+                // Company
+                $company = Company::create([
+                    'name'           => $request->company_name,
+                    'slug'           => Str::slug($request->company_name) . '-' . uniqid(),
+                    'address'        => $request->address,
+                    'email'          => $request->company_email,
+                    'phone'          => $request->phone,
+                    'gstin'          => $request->gstin,
+                    'logo'           => $logoPath,
+                    'trial_ends_at'  => now()->addDays(15),
+                    'selected_plan'  => $request->selected_plan ?? 'plan_basic',
+                    'is_paid'        => false,
+                    'status'         => 'pending',
+                ]);
 
-    $logoPath = null;
-    if ($request->hasFile('logo')) {
-        $logoPath = $request->file('logo')->store('logos', 'public');
+                // ✅ Create Default Roles (Admin role is usually created via Company observer or manually)
+                // If not via observer, ensure it exists
+                $adminRole = \App\Models\Role::firstOrCreate(
+                    ['name' => 'admin', 'company_id' => $company->id]
+                );
+
+                \App\Models\Role::firstOrCreate(
+                    ['name' => 'Client', 'company_id' => $company->id]
+                );
+
+                // Admin user
+                $user = User::create([
+                    'company_id' => $company->id,
+                    'name'       => $request->name,
+                    'email'      => $request->admin_email,
+                    'password'   => Hash::make($request->password),
+                ]);
+
+                // ✅ Assign Admin Role
+                $user->assignRole($adminRole);
+
+                Auth::login($user);
+            });
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Account created successfully',
+                    'redirect' => route('dashboard') // Fallback
+                ]);
+            }
+
+            return redirect()->route('subscriptions.checkout');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Registration failed: ' . $e->getMessage()
+                ], 500);
+            }
+            throw $e;
+        }
     }
-
-    // Company
-    $company = Company::create([
-        'name'           => $request->company_name,
-        'slug'           => Str::slug($request->company_name) . '-' . uniqid(),
-        'address'        => $request->address,
-        'email'          => $request->company_email,
-        'phone'          => $request->phone,
-        'gstin'          => $request->gstin,
-        'logo'           => $logoPath,
-        'bank_name'      => $request->bank_name,
-        'account_number' => $request->account_number,
-        'ifsc_code'      => $request->ifsc_code,
-        'trial_ends_at'  => now()->addDays(15),
-        'is_paid'        => false,
-        'status'         => 'active',
-    ]);
-
-    // ✅ Create Default Roles
-   $adminRole = \App\Models\Role::where('name', 'admin')
-        ->where('company_id', $company->id)
-        ->first();
-
-    $clientRole = \App\Models\Role::create([
-        'name' => 'Client',
-        'company_id' => $company->id,
-    ]);
-
-    // Admin user
-    $user = User::create([
-        'company_id' => $company->id,
-        'name'       => $request->name,
-        'email'      => $request->admin_email,
-        'password'   => Hash::make($request->password),
-    ]);
-
-    // ✅ Assign Admin Role
-    $user->assignRole($adminRole);
-
-    Auth::login($user);
-    });
-
-    return redirect()->route('dashboard')->with('showWelcome', true);
-}
 
 }

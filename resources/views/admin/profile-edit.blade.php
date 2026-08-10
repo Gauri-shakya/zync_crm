@@ -23,7 +23,7 @@
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('profile.update') }}">
+            <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
                 @csrf
                 
                 <div class="space-y-6">
@@ -77,6 +77,30 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('company_name') border-red-500 @enderror"
                         >
                         @error('company_name')
+                            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <!-- Company Logo Field -->
+                    <div>
+                        <label for="logo" class="block text-sm font-medium text-gray-700 mb-2">
+                            Company Logo
+                        </label>
+                        @if(Auth::user()->company->logo)
+                            <div class="mb-3">
+                                <img src="{{ asset('storage/' . Auth::user()->company->logo) }}" alt="Current Logo" class="w-20 h-20 object-contain border border-gray-200 rounded">
+                                <p class="text-xs text-gray-500 mt-1">Current Logo</p>
+                            </div>
+                        @endif
+                        <input 
+                            type="file" 
+                            id="logo" 
+                            name="logo" 
+                            accept="image/*"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('logo') border-red-500 @enderror"
+                        >
+                        <p class="text-xs text-gray-500 mt-2">Recommended: PNG, JPG (max 2MB)</p>
+                        @error('logo')
                             <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                         @enderror
                     </div>

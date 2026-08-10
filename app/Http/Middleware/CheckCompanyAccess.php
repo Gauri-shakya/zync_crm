@@ -24,6 +24,21 @@ class CheckCompanyAccess
             return redirect()->route('login.show')->with('error', $message);
         }
 
+        // 🔒 PENDING REGISTRATION (Step 3 bypass check)
+        if ($company->status === 'pending') {
+            // Allow ONLY subscription & auth routes
+            if (
+                $request->routeIs('subscriptions.*') ||
+                $request->routeIs('logout') ||
+                $request->routeIs('login')
+            ) {
+                return $next($request);
+            }
+
+            // Redirect to checkout to complete mandate authorization
+            return redirect()->route('subscriptions.checkout');
+        }
+
         // 🔒 TRIAL EXPIRED & NOT PAID
         if (
             !$company->is_paid &&
@@ -31,9 +46,10 @@ class CheckCompanyAccess
             now()->greaterThan($company->trial_ends_at)
         ) {
 
-            // Allow ONLY upgrade & auth routes
+            // Allow ONLY upgrade, subscription & auth routes
             if (
                 $request->routeIs('upgrade.index') ||
+                $request->routeIs('subscriptions.*') ||
                 $request->routeIs('logout') ||
                 $request->routeIs('login')
             ) {

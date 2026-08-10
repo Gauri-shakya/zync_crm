@@ -460,6 +460,11 @@
 
     <!-- Navigation -->
     <nav class="bg-white/95 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-100">
+        @if(session('error'))
+            <div class="bg-red-500 text-white text-center py-2 px-4 text-sm font-bold animate-pulse">
+                {{ session('error') }}
+            </div>
+        @endif
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center py-0">
                 <!-- Logo -->
@@ -634,7 +639,7 @@
 
                     <!-- Mobile CTA -->
                     <div class="mt-8 pt-6 border-t border-gray-200">
-                        <a href="{{ route('trial.create') }}"
+                        <a href="/start-trial"
                             class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 text-center start-now-btn">
                             <div class="flex items-center justify-center">
                                 <i class="fas fa-rocket mr-3"></i>
@@ -714,7 +719,7 @@
                     </div>
 
                     <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                        <a href="{{ route('trial.create') }}"
+                        <a href="/start-trial"
                             class="start-now-btn bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-bold text-center transition duration-300 shadow-lg hover:shadow-xl flex items-center justify-center">
                             <span>Start Now</span>
                             <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -1670,7 +1675,7 @@
 
                     <!-- CTA Section -->
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="{{ route('trial.create') }}" class="group relative flex-1">
+                        <a href="{{ route('trial.create', ['plan' => 'plan_basic']) }}" class="group relative flex-1">
                             <div
                                 class="absolute -inset-0.5 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-300">
                             </div>
@@ -1877,153 +1882,7 @@
 
 
 
-     <!-- Pricing Section -->
-    <section id="pricing" class="py-12 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Simple, Transparent Pricing</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Start for free, upgrade as you grow. No hidden fees, no long-term contracts.</p>
-            </div>
-
-            <div class="max-w-6xl mx-auto px-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-                    <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 pricing-card flex flex-col">
-                        <div class="text-center mb-6">
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">Basic</h3>
-                            <div class="flex justify-center items-baseline mb-4">
-                                <span class="text-3xl font-bold text-gray-800">₹1,999</span>
-                                <span class="text-gray-600 ml-1">/month</span>
-                            </div>
-                            <p class="text-gray-600">Essential tools for small teams</p>
-                            <p class="text-primary font-bold mt-2">15-day free trial</p>
-                        </div>
-                        <ul class="text-gray-600 space-y-3 mb-6 flex-grow">
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Up to 10 users</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Lead & Client Management</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>HR & Payroll Suite</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Attendance & Leave Tracking</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Task & Project Management</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Invoice & Proposal Generator</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>24/7 Customer Support</span>
-                            </li>
-                        </ul>
-                        <a href="{{ route('trial.create') }}" class="block w-full bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white text-center py-3 rounded-lg font-medium transition duration-300">Start Now</a>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-lg border-2 border-primary p-6 pricing-card relative flex flex-col">
-                        <div class="absolute top-0 right-0 bg-primary text-white px-4 py-1 rounded-bl-lg rounded-tr-lg text-sm font-medium">Most Popular</div>
-                        <div class="text-center mb-6">
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">Pro</h3>
-                            <div class="flex justify-center items-baseline mb-4">
-                                <span class="text-3xl font-bold text-gray-800">₹4,999</span>
-                                <span class="text-gray-600 ml-1">/month</span>
-                            </div>
-                            <p class="text-gray-600">Advanced features for growing teams</p>
-                            <p class="text-primary font-bold mt-2">15-day free trial</p>
-                        </div>
-                        <ul class="text-gray-600 space-y-3 mb-6 flex-grow">
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Up to 30 users</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Lead & Client Management</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>HR & Payroll Suite</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Attendance & Leave Tracking</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Task & Project Management</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Invoice & Proposal Generator</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Priority 24/7 Support</span>
-                            </li>
-                        </ul>
-                        <a href="{{ route('trial.create') }}" class="start-now-btn block w-full bg-primary hover:bg-secondary text-white text-center py-3 rounded-lg font-medium transition duration-300">Start Now</a>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 pricing-card flex flex-col">
-                        <div class="text-center mb-6">
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">Enterprise</h3>
-                            <div class="flex justify-center items-baseline mb-4">
-                                <span class="text-3xl font-bold text-gray-800">Custom</span>
-                            </div>
-                            <p class="text-gray-600">Tailored solutions for large organizations</p>
-                        </div>
-                        <ul class="text-gray-600 space-y-3 mb-6 flex-grow">
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Unlimited Users</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>All Business & Pro features</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Custom API Integration</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Dedicated Account Manager</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>White-label Solution</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>On-premise deployment</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check text-accent mt-1 mr-2"></i>
-                                <span>Enterprise-grade security</span>
-                            </li>
-                        </ul>
-                        <button id="contact-sales-btn" class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-center py-3 rounded-lg font-medium transition duration-300">Contact Sales</button>
-                    </div>
-                </div>
-
-                <div class="mt-12 text-center">
-                    <p class="text-gray-600">All plans include a 15-day free trial. No credit card required.</p>
-                </div>
-            </div>
-
-
-    </section>
+    @include('admin.partials.pricing')
 
     
     <!-- FAQ Section -->
@@ -2165,11 +2024,11 @@
                     <div
                         class="faq-answer bg-white rounded-b-lg px-6 overflow-hidden max-h-0 transition-all duration-300">
                         <div class="py-6 border-t border-gray-100">
-                            <p class="text-gray-600 mb-4">Yes! We offer a 15-day full-access free trial. You can explore
+                            <p class="text-gray-600 mb-4">Yes! We offer a 15-days full-access free trial. You can explore
                                 every feature of ZynCRM CRM without entering any credit card information.</p>
                             <div class="flex items-center text-orange-700 font-bold">
                                 <i class="fas fa-gift mr-2"></i>
-                                Start your 15-day journey today for free!
+                                Start your 15-days journey today for free!
                             </div>
                         </div>
                     </div>

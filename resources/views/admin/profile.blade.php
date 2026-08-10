@@ -36,11 +36,15 @@
                     <div class="px-8 pb-10 text-center relative">
                         <!-- Avatar -->
                         <div class="relative inline-block -mt-16 mb-6">
-                            <div class="w-32 h-32 bg-white rounded-3xl shadow-xl p-1 transition-transform duration-500 group-hover:scale-105 border border-gray-100">
-                                <div class="w-full h-full bg-white rounded-[1.25rem] flex items-center justify-center border border-gray-50 overflow-hidden relative group/avatar">
-                                    <span class="text-gray-700 font-black text-4xl tracking-tighter relative z-10">
-                                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                                    </span>
+                            <div class="w-32 h-32 bg-white rounded-full shadow-xl p-1 transition-transform duration-500 group-hover:scale-105 border border-gray-100">
+                                <div class="w-full h-full bg-white rounded-full flex items-center justify-center border border-gray-50 overflow-hidden relative group/avatar">
+                                    @if(Auth::user()->company && Auth::user()->company->logo)
+                                        <img src="{{ asset('storage/' . Auth::user()->company->logo) }}" alt="Company Logo" class="w-full h-full object-contain">
+                                    @else
+                                        <span class="text-gray-700 font-black text-4xl tracking-tighter relative z-10">
+                                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                        </span>
+                                    @endif
                                     <div class="absolute inset-0 bg-blue-50 opacity-0 group-hover/avatar:opacity-100 transition-opacity"></div>
                                 </div>
                             </div>
@@ -53,6 +57,9 @@
                         <!-- Basic Info -->
                         <div class="space-y-1">
                             <h1 class="text-2xl font-bold text-gray-800 tracking-tight">{{ Auth::user()->name }}</h1>
+                            @if(Auth::user()->company)
+                                <p class="text-sm font-semibold text-gray-500">{{ Auth::user()->company->name }}</p>
+                            @endif
                             <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">{{ Auth::user()->status }} member</p>
                         </div>
 
@@ -107,7 +114,7 @@
                                     <i class="fas fa-id-card text-lg"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-xl font-black text-gray-900 tracking-tight">Personal Identity</h3>
+                                    <h3 class="text-xl font-semibold text-gray-700 tracking-tight">Personal Identity</h3>
                                     <p class="text-sm font-medium text-gray-400 mt-0.5">Your core account identity and contact details</p>
                                 </div>
                             </div>
@@ -146,7 +153,7 @@
                                     <i class="fas fa-history text-lg"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-xl font-black text-gray-900 tracking-tight">Activity & Timeline</h3>
+                                    <h3 class="text-xl font-semibold text-gray-700 tracking-tight">Activity & Timeline</h3>
                                     <p class="text-sm font-medium text-gray-400 mt-0.5">Tracking your history within our ecosystem</p>
                                 </div>
                             </div>

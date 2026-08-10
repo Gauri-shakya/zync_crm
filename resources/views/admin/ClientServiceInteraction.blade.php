@@ -267,7 +267,7 @@
         }
     </style>
 
-    <div class="flex h-screen bg-gray-100 font-sans">
+    <div class="flex h-[90vh] bg-gray-100 font-sans">
 
         <div id="chatInterface" class="w-full flex flex-col md:flex-row">
 
@@ -357,9 +357,9 @@
                     </div>
                 </div>
 
-                <div class="p-4 border-t border-gray-200 text-center">
-                    <p class="text-xs text-gray-500">Social Cults CRM © {{ date('Y') }}</p>
-                </div>
+                <!--<div class="p-4 border-t border-gray-200 text-center">-->
+                <!--    <p class="text-xs text-gray-500">Social Cults CRM © {{ date('Y') }}</p>-->
+                <!--</div>-->
             </div>
 
             <!-- Chat Area -->

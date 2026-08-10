@@ -6,7 +6,7 @@
 <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
     <div>
         <h1 class="text-2xl font-bold text-gray-800">Trial Management</h1>
-        <p class="text-gray-600">Manage all 15-day trial users and conversions</p>
+        <p class="text-gray-600">Manage all 15-days trial users and conversions</p>
     </div>
 </div>
 
@@ -58,7 +58,7 @@
                     <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                     <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trial Start</th>
                     <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trial End</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days Remaining</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Remaining</th>
                     <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active Status</th>
                 </tr>
             </thead>
@@ -84,8 +84,8 @@
     {{ $company->created_at->format('d M Y') }}
 </td>
 
-<td class="py-3 px-6">
-    {{ $company->trial_ends_at->format('d M Y') }}
+<td class="py-3 px-6 text-sm">
+    {{ $company->trial_ends_at->format('d M Y H:i:s') }}
 </td>
 
 <td class="py-3 px-6">
