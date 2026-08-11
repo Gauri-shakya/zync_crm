@@ -72,17 +72,27 @@ class MyLeadsController extends Controller
         'status' => 'required|string',
     ]);
 
-    $lead = Mylead::create([
-        'user_id' => Auth::id(),
-        'client_id' => $request->client_id,
-        'response' => $request->response,
-        'next_follow_up' => $request->next_follow_up,
-        'follow_up_time' => $request->follow_up_time,
-        'project_type' => $request->project_type,
-        'status' => $request->status,
-    ]);
+    // Update existing unlocked lead or create a new one
+    $lead = Mylead::updateOrCreate(
+        ['client_id' => $request->client_id, 'company_id' => auth()->user()->company_id],
+        [
+            'user_id' => Auth::id(),
+            'response' => $request->response,
+            'next_follow_up' => $request->next_follow_up ? $request->next_follow_up : null,
+            'follow_up_time' => $request->follow_up_time,
+            'project_type' => $request->project_type,
+            'status' => $request->status,
+        ]
+    );
 
-    $this->logHistory($lead, null, $request->all());
+    // Log initial history
+    MyleadHistory::create([
+        'company_id' => auth()->user()->company_id,
+        'mylead_id' => $lead->id,
+        'user_id' => Auth::id(),
+        'changes' => json_encode(['action_taken' => 'Initial Action Taken']),
+        'response' => $request->response,
+    ]);
 
     return back()->with('success', 'Lead response saved successfully!');
 }

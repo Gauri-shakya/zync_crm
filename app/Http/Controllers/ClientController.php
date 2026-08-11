@@ -500,6 +500,95 @@ public function destroy($id)
         }
     }
 
+    public function getNotes($id)
+    {
+        $client = Client::with(['leadAction.histories.user'])->findOrFail($id);
+        $this->authorize('manage', $client);
+        
+        $histories = [];
+        if ($client->leadAction) {
+            $histories = $client->leadAction->histories()
+                ->with('user:id,name')
+                ->orderBy('created_at', 'asc')
+                ->get()
+                ->map(function($history) {
+                    return [
+                        'id' => $history->id,
+                        'user_name' => $history->user ? $history->user->name : 'Unknown User',
+                        'response' => $history->response,
+                        'created_at' => $history->created_at->format('M d, Y h:i A'),
+                        'changes' => $history->changes,
+                    ];
+                });
+        }
+        
+        return response()->json(['success' => true, 'notes' => $histories]);
+    }
 
-    
+    public function addNote(Request $request, $id)
+    {
+        $request->validate(['note' => 'required|string']);
+        
+        $client = Client::findOrFail($id);
+        $this->authorize('manage', $client);
+        
+        // Find or create MyLead for this client
+        $mylead = \App\Models\Mylead::firstOrCreate(
+            ['client_id' => $client->id, 'company_id' => auth()->user()->company_id],
+            [
+                'user_id' => auth()->id(),
+                'status' => 'lead',
+                'project_type' => 'other',
+                'response' => $request->note
+            ]
+        );
+        
+        // Update the mylead response so it reflects the latest note
+        if (!$mylead->wasRecentlyCreated) {
+            $mylead->update(['response' => $request->note]);
+        }
+        
+        // Add History
+        $history = \App\Models\MyleadHistory::create([
+            'company_id' => auth()->user()->company_id,
+            'mylead_id' => $mylead->id,
+            'user_id' => auth()->id(),
+            'response' => $request->note,
+            'changes' => json_encode(['note_added' => 'Yes'])
+        ]);
+        
+        return response()->json([
+            'success' => true, 
+            'note' => [
+                'id' => $history->id,
+                'user_name' => auth()->user()->name,
+                'response' => $history->response,
+                'created_at' => $history->created_at->format('M d, Y h:i A')
+            ]
+        ]);
+    }
+
+    public function unlockLead($id)
+    {
+        $client = Client::findOrFail($id);
+        
+        // Ensure only admin can unlock
+        if (!auth()->user()->hasRole('admin')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized access'], 403);
+        }
+
+        if ($client->leadAction) {
+            $client->leadAction->update(['status' => 'unlocked']);
+            
+            \App\Models\MyleadHistory::create([
+                'company_id' => auth()->user()->company_id,
+                'mylead_id' => $client->leadAction->id,
+                'user_id' => auth()->id(),
+                'response' => 'Admin unlocked this lead.',
+                'changes' => json_encode(['status' => ['old' => 'locked', 'new' => 'unlocked']])
+            ]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Lead successfully unlocked!']);
+    }
 }

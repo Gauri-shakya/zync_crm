@@ -185,11 +185,11 @@
 
                 <div class="w-full lg:w-auto">
                     <div class="h-auto lg:h-10 items-center justify-center rounded-md p-1 bg-white w-full lg:w-auto grid grid-cols-3 sm:grid-cols-5 lg:flex gap-1 border border-slate-200 shadow-sm">
-                        <button class="filter-btn active inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-900 shadow-sm" data-status="all">All</button>
-                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors" data-status="lead">Leads</button>
-                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors" data-status="qualified">Qualified</button>
-                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors" data-status="proposal">Proposal</button>
-                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors" data-status="client">Clients</button>
+                        <button class="filter-btn active inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors" data-status="all">All</button>
+                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="lead">Leads</button>
+                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="qualified">Qualified</button>
+                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="proposal">Proposal</button>
+                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="client">Clients</button>
                     </div>
                 </div>
             </div>
@@ -198,6 +198,8 @@
 <div id="clients-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
     @foreach($clients as $client)
     @php
+        $canSeeFullCompanyName = auth()->user()->hasRole('admin');
+        
         $canSeeFullDetails = true;
         if ($client->leadAction) {
             $canSeeFullDetails = false;
@@ -222,7 +224,13 @@
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h3 class="font-semibold text-slate-900 text-lg truncate" title="{{ $client->company_name }}">{{ $client->company_name }}</h3>
+                        <h3 class="font-semibold text-slate-900 text-lg truncate" title="{{ $client->company_name }}">
+                            @if($canSeeFullCompanyName)
+                                {{ $client->company_name }}
+                            @else
+                                {{ explode(' ', trim($client->company_name))[0] }}
+                            @endif
+                        </h3>
                         <p class="text-sm text-slate-500 truncate" title="{{ $client->contact_person }}">{{ $client->contact_person }}</p>
                     
                     
@@ -401,8 +409,8 @@
                         @if($client->email)
                         <!-- Email -->
                         <div class="relative group inline-block">
-                            <a href="mailto:{{ $client->email }}" 
-                               class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-red-50 hover:bg-red-100 transition-all duration-200 hover:scale-110">
+                            <a href="{{ $canSeeFullDetails ? 'mailto:' . $client->email : 'javascript:void(0)' }}" 
+                               class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-red-50 hover:bg-red-100 transition-all duration-200 {{ $canSeeFullDetails ? 'hover:scale-110' : 'opacity-50 cursor-not-allowed' }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-red-600">
                                     <rect width="20" height="16" x="2" y="4" rx="2"></rect>
                                     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
@@ -430,15 +438,30 @@
                         @endif
                     </div>
             <div class="pt-3 border-t border-slate-200">
-                <p class="text-xs text-slate-500">Lead Source</p>
-                <p class="text-lg font-semibold text-slate-900">{{ $client->source }}</p>
-                <p class="text-xs text-slate-500"> <strong>Notes:</strong> {{ $client->notes }}</p>
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500">Lead Source</p>
+                        <p class="text-lg font-semibold text-slate-900">{{ $client->source }}</p>
+                        <p class="text-xs text-slate-500"> <strong>Notes:</strong> {{ $client->notes }}</p>
+                    </div>
+                    <div class="mt-1">
+                        <button onclick="openNotesModal({{ $client->id }}, '{{ addslashes($client->company_name) }}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-md transition-colors shadow-sm">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                            Edit Comments
+                        </button>
+                    </div>
+                </div>
             </div>
 
 
 
         <!-- Take Action Button -->
-@if($client->leadAction)
+        <!-- Take Action Button -->
+@php
+    $isClaimed = $client->leadAction && $client->leadAction->status !== 'unlocked';
+@endphp
+
+@if($isClaimed)
   <!-- Button disabled if already actioned -->
   <button
     class="block w-full text-center px-4 py-2 text-sm font-medium border border-gray-400 text-gray-400 rounded-lg cursor-not-allowed bg-gray-100"
@@ -450,13 +473,19 @@
     ✅ Action taken by <strong>{{ $client->leadAction->user->name ?? 'Unknown User' }} , &nbsp; {{ \Carbon\Carbon::parse($client->leadAction->created_at)
     ->setTimezone('Asia/Kolkata')
     ->diffForHumans() }}
-
-
 </strong>
   </div>
+  
+  @if(auth()->user()->hasRole('admin'))
+  <div class="mt-2 text-center">
+      <button onclick="unlockLead({{ $client->id }})" class="text-xs text-red-600 hover:text-red-800 font-medium underline decoration-red-300 hover:decoration-red-600 transition-colors">
+          Unlock Lead (Re-open for all)
+      </button>
+  </div>
+  @endif
 
 @else
-  <!-- Button active if no action yet -->
+  <!-- Button active if no action yet or if unlocked -->
   <button
     onclick="openActionModal({{ $client->id }})"
     class="block w-full text-center px-4 py-2 text-sm font-medium border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200">
@@ -464,7 +493,11 @@
   </button>
 
   <div class="mt-2 px-3 py-1 bg-gray-50 border border-gray-300 rounded-md text-gray-600 text-sm">
-    ⏳ No action taken yet
+    @if($client->leadAction && $client->leadAction->status === 'unlocked')
+      🔓 Lead unlocked by Admin. Ready to pick up!
+    @else
+      ⏳ No action taken yet
+    @endif
   </div>
 @endif
 
@@ -479,40 +512,62 @@
 <!-- Client Table View -->
 <div id="clients-table-container" class="hidden overflow-x-auto bg-white rounded-lg border border-slate-200 shadow-sm w-full max-w-full relative pb-32">
     <table class="w-full text-sm text-left text-slate-500 min-w-max table-auto">
-        <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+        <thead class="text-xs text-white uppercase bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 shadow-md">
             <tr>
-                <th scope="col" class="px-4 py-4 font-semibold whitespace-nowrap">Company</th>
-                <th scope="col" class="px-4 py-4 font-semibold hidden md:table-cell whitespace-nowrap">Contact</th>
-                <!-- <th scope="col" class="px-4 py-4 font-semibold whitespace-nowrap">Status</th> -->
-                <th scope="col" class="px-4 py-4 font-semibold hidden lg:table-cell whitespace-nowrap">Priority</th>
-                <th scope="col" class="px-4 py-4 font-semibold hidden sm:table-cell whitespace-nowrap">Follow-up</th>
-                <th scope="col" class="px-4 py-4 font-semibold text-right whitespace-nowrap sticky right-0 bg-slate-50 z-10 border-l border-slate-200">Actions</th>
+                <th scope="col" class="px-5 py-4 font-bold tracking-wider whitespace-nowrap rounded-tl-lg">Company</th>
+                <th scope="col" class="px-4 py-4 font-bold tracking-wider hidden md:table-cell whitespace-nowrap">Contact</th>
+                <!-- <th scope="col" class="px-4 py-4 font-bold tracking-wider whitespace-nowrap">Status</th> -->
+                <th scope="col" class="px-4 py-4 font-bold tracking-wider hidden lg:table-cell whitespace-nowrap">Priority</th>
+                <th scope="col" class="px-4 py-4 font-bold tracking-wider hidden sm:table-cell whitespace-nowrap">Follow-up</th>
+                <th scope="col" class="px-4 py-4 font-bold tracking-wider text-right whitespace-nowrap sticky right-0 bg-indigo-700/90 backdrop-blur-sm z-10 rounded-tr-lg">Actions</th>
             </tr>
         </thead>
         <tbody id="clients-table-body">
             @foreach($clients as $client)
             @php
+                $canSeeFullCompanyName = auth()->user()->hasRole('admin');
+                
                 $canSeeFullDetails = true;
-                if ($client->leadAction) {
+                if ($client->leadAction && $client->leadAction->status !== 'unlocked') {
                     $canSeeFullDetails = false;
                     if (auth()->user()->hasRole('admin') || $client->leadAction->user_id == auth()->id()) {
                         $canSeeFullDetails = true;
                     }
                 }
+
+                $avatarColors = 'from-blue-100 to-indigo-200 text-blue-700 ring-blue-100';
+                if(strtolower($client->priority) == 'high') $avatarColors = 'from-rose-100 to-red-200 text-rose-700 ring-rose-100';
+                elseif(strtolower($client->priority) == 'medium') $avatarColors = 'from-amber-100 to-orange-200 text-amber-700 ring-amber-100';
+                elseif(strtolower($client->priority) == 'low') $avatarColors = 'from-emerald-100 to-teal-200 text-emerald-700 ring-emerald-100';
             @endphp
-            <tr class="client-table-row border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200" data-status="{{ $client->status }}">
-                <td class="px-4 py-4">
-                    <div class="flex items-center gap-2">
+            <tr class="client-table-row border-b border-slate-100 hover:bg-slate-50/80 transition-all duration-200 group" data-status="{{ $client->status }}">
+                <td class="px-5 py-4">
+                    <div class="flex items-center gap-3.5">
+                        <div class="hidden sm:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br {{ $avatarColors }} font-bold shadow-sm ring-4">
+                            {{ strtoupper(substr(trim($client->company_name), 0, 1)) }}
+                        </div>
                         <div class="flex flex-col min-w-0">
-                            <span class="font-semibold text-slate-900 truncate text-xs sm:text-sm uppercase tracking-tight">{{ $client->company_name }}</span>
-                            <span class="text-[10px] text-slate-500 md:hidden truncate max-w-[120px]">{{ $client->contact_person }}</span>
+                            <span class="font-semibold text-slate-900 truncate text-xs sm:text-sm uppercase tracking-tight" title="{{ $client->company_name }}">
+                                @if($canSeeFullCompanyName)
+                                    {{ $client->company_name }}
+                                @else
+                                    {{ explode(' ', trim($client->company_name))[0] }}
+                                @endif
+                            </span>
+                            <span class="text-[10px] text-slate-500 md:hidden truncate max-w-[120px] mt-0.5">{{ $client->contact_person }}</span>
                         </div>
                     </div>
                 </td>
                 <td class="px-4 py-4 hidden md:table-cell">
                     <div class="flex flex-col min-w-0">
-                        <span class="text-slate-900 truncate">{{ $client->contact_person }}</span>
-                        <span class="text-xs text-slate-500 truncate">{{ $client->email }}</span>
+                        <span class="text-sm font-medium text-slate-800 truncate flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            {{ $client->contact_person }}
+                        </span>
+                        <span class="text-xs text-slate-500 truncate flex items-center gap-1.5 mt-1">
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            {{ $client->email }}
+                        </span>
                     </div>
                 </td>
                 <!-- <td class="px-4 py-4">
@@ -535,18 +590,31 @@
                     </span>
                 </td>
                 <td class="px-4 py-4 text-slate-600 hidden sm:table-cell whitespace-nowrap">
-                    {{ $client->next_follow_up ? \Carbon\Carbon::parse($client->next_follow_up)->format('M j, Y') : 'No follow-up' }}
+                    @if($client->next_follow_up)
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200 shadow-sm">
+                            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            {{ \Carbon\Carbon::parse($client->next_follow_up)->format('M j, Y') }}
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-slate-400 text-xs font-medium">
+                            <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                            No follow-up
+                        </span>
+                    @endif
                 </td>
-                <td class="px-4 py-4 text-right sticky right-0 bg-white group-hover:bg-slate-50 transition-colors duration-200 border-l border-slate-100 z-10">
-                    <div class="flex items-center justify-end gap-1 sm:gap-2">
-                        <a href="{{ $canSeeFullDetails ? 'https://wa.me/' . preg_replace('/[^0-9]/', '', $client->phone) : 'javascript:void(0)' }}" target="{{ $canSeeFullDetails ? '_blank' : '' }}" class="p-1.5 text-green-600 rounded-full transition-colors sm:inline-flex {{ $canSeeFullDetails ? 'hover:bg-green-50' : 'opacity-50 cursor-not-allowed' }}" title="WhatsApp">
+                <td class="px-4 py-4 text-right sticky right-0 bg-white group-hover:bg-slate-50 transition-colors duration-200 z-10">
+                    <div class="flex items-center justify-end gap-2 sm:gap-3">
+                        <a href="{{ $canSeeFullDetails ? 'https://wa.me/' . preg_replace('/[^0-9]/', '', $client->phone) : 'javascript:void(0)' }}" target="{{ $canSeeFullDetails ? '_blank' : '' }}" class="p-2 text-white bg-green-500 rounded-full transition-all sm:inline-flex {{ $canSeeFullDetails ? 'hover:bg-green-600 hover:shadow-md hover:scale-110' : 'opacity-50 cursor-not-allowed' }}" title="WhatsApp">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.209-3.553-8.485"/></svg>
                         </a>
+                        <button onclick="openNotesModal({{ $client->id }}, '{{ addslashes($client->company_name) }}')" class="p-2 text-white bg-indigo-500 rounded-full transition-all sm:inline-flex hover:bg-indigo-600 hover:shadow-md hover:scale-110" title="Edit Comments">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        </button>
                         <div class="relative inline-block text-left ">
                             <button 
                                 id="toggle-table-client-options-{{ $client->id }}"
                                 onclick="toggleDropdown('table-client-options-menu-{{ $client->id }}')" 
-                                class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                                class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-all"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
                             </button>
@@ -580,6 +648,48 @@
 
 
     
+
+    <!-- ====================== NOTES / TIMELINE MODAL ====================== -->
+    <div id="notesModal" class="fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 hidden flex items-center justify-center p-4">
+        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
+                        Lead Notes
+                    </h3>
+                    <p id="notesModalClientName" class="text-xs text-gray-500 mt-0.5 font-medium uppercase"></p>
+                </div>
+                <button type="button" onclick="closeNotesModal()" class="text-gray-400 hover:bg-gray-200 hover:text-gray-900 rounded-full p-2 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Timeline Body (Scrollable) -->
+            <div id="notesTimelineContainer" class="p-5 overflow-y-auto flex-1 bg-white space-y-4">
+                <!-- Notes will be injected here via JS -->
+                <div class="flex justify-center py-8">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+                </div>
+            </div>
+            
+            <!-- Add Note Form -->
+            <div class="p-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
+                <form id="addNoteForm" onsubmit="submitNewNote(event)" class="flex gap-2">
+                    <input type="hidden" id="noteClientId" value="">
+                    <div class="relative flex-1">
+                        <input type="text" id="newNoteText" placeholder="Add a comment..." required
+                            class="w-full pl-4 pr-12 py-2.5 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm">
+                        <button type="submit" class="absolute right-1.5 top-1.5 bottom-1.5 p-1.5 px-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors flex items-center justify-center">
+                            <svg class="w-4 h-4 translate-x-px translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- ====================== END NOTES MODAL ====================== -->
 
             <!-- Delete Confirmation Modal -->
 <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
@@ -1057,11 +1167,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (filterBtns) {
         filterBtns.forEach(btn => {
             btn.addEventListener('click', function() {
-                filterBtns.forEach(b => b.classList.remove('active', 'bg-blue-100', 'text-blue-900', 'shadow-sm'));
-                filterBtns.forEach(b => b.classList.add('text-slate-600'));
+                filterBtns.forEach(b => {
+                    b.classList.remove('active', 'bg-indigo-600', 'text-white', 'shadow-sm', 'hover:bg-indigo-700');
+                    b.classList.add('bg-white', 'text-slate-600', 'hover:bg-slate-50');
+                });
                 
-                this.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-sm');
-                this.classList.remove('text-slate-600');
+                this.classList.remove('bg-white', 'text-slate-600', 'hover:bg-slate-50');
+                this.classList.add('active', 'bg-indigo-600', 'text-white', 'shadow-sm', 'hover:bg-indigo-700');
                 
                 currentFilter = this.getAttribute('data-status');
                 filterClients();
@@ -1740,5 +1852,193 @@ document.getElementById('deleteForm')?.addEventListener('submit', function(e) {
         submitBtn.textContent = originalText;
     });
 });
+</script>
+
+<style>
+.word-break {
+    word-break: break-word;
+}
+@keyframes fade-in-up {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.animate-fade-in-up {
+    animation: fade-in-up 0.3s ease-out forwards;
+}
+</style>
+
+<script>
+    // Notes Modal Logic
+    const notesModal = document.getElementById('notesModal');
+    const notesTimelineContainer = document.getElementById('notesTimelineContainer');
+    const addNoteForm = document.getElementById('addNoteForm');
+    const noteClientId = document.getElementById('noteClientId');
+    const newNoteText = document.getElementById('newNoteText');
+    const notesModalClientName = document.getElementById('notesModalClientName');
+
+    function openNotesModal(clientId, clientName) {
+        notesModal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        noteClientId.value = clientId;
+        notesModalClientName.textContent = clientName;
+        newNoteText.value = '';
+        
+        // Show loader
+        notesTimelineContainer.innerHTML = '<div class="flex justify-center py-8"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div></div>';
+        
+        // Fetch notes via AJAX
+        fetch(`/clients/${clientId}/notes`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    renderNotes(data.notes);
+                } else {
+                    notesTimelineContainer.innerHTML = '<p class="text-center text-red-500 text-sm">Failed to load notes.</p>';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                notesTimelineContainer.innerHTML = '<p class="text-center text-red-500 text-sm">Error loading notes.</p>';
+            });
+    }
+
+    function closeNotesModal() {
+        notesModal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    function renderNotes(notes) {
+        if (!notes || notes.length === 0) {
+            notesTimelineContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                    <svg class="w-12 h-12 mb-3 opacity-20" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+                    <p class="text-sm font-medium">No notes yet</p>
+                    <p class="text-xs mt-1">Be the first to add a comment.</p>
+                </div>`;
+            return;
+        }
+
+        let html = '';
+        notes.forEach(note => {
+            const isMe = note.user_name === '{{ auth()->user()->name }}'; // simplistic check
+            
+            html += `
+            <div class="flex gap-3 ${isMe ? 'flex-row-reverse' : ''} mb-4">
+                <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                    ${note.user_name.charAt(0).toUpperCase()}
+                </div>
+                <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%]">
+                    <div class="flex items-baseline gap-2 mb-1 ${isMe ? 'flex-row-reverse' : ''}">
+                        <span class="text-xs font-semibold text-gray-700">${note.user_name}</span>
+                        <span class="text-[10px] text-gray-400">${note.created_at}</span>
+                    </div>
+                    <div class="px-3 py-2 rounded-2xl text-sm ${isMe ? 'bg-indigo-600 text-white rounded-tr-sm' : 'bg-gray-100 text-gray-800 rounded-tl-sm'} shadow-sm whitespace-pre-wrap word-break">${note.response}</div>
+                </div>
+            </div>`;
+        });
+        
+        notesTimelineContainer.innerHTML = html;
+        // Scroll to bottom
+        setTimeout(() => {
+            notesTimelineContainer.scrollTop = notesTimelineContainer.scrollHeight;
+        }, 10);
+    }
+
+    function submitNewNote(e) {
+        e.preventDefault();
+        const clientId = noteClientId.value;
+        const note = newNoteText.value.trim();
+        if (!note) return;
+        
+        const submitBtn = addNoteForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+        
+        fetch(`/clients/${clientId}/notes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ note: note })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Remove empty state if present
+                if (notesTimelineContainer.querySelector('.text-gray-400')) {
+                    notesTimelineContainer.innerHTML = '';
+                }
+                
+                // Append new note
+                const noteHtml = `
+                <div class="flex gap-3 flex-row-reverse mb-4 animate-fade-in-up">
+                    <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                        ${data.note.user_name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="flex flex-col items-end max-w-[80%]">
+                        <div class="flex items-baseline gap-2 mb-1 flex-row-reverse">
+                            <span class="text-xs font-semibold text-gray-700">${data.note.user_name}</span>
+                            <span class="text-[10px] text-gray-400">${data.note.created_at}</span>
+                        </div>
+                        <div class="px-3 py-2 rounded-2xl text-sm bg-indigo-600 text-white rounded-tr-sm shadow-sm whitespace-pre-wrap word-break">${data.note.response}</div>
+                    </div>
+                </div>`;
+                
+                notesTimelineContainer.insertAdjacentHTML('beforeend', noteHtml);
+                setTimeout(() => {
+                    notesTimelineContainer.scrollTop = notesTimelineContainer.scrollHeight;
+                }, 10);
+                
+                newNoteText.value = '';
+                showToast('Note added successfully');
+            } else {
+                showToast('Failed to add note', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Error adding note', 'error');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<svg class="w-4 h-4 translate-x-px translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>';
+        });
+    }
+
+    function unlockLead(clientId) {
+        if (!confirm('Are you sure you want to unlock this lead? It will become available for anyone to pick up again.')) {
+            return;
+        }
+
+        fetch(`/clients/${clientId}/unlock`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Lead unlocked successfully!');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast(data.message || 'Failed to unlock lead', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Error unlocking lead', 'error');
+        });
+    }
 </script>
 @endsection

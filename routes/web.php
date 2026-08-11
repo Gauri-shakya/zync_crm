@@ -100,6 +100,13 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
         Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
         Route::post('/clients/import', [ClientController::class, 'import'])->name('clients.import');
         Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
+        
+        // Lead Notes (Instagram style)
+        Route::get('/clients/{id}/notes', [ClientController::class, 'getNotes'])->name('clients.notes.get');
+        Route::post('/clients/{id}/notes', [ClientController::class, 'addNote'])->name('clients.notes.add');
+        
+        // Admin Unlock Lead
+        Route::post('/clients/{id}/unlock', [ClientController::class, 'unlockLead'])->name('clients.unlock');
     });
 
     // Campaigns
