@@ -153,6 +153,63 @@
             transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
             pointer-events: none;
         }
+
+        /* Sidebar Collapse Styles */
+        .sidebar-collapsed {
+            width: 5.5rem !important; /* slightly wider (88px) to fit icons comfortably */
+        }
+        .sidebar-collapsed-main {
+            margin-left: 5.5rem !important;
+        }
+        #desktop-sidebar.sidebar-collapsed span.font-medium,
+        #desktop-sidebar.sidebar-collapsed .text-xs.font-semibold,
+        #desktop-sidebar.sidebar-collapsed .sidebar-logo,
+        #desktop-sidebar.sidebar-collapsed .sidebar-footer,
+        #desktop-sidebar.sidebar-collapsed .trial-block,
+        #desktop-sidebar.sidebar-collapsed .status-badge {
+            display: none !important;
+        }
+        #desktop-sidebar.sidebar-collapsed a {
+            justify-content: center !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        #desktop-sidebar.sidebar-collapsed a svg {
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+        #sidebar-toggle-btn {
+            transition: all 0.3s ease;
+        }
+        #sidebar-toggle-btn svg {
+            transition: transform 0.3s ease;
+        }
+        #desktop-sidebar.sidebar-collapsed #sidebar-toggle-btn {
+            top: 50% !important;
+            right: 50% !important;
+            transform: translate(50%, -50%) !important;
+        }
+        #desktop-sidebar.sidebar-collapsed #sidebar-toggle-btn svg {
+            transform: rotate(180deg);
+        }
+        
+        /* Hide scrollbar for sidebar */
+        .sidebar-scroll-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-scroll-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar-scroll-container::-webkit-scrollbar-thumb {
+            background-color: transparent;
+            border-radius: 20px;
+        }
+        .sidebar-scroll-container:hover::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+        }
+        #desktop-sidebar.sidebar-collapsed .sidebar-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
     </style>
 
     <script>
@@ -189,7 +246,7 @@
 
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col lg:ml-64">
+        <div id="main-content" class="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
 
             <!-- Header -->
             @include('components.header')
@@ -219,6 +276,18 @@
                     card.classList.add('visible');
                 }, index * 100);
             });
+
+            // Sidebar Toggle Logic
+            const toggleBtn = document.getElementById('sidebar-toggle-btn');
+            const sidebar = document.getElementById('desktop-sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            if (toggleBtn && sidebar && mainContent) {
+                toggleBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('sidebar-collapsed');
+                    mainContent.classList.toggle('sidebar-collapsed-main');
+                });
+            }
         });
     </script>
 

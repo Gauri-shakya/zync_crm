@@ -8,6 +8,83 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="p-4 lg:p-8 pb-24 lg:pb-8">
         <div class="max-w-7xl mx-auto space-y-4 lg:space-y-6">
+@php
+    $now = \Carbon\Carbon::now();
+    $thisMonthStart = $now->copy()->startOfMonth();
+    $lastMonthStart = $now->copy()->subMonth()->startOfMonth();
+    $lastMonthEnd = $now->copy()->subMonth()->endOfMonth();
+
+    $totalLeadsCount = $clients->count();
+    $followUpCount = 0;
+    $closedCount = 0;
+    $notInterestedCount = 0;
+    $nonContactableCount = 0;
+
+    $thisMonth = ['total' => 0, 'followUp' => 0, 'closed' => 0, 'notInterested' => 0, 'nonContactable' => 0];
+    $lastMonth = ['total' => 0, 'followUp' => 0, 'closed' => 0, 'notInterested' => 0, 'nonContactable' => 0];
+
+    foreach($clients as $c) {
+        $cStatus = strtolower($c->status ?? '');
+        $aStatus = strtolower($c->leadAction->status ?? '');
+        
+        $date = $c->created_at ? \Carbon\Carbon::parse($c->created_at) : null;
+        $isThisMonth = $date && $date->between($thisMonthStart, $now);
+        $isLastMonth = $date && $date->between($lastMonthStart, $lastMonthEnd);
+
+        if ($isThisMonth) $thisMonth['total']++;
+        if ($isLastMonth) $lastMonth['total']++;
+        
+        if (in_array($cStatus, ['client', 'purchased']) || in_array($aStatus, ['client', 'purchased'])) {
+            $closedCount++;
+            if ($isThisMonth) $thisMonth['closed']++;
+            if ($isLastMonth) $lastMonth['closed']++;
+        } elseif (in_array($cStatus, ['not interested', 'lost']) || in_array($aStatus, ['not interested', 'lost'])) {
+            $notInterestedCount++;
+            if ($isThisMonth) $thisMonth['notInterested']++;
+            if ($isLastMonth) $lastMonth['notInterested']++;
+        } elseif (in_array($cStatus, ['non-contactable', 'not reachable']) || in_array($aStatus, ['non-contactable', 'not reachable'])) {
+            $nonContactableCount++;
+            if ($isThisMonth) $thisMonth['nonContactable']++;
+            if ($isLastMonth) $lastMonth['nonContactable']++;
+        } elseif (!empty($c->next_follow_up) || !empty($c->leadAction->next_follow_up) || in_array($aStatus, ['will call back', 'interested', 'missed booked'])) {
+            $followUpCount++;
+            if ($isThisMonth) $thisMonth['followUp']++;
+            if ($isLastMonth) $lastMonth['followUp']++;
+        }
+    }
+
+    $calcTrend = function($current, $previous) {
+        if ($previous == 0) {
+            return $current > 0 ? ['value' => 100, 'dir' => 'up'] : ['value' => 0, 'dir' => 'neutral'];
+        }
+        $change = (($current - $previous) / $previous) * 100;
+        return [
+            'value' => abs(round($change, 1)),
+            'dir' => $change > 0 ? 'up' : ($change < 0 ? 'down' : 'neutral')
+        ];
+    };
+
+    $trends = [
+        'total' => $calcTrend($thisMonth['total'], $lastMonth['total']),
+        'followUp' => $calcTrend($thisMonth['followUp'], $lastMonth['followUp']),
+        'closed' => $calcTrend($thisMonth['closed'], $lastMonth['closed']),
+        'notInterested' => $calcTrend($thisMonth['notInterested'], $lastMonth['notInterested']),
+        'nonContactable' => $calcTrend($thisMonth['nonContactable'], $lastMonth['nonContactable'])
+    ];
+
+    $renderTrend = function($trendData) {
+        $html = '';
+        if($trendData['dir'] == 'up') {
+            $html .= '<span class="flex items-center text-emerald-500"><svg class="w-3.5 h-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>' . $trendData['value'] . '%</span>';
+        } elseif($trendData['dir'] == 'down') {
+            $html .= '<span class="flex items-center text-rose-500"><svg class="w-3.5 h-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>' . $trendData['value'] . '%</span>';
+        } else {
+            $html .= '<span class="flex items-center text-slate-400"><svg class="w-3.5 h-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"></path></svg>0%</span>';
+        }
+        $html .= '<span class="text-slate-400 ml-1.5 font-normal">vs last month</span>';
+        return $html;
+    };
+@endphp
             <!-- Page Header -->
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
     <div>
@@ -163,8 +240,212 @@
     </div>
 </div>
 
+            <!-- Besdesk Dashboard -->
+            @if(auth()->check() && auth()->user()->hasRole('admin'))
+            <div class="mb-4 mt-2">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-5">
+                    
+                    <!-- Total Leads -->
+                    <div class="filter-dashboard-card active-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('all', this)">
+                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
+                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-blue-200 text-blue-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-blue-50 transition-all duration-300 shrink-0 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Total Leads</span>
+                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-blue-600 transition-colors">{{ $totalLeadsCount }}</span>
+                            </div>
+                        </div>
+                        <div class="relative z-10 mt-5 flex items-center text-[11px] sm:text-xs font-medium">
+                            {!! $renderTrend($trends['total']) !!}
+                        </div>
+                    </div>
+
+                    <!-- Follow Up -->
+                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('follow_up', this)">
+                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
+                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-indigo-200 text-indigo-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-indigo-50 transition-all duration-300 shrink-0 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Follow Up</span>
+                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-indigo-600 transition-colors">{{ $followUpCount }}</span>
+                            </div>
+                        </div>
+                        <div class="relative z-10 mt-5 flex items-center text-[11px] sm:text-xs font-medium">
+                            {!! $renderTrend($trends['followUp']) !!}
+                        </div>
+                    </div>
+
+                    <!-- Closed Leads -->
+                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('closed', this)">
+                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-teal-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
+                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-teal-200 text-teal-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-teal-50 transition-all duration-300 shrink-0 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Closed</span>
+                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-teal-600 transition-colors">{{ $closedCount }}</span>
+                            </div>
+                        </div>
+                        <div class="relative z-10 mt-5 flex items-center text-[11px] sm:text-xs font-medium">
+                            {!! $renderTrend($trends['closed']) !!}
+                        </div>
+                    </div>
+
+                    <!-- Not Interested -->
+                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('not_interested', this)">
+                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-rose-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
+                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-rose-200 text-rose-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-rose-50 transition-all duration-300 shrink-0 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Not Interest</span>
+                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-rose-600 transition-colors">{{ $notInterestedCount }}</span>
+                            </div>
+                        </div>
+                        <div class="relative z-10 mt-5 flex items-center text-[11px] sm:text-xs font-medium">
+                            {!! $renderTrend($trends['notInterested']) !!}
+                        </div>
+                    </div>
+
+                    <!-- Non-contactable -->
+                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('non_contactable', this)">
+                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-orange-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
+                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-orange-200 text-orange-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-orange-50 transition-all duration-300 shrink-0 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.122-3.536m-4.243-4.243a8.976 8.976 0 013.536-2.122m3.536-2.122a4.978 4.978 0 012.83-1.414M12 12v.01"></path></svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Non-contact</span>
+                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-orange-600 transition-colors">{{ $nonContactableCount }}</span>
+                            </div>
+                        </div>
+                        <div class="relative z-10 mt-5 flex items-center text-[11px] sm:text-xs font-medium">
+                            {!! $renderTrend($trends['nonContactable']) !!}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            @elseif(auth()->check())
+            @php
+                $myTotalLeadsCount = 0;
+                $myFollowUpCount = 0;
+                $myClosedCount = 0;
+                $myNotInterestedCount = 0;
+                $myNonContactableCount = 0;
+                $userId = auth()->id();
+
+                foreach($clients as $c) {
+                    if ($c->leadAction && $c->leadAction->user_id == $userId) {
+                        $myTotalLeadsCount++;
+                        $cStatus = strtolower($c->status ?? '');
+                        $aStatus = strtolower($c->leadAction->status ?? '');
+                        
+                        if (in_array($cStatus, ['client', 'purchased', 'closed']) || in_array($aStatus, ['client', 'purchased', 'closed'])) {
+                            $myClosedCount++;
+                        } elseif (in_array($cStatus, ['not interested', 'lost']) || in_array($aStatus, ['not interested', 'lost'])) {
+                            $myNotInterestedCount++;
+                        } elseif (in_array($cStatus, ['non-contactable', 'not reachable']) || in_array($aStatus, ['non-contactable', 'not reachable'])) {
+                            $myNonContactableCount++;
+                        } elseif (!empty($c->next_follow_up) || !empty($c->leadAction->next_follow_up) || in_array($aStatus, ['will call back', 'interested', 'missed booked', 'follow up', 'lead', 'proposal', 'negotiation'])) {
+                            $myFollowUpCount++;
+                        }
+                    }
+                }
+            @endphp
+            <div class="mb-4 mt-2">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-5">
+                    
+                    <!-- My Total Leads -->
+                    <div class="filter-dashboard-card active-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('my_all', this)">
+                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
+                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-blue-200 text-blue-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-blue-50 transition-all duration-300 shrink-0 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Total Leads</span>
+                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-blue-600 transition-colors">{{ $myTotalLeadsCount }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- My Follow Up -->
+                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('my_follow_up', this)">
+                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
+                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-indigo-200 text-indigo-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-indigo-50 transition-all duration-300 shrink-0 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Follow Up</span>
+                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-indigo-600 transition-colors">{{ $myFollowUpCount }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- My Closed -->
+                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('my_closed', this)">
+                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-teal-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
+                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-teal-200 text-teal-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-teal-50 transition-all duration-300 shrink-0 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Closed</span>
+                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-teal-600 transition-colors">{{ $myClosedCount }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- My Not Interested -->
+                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('my_not_interested', this)">
+                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-rose-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
+                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-rose-200 text-rose-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-rose-50 transition-all duration-300 shrink-0 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Not Interest</span>
+                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-rose-600 transition-colors">{{ $myNotInterestedCount }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- My Non-contactable -->
+                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('my_non_contactable', this)">
+                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-orange-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
+                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-orange-200 text-orange-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-orange-50 transition-all duration-300 shrink-0 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.122-3.536m-4.243-4.243a8.976 8.976 0 013.536-2.122m3.536-2.122a4.978 4.978 0 012.83-1.414M12 12v.01"></path></svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Non-contact</span>
+                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-orange-600 transition-colors">{{ $myNonContactableCount }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            @endif
+
+            <style>
+                .active-dashboard-card {
+                    border-color: #6366f1 !important;
+                    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.1), 0 4px 6px -4px rgba(99, 102, 241, 0.05) !important;
+                    background-color: #f8fafc !important;
+                }
+            </style>
+
             <!-- Search and Filter -->
-            <div class="flex flex-col lg:flex-row gap-3 lg:gap-4 items-center">
+            <div class="flex flex-col lg:flex-row gap-3 lg:gap-4 items-center mt-2">
                 <div class="relative flex-1 w-full">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400">
                         <circle cx="11" cy="11" r="8"></circle>
@@ -185,11 +466,19 @@
 
                 <div class="w-full lg:w-auto">
                     <div class="h-auto lg:h-10 items-center justify-center rounded-md p-1 bg-white w-full lg:w-auto grid grid-cols-3 sm:grid-cols-5 lg:flex gap-1 border border-slate-200 shadow-sm">
-                        <button class="filter-btn active inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors" data-status="all">All</button>
-                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="lead">Leads</button>
-                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="qualified">Qualified</button>
-                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="proposal">Proposal</button>
-                        <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="client">Clients</button>
+                        @if(auth()->check() && auth()->user()->hasRole('admin'))
+                            <button class="filter-btn active inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors" data-status="all">All</button>
+                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="lead">Leads</button>
+                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="follow_up">Follow Up</button>
+                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="closed">Closed</button>
+                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="not_interested">Not Interested</button>
+                        @elseif(auth()->check())
+                            <button class="filter-btn active inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors" data-status="all">All</button>
+                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="my_all">Leads</button>
+                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="my_follow_up">Follow Up</button>
+                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="my_closed">Closed</button>
+                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="my_not_interested">Not Interest</button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -207,8 +496,21 @@
                 $canSeeFullDetails = true;
             }
         }
+
+        $cStatus = strtolower($client->status ?? '');
+        $aStatus = strtolower($client->leadAction->status ?? '');
+        $dashboardCategory = 'other';
+        if (in_array($cStatus, ['client', 'purchased']) || in_array($aStatus, ['client', 'purchased'])) {
+            $dashboardCategory = 'closed';
+        } elseif (in_array($cStatus, ['not interested', 'lost']) || in_array($aStatus, ['not interested', 'lost'])) {
+            $dashboardCategory = 'not_interested';
+        } elseif (in_array($cStatus, ['non-contactable', 'not reachable']) || in_array($aStatus, ['non-contactable', 'not reachable'])) {
+            $dashboardCategory = 'non_contactable';
+        } elseif (!empty($client->next_follow_up) || !empty($client->leadAction->next_follow_up) || in_array($aStatus, ['will call back', 'interested', 'missed booked'])) {
+            $dashboardCategory = 'follow_up';
+        }
     @endphp
-    <div class="client-card rounded-lg border border-slate-200/60 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group" data-status="{{ $client->status }}">
+    <div class="client-card rounded-lg border border-slate-200/60 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group" data-status="{{ $client->status }}" data-category="{{ $dashboardCategory }}" data-assigned-user="{{ $client->leadAction->user_id ?? '' }}">
         <div class="flex flex-col space-y-1.5 p-6 pb-3">
             <div class="flex items-start justify-between">
                 <div class="flex items-start gap-3 flex-1 min-w-0">
@@ -224,11 +526,11 @@
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h3 class="font-semibold text-slate-900 text-lg truncate" title="{{ $client->company_name }}">
+                        <h3 class="font-semibold text-slate-900 text-lg truncate" @if($canSeeFullCompanyName) title="{{ $client->company_name }}" @endif>
                             @if($canSeeFullCompanyName)
                                 {{ $client->company_name }}
                             @else
-                                {{ explode(' ', trim($client->company_name))[0] }}
+                                {{ explode(' ', trim($client->company_name))[0] }} ****
                             @endif
                         </h3>
                         <p class="text-sm text-slate-500 truncate" title="{{ $client->contact_person }}">{{ $client->contact_person }}</p>
@@ -518,7 +820,6 @@
                 <th scope="col" class="px-4 py-4 font-bold tracking-wider hidden md:table-cell whitespace-nowrap">Contact</th>
                 <!-- <th scope="col" class="px-4 py-4 font-bold tracking-wider whitespace-nowrap">Status</th> -->
                 <th scope="col" class="px-4 py-4 font-bold tracking-wider hidden lg:table-cell whitespace-nowrap">Priority</th>
-                <th scope="col" class="px-4 py-4 font-bold tracking-wider hidden sm:table-cell whitespace-nowrap">Follow-up</th>
                 <th scope="col" class="px-4 py-4 font-bold tracking-wider text-right whitespace-nowrap sticky right-0 bg-indigo-700/90 backdrop-blur-sm z-10 rounded-tr-lg">Actions</th>
             </tr>
         </thead>
@@ -528,7 +829,9 @@
                 $canSeeFullCompanyName = auth()->user()->hasRole('admin');
                 
                 $canSeeFullDetails = true;
+                $isClaimed = false;
                 if ($client->leadAction && $client->leadAction->status !== 'unlocked') {
+                    $isClaimed = true;
                     $canSeeFullDetails = false;
                     if (auth()->user()->hasRole('admin') || $client->leadAction->user_id == auth()->id()) {
                         $canSeeFullDetails = true;
@@ -539,19 +842,32 @@
                 if(strtolower($client->priority) == 'high') $avatarColors = 'from-rose-100 to-red-200 text-rose-700 ring-rose-100';
                 elseif(strtolower($client->priority) == 'medium') $avatarColors = 'from-amber-100 to-orange-200 text-amber-700 ring-amber-100';
                 elseif(strtolower($client->priority) == 'low') $avatarColors = 'from-emerald-100 to-teal-200 text-emerald-700 ring-emerald-100';
+
+                $cStatus = strtolower($client->status ?? '');
+                $aStatus = strtolower($client->leadAction->status ?? '');
+                $dashboardCategory = 'other';
+                if (in_array($cStatus, ['client', 'purchased']) || in_array($aStatus, ['client', 'purchased'])) {
+                    $dashboardCategory = 'closed';
+                } elseif (in_array($cStatus, ['not interested', 'lost']) || in_array($aStatus, ['not interested', 'lost'])) {
+                    $dashboardCategory = 'not_interested';
+                } elseif (in_array($cStatus, ['non-contactable', 'not reachable']) || in_array($aStatus, ['non-contactable', 'not reachable'])) {
+                    $dashboardCategory = 'non_contactable';
+                } elseif (!empty($client->next_follow_up) || !empty($client->leadAction->next_follow_up) || in_array($aStatus, ['will call back', 'interested', 'missed booked'])) {
+                    $dashboardCategory = 'follow_up';
+                }
             @endphp
-            <tr class="client-table-row border-b border-slate-100 hover:bg-slate-50/80 transition-all duration-200 group" data-status="{{ $client->status }}">
+            <tr class="client-table-row border-b border-slate-100 hover:bg-slate-50/80 transition-all duration-200 group" data-status="{{ $client->status }}" data-category="{{ $dashboardCategory }}" data-assigned-user="{{ $client->leadAction->user_id ?? '' }}">
                 <td class="px-5 py-4">
                     <div class="flex items-center gap-3.5">
                         <div class="hidden sm:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br {{ $avatarColors }} font-bold shadow-sm ring-4">
                             {{ strtoupper(substr(trim($client->company_name), 0, 1)) }}
                         </div>
                         <div class="flex flex-col min-w-0">
-                            <span class="font-semibold text-slate-900 truncate text-xs sm:text-sm uppercase tracking-tight" title="{{ $client->company_name }}">
+                            <span class="font-semibold text-slate-900 truncate text-xs sm:text-sm uppercase tracking-tight" @if($canSeeFullCompanyName) title="{{ $client->company_name }}" @endif>
                                 @if($canSeeFullCompanyName)
                                     {{ $client->company_name }}
                                 @else
-                                    {{ explode(' ', trim($client->company_name))[0] }}
+                                    {{ explode(' ', trim($client->company_name))[0] }} ****
                                 @endif
                             </span>
                             <span class="text-[10px] text-slate-500 md:hidden truncate max-w-[120px] mt-0.5">{{ $client->contact_person }}</span>
@@ -589,21 +905,19 @@
                         {{ $client->priority }}
                     </span>
                 </td>
-                <td class="px-4 py-4 text-slate-600 hidden sm:table-cell whitespace-nowrap">
-                    @if($client->next_follow_up)
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200 shadow-sm">
-                            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            {{ \Carbon\Carbon::parse($client->next_follow_up)->format('M j, Y') }}
-                        </span>
-                    @else
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-slate-400 text-xs font-medium">
-                            <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                            No follow-up
-                        </span>
-                    @endif
-                </td>
                 <td class="px-4 py-4 text-right sticky right-0 bg-white group-hover:bg-slate-50 transition-colors duration-200 z-10">
                     <div class="flex items-center justify-end gap-2 sm:gap-3">
+                        @if(!$isClaimed)
+                            <button onclick="openActionModal({{ $client->id }})" class="px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all shadow-sm hover:shadow hover:-translate-y-0.5 whitespace-nowrap"
+                                    data-client-id="{{ $client->id }}"
+                                    data-company-name="{{ addslashes($client->company_name) }}">
+                                Take Action
+                            </button>
+                        @else
+                            <button class="px-3 py-1.5 text-xs font-medium text-slate-400 bg-slate-100 rounded-lg cursor-not-allowed border border-slate-200 whitespace-nowrap" disabled>
+                                Action Taken
+                            </button>
+                        @endif
                         <a href="{{ $canSeeFullDetails ? 'https://wa.me/' . preg_replace('/[^0-9]/', '', $client->phone) : 'javascript:void(0)' }}" target="{{ $canSeeFullDetails ? '_blank' : '' }}" class="p-2 text-white bg-green-500 rounded-full transition-all sm:inline-flex {{ $canSeeFullDetails ? 'hover:bg-green-600 hover:shadow-md hover:scale-110' : 'opacity-50 cursor-not-allowed' }}" title="WhatsApp">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.209-3.553-8.485"/></svg>
                         </a>
@@ -749,87 +1063,112 @@
     {{-- take action form --}}
     <!-- Take Action Modal -->
 <!-- ====================== MODAL ====================== -->
-  <div id="actionModal"
-       class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 relative">
+  <div id="actionModal" style="z-index: 9999;"
+       class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-[100] p-4 sm:p-6 transition-all duration-300">
+    <div class="bg-white rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] w-full max-w-lg relative flex flex-col max-h-[90vh] border border-white/40 ring-1 ring-slate-900/5">
+      
+      <!-- Premium Header -->
+      <div class="px-8 py-6 border-b border-slate-100/80 flex justify-between items-center bg-white/90 backdrop-blur-md rounded-t-3xl sticky top-0 z-10">
+          <div class="flex items-center gap-3.5">
+              <div class="w-11 h-11 rounded-2xl bg-indigo-50/80 flex items-center justify-center border border-indigo-100/50 text-indigo-600 shadow-sm">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+              </div>
+              <div>
+                  <h3 class="text-lg font-bold text-slate-900 tracking-tight">Submit Response</h3>
+                  <p class="text-xs text-slate-500 mt-0.5 font-medium">Record feedback & plan next steps</p>
+              </div>
+          </div>
+          <button id="closeModal" class="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-2.5 rounded-full transition-all duration-200">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+      </div>
 
-      <button id="closeModal"
-              class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl">
-        &times;
-      </button>
+      <!-- Form Body -->
+      <div class="px-8 py-7 overflow-y-auto custom-scrollbar">
+          <form id="actionForm" method="POST" action="{{ route('myleads.store') }}" class="space-y-6">
+            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="client_id" id="client_id">
 
-      <h3 class="text-lg font-semibold mb-4 text-gray-800">Submit Lead Response</h3>
+            <div class="space-y-1.5">
+                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Response / Feedback</label>
+                <textarea name="response" rows="3"
+                          class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm text-slate-800 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all duration-200 outline-none resize-none placeholder-slate-400"
+                          placeholder="What did you discuss? What are the next steps?"
+                          required></textarea>
+            </div>
 
-      <form id="actionForm" method="POST" action="{{ route('myleads.store') }}">
-    <!-- Laravel style token – delete if you don’t use it -->
-    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="space-y-1.5">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Next Follow-Up</label>
+                    <div class="relative">
+                        <input type="date" name="next_follow_up"
+                               class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm text-slate-800 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all duration-200 outline-none">
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Time</label>
+                    <div class="relative">
+                        <input type="time" name="follow_up_time"
+                               class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm text-slate-800 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all duration-200 outline-none">
+                    </div>
+                </div>
+            </div>
 
-    <input type="hidden" name="client_id" id="client_id">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="space-y-1.5">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Project Type</label>
+                    <div class="relative group">
+                        <select name="project_type" id="project_type_select" onchange="toggleOtherProjectInput(this)" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 pr-10 text-sm text-slate-800 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all duration-200 outline-none appearance-none cursor-pointer">
+                            <option value="">-- Select Type --</option>
+                            <option value="web_development">Web Development</option>
+                            <option value="mobile_app">Mobile App</option>
+                            <option value="ecommerce">E-commerce</option>
+                            <option value="ui_ux_design">UI/UX Design</option>
+                            <option value="digital_marketing">Digital Marketing</option>
+                            <option value="seo">SEO</option>
+                            <option value="custom_software">Custom Software</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Lead Status</label>
+                    <div class="relative group">
+                        <select name="status" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 pr-10 text-sm text-slate-800 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all duration-200 outline-none appearance-none cursor-pointer">
+                            <option value="">-- Select Status --</option>
+                            <option value="lead">Lead</option>
+                            <option value="follow up">Follow Up</option>
+                            <option value="closed">Closed</option>
+                            <option value="not interested">Not Interested</option>
+                            <option value="non-contactable">Non-contactable</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <div class="mb-3">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Response / Feedback</label>
-        <textarea name="response" rows="3"
-                  class="w-full border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-200"
-                  required></textarea>
-    </div>
+            <div class="space-y-1.5 hidden" id="other_project_type_container">
+                <label for="other_project_type" class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Specify Project Type</label>
+                <input type="text" name="other_project_type" id="other_project_type" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm text-slate-800 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all duration-200 outline-none" placeholder="Please specify details...">
+            </div>
 
-    <div class="mb-3">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Next Follow-Up Date</label>
-        <input type="date" name="next_follow_up"
-               class="w-full border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-200">
-    </div>
-
-    <!-- New Field: Follow-up Time -->
-    <div class="mb-3">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Follow-Up Time</label>
-        <input type="time" name="follow_up_time"
-               class="w-full border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-200">
-    </div>
-
-    <!-- New Field: Project Type -->
-    <div class="mb-3">
-        <label name="project_type" class="block text-sm font-medium text-gray-700 mb-1">Project Type</label>
-        <select name="project_type" id="project_type_select" onchange="toggleOtherProjectInput(this)" class="w-full border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-200">
-            <option value="">-- Select Project Type --</option>
-            <option value="web_development">Web Development</option>
-            <option value="mobile_app">Mobile App</option>
-            <option value="ecommerce">E-commerce</option>
-            <option value="ui_ux_design">UI/UX Design</option>
-            <option value="digital_marketing">Digital Marketing</option>
-            <option value="seo">SEO</option>
-            <option value="custom_software">Custom Software</option>
-            <option value="other">Other</option>
-        </select>
-    </div>
-
-    <!-- Other Project Type Input (Hidden by default) -->
-    <div class="mb-3 hidden" id="other_project_type_container">
-        <label for="other_project_type" class="block text-sm font-medium text-gray-700 mb-1">Specify Project Type</label>
-        <input type="text" name="other_project_type" id="other_project_type" class="w-full border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-200" placeholder="Please specify...">
-    </div>
-
-    <div class="mb-3">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Lead Status</label>
-        <select name="status" class="w-full border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-200">
-            <option>--select--</option>
-            <option value="interested">Interested</option>
-            <option value="not interested">Not Interested</option>
-            <option value="missed booked">Meeting Booked</option>
-            <option value="proposal">Proposal</option>
-            <option value="negotiating">Negotiating</option>
-            <option value="purchased">Purchased</option>
-            <option value="will call back">Will Call Back</option>
-        </select>
-    </div>
-
-    <button type="submit"
-            class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-all">
-        Save Response
-    </button>
-</form>
+            <div class="pt-4 pb-2">
+                <button type="submit"
+                        class="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-right text-white font-semibold py-4 rounded-xl shadow-[0_8px_20px_-6px_rgba(79,70,229,0.5)] hover:shadow-[0_12px_25px_-8px_rgba(79,70,229,0.6)] hover:-translate-y-0.5 transition-all duration-500 flex items-center justify-center gap-2">
+                    <span class="tracking-wide">Save Response</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </form>
+      </div>
     </div>
   </div>
-  <!-- ====================== END MODAL ====================== -->
+<!-- ====================== END MODAL ====================== -->
   {{-- take action form --}}
   
   
@@ -865,13 +1204,11 @@
             <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Lead Status</label>
                 <select name="status" id="edit_status" class="w-full border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-200">
-                    <option value="interested">Interested</option>
+                    <option value="lead">Lead</option>
+                    <option value="follow up">Follow Up</option>
+                    <option value="closed">Closed</option>
                     <option value="not interested">Not Interested</option>
-                    <option value="meeting booked">Meeting Booked</option>
-                    <option value="proposal">Proposal</option>
-                    <option value="negotiating">Negotiating</option>
-                    <option value="purchased">Purchased</option>
-                    <option value="will call back">Will Call Back</option>
+                    <option value="non-contactable">Non-contactable</option>
                 </select>
             </div>
 
@@ -973,11 +1310,10 @@
                         <select id="status" name="status"
                             class="w-full h-10 px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                             <option value="lead">Lead</option>
-                            <option value="qualified">Qualified</option>
-                            <option value="proposal">Proposal</option>
-                            <option value="negotiation">Negotiation</option>
-                            <option value="client">Client</option>
-                            <option value="lost">Lost</option>
+                            <option value="follow up">Follow Up</option>
+                            <option value="closed">Closed</option>
+                            <option value="not interested">Not Interested</option>
+                            <option value="non-contactable">Non-contactable</option>
                         </select>
                     </div>
 
@@ -1133,15 +1469,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // Filter and search clients
     function filterClients() {
         const searchTerm = currentSearch.toLowerCase();
+        const currentUserId = "{{ auth()->id() }}";
+        const isUserDashboard = currentFilter.startsWith('my_');
+        const actualFilter = isUserDashboard ? currentFilter.replace('my_', '') : currentFilter;
         
         // Filter Grid View
         const clientCards = document.querySelectorAll('.client-card');
         clientCards.forEach(card => {
             const clientText = card.textContent.toLowerCase();
             const clientStatus = card.getAttribute('data-status');
+            const clientCategory = card.getAttribute('data-category');
+            const assignedUserId = card.getAttribute('data-assigned-user');
+
             const matchesSearch = clientText.includes(searchTerm);
-            const matchesFilter = currentFilter === 'all' || clientStatus === currentFilter;
-            card.style.display = (matchesSearch && matchesFilter) ? 'block' : 'none';
+            const matchesFilter = actualFilter === 'all' || clientStatus === actualFilter || clientCategory === actualFilter;
+            const matchesUser = !isUserDashboard || (assignedUserId === currentUserId);
+
+            card.style.display = (matchesSearch && matchesFilter && matchesUser) ? 'block' : 'none';
         });
 
         // Filter Table View
@@ -1149,11 +1493,33 @@ document.addEventListener('DOMContentLoaded', function() {
         clientTableRows.forEach(row => {
             const clientText = row.textContent.toLowerCase();
             const clientStatus = row.getAttribute('data-status');
+            const clientCategory = row.getAttribute('data-category');
+            const assignedUserId = row.getAttribute('data-assigned-user');
+
             const matchesSearch = clientText.includes(searchTerm);
-            const matchesFilter = currentFilter === 'all' || clientStatus === currentFilter;
-            row.style.display = (matchesSearch && matchesFilter) ? 'table-row' : 'none';
+            const matchesFilter = actualFilter === 'all' || clientStatus === actualFilter || clientCategory === actualFilter;
+            const matchesUser = !isUserDashboard || (assignedUserId === currentUserId);
+
+            row.style.display = (matchesSearch && matchesFilter && matchesUser) ? 'table-row' : 'none';
         });
     }
+
+    window.setDashboardFilter = function(filterValue, element) {
+        // Update active state of dashboard cards
+        document.querySelectorAll('.filter-dashboard-card').forEach(card => {
+            card.classList.remove('active-dashboard-card');
+        });
+        if(element) element.classList.add('active-dashboard-card');
+        
+        // Clear standard filters visually
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('active', 'bg-indigo-600', 'text-white', 'shadow-sm', 'hover:bg-indigo-700');
+            b.classList.add('bg-white', 'text-slate-600', 'hover:bg-slate-50');
+        });
+
+        currentFilter = filterValue;
+        filterClients();
+    };
 
     // Search functionality
     if (searchInput) {

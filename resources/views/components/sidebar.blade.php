@@ -9,40 +9,48 @@
 
 
 <!-- Desktop Sidebar -->
-<div class="hidden lg:flex fixed inset-y-0 z-50 h-svh w-64 transition-all duration-200 border-r border-slate-200/60 bg-white/80 backdrop-blur-xl">
+<div id="desktop-sidebar" class="hidden lg:flex fixed inset-y-0 z-50 h-svh w-64 transition-all duration-300 border-r border-slate-200/60 bg-white/80 backdrop-blur-xl">
     <div class="flex h-full w-full flex-col">
         <!-- Sidebar Header -->
-    <div class="flex flex-col gap-2 border-b border-slate-200/60 p-6">
-    <div class="items-center gap-3">
+    <div class="flex flex-col gap-2 border-b border-slate-200/60 p-6 sidebar-logo-container relative min-h-[88px]">
+    <button id="sidebar-toggle-btn" class="absolute right-2 top-2 z-[60] flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm text-slate-500 hover:text-slate-800 hover:bg-slate-50 cursor-pointer hidden lg:flex transition-all duration-300">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <div class="items-center gap-3 sidebar-logo">
         @if(auth()->user()->company && auth()->user()->company->logo)
-            <div class="mb-3">
+            <div class="mb-3 mt-2 w-full">
                 <img src="{{ asset('storage/' . auth()->user()->company->logo) }}" 
                      alt="{{ auth()->user()->company->name }}" 
-                     class="h-12 w-auto object-contain rounded-lg">
+                     class="max-h-12 w-auto object-contain rounded-lg">
+            </div>
+        @else
+            <div class="mb-3 mt-2 w-full">
+                <img src="{{ asset('images/social-cults-logo.png') }}" 
+                     alt="Social Cults" 
+                     class="max-h-12 w-auto object-contain">
             </div>
         @endif
-       <div class="text-3xl font-extrabold text-slate-800 tracking-tight">
-            {{ auth()->user()->company->name ?? 'Company' }}
-        </div>
 
         @php
             $company = auth()->user()->company;
         @endphp
 
         @if($company)
-            @if(!$company->is_paid && now()->lt($company->trial_ends_at))
-                <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700">
-                    Trial
-                </span>
-            @elseif($company->is_paid)
-                <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">
-                    Active
-                </span>
-            @else
-                <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">
-                    Expired
-                </span>
-            @endif
+            <div class="status-badge">
+                @if(!$company->is_paid && now()->lt($company->trial_ends_at))
+                    <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700">
+                        Trial
+                    </span>
+                @elseif($company->is_paid)
+                    <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                        Active
+                    </span>
+                @else
+                    <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">
+                        Expired
+                    </span>
+                @endif
+            </div>
         @endif
     </div>
 
@@ -54,7 +62,7 @@
     @php
         $diff = now()->diff($company->trial_ends_at);
     @endphp
-    <div class="flex flex-col gap-3 mt-2">
+    <div class="flex flex-col gap-3 mt-2 trial-block">
         <p class="text-[14px] text-slate-500 font-medium whitespace-nowrap text-center">
             Trial ends in {{ $diff->days }} days {{ $diff->h }} hours
         </p>
@@ -70,7 +78,7 @@
 
 
         <!-- Sidebar Content -->
-        <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3">
+        <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto sidebar-scroll-container p-3">
             <!-- Navigation Section -->
             <div class="relative flex w-full min-w-0 flex-col p-2">
                 <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2">Navigation</div>
@@ -703,7 +711,7 @@
         </div>
 
         <!-- Sidebar Footer -->
-        <div class="flex flex-col gap-2 border-t border-slate-200/60 p-4">
+        <div class="flex flex-col gap-2 border-t border-slate-200/60 p-4 sidebar-footer">
             <div class="group relative overflow-hidden rounded-xl">
                 <div class="flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer">
                     <div class="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center">
