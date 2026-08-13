@@ -46,7 +46,7 @@ class MyLeadsController extends Controller
             $query->whereDate('next_follow_up', $request->next_follow_up_date);
         }
 
-        $myleads = $query->latest()->get();
+        $myleads = $query->latest()->paginate(20)->withQueryString();
 
         return view('admin.sales.myleads', compact('myleads'));
     }
@@ -158,7 +158,7 @@ $this->authorize('manage', $lead);
         // Validation rules
         $request->validate([
             'response' => 'required|string|max:1000',
-            'next_follow_up' => 'nullable|date|after_or_equal:today',
+            'next_follow_up' => 'nullable|date',
             'project_type' => 'nullable|string',
             'status' => 'required|string',
         ]);
@@ -176,6 +176,10 @@ $this->authorize('manage', $lead);
         $this->logHistory($lead, $oldData, $request->all());
 
         // Optional: Redirect with success message
+        if ($request->has('redirect_to') && $request->redirect_to === 'show') {
+            return redirect()->back()->with('success', 'Lead updated successfully!');
+        }
+        
         return redirect()->route('myleads')
             ->with('success', 'Lead updated successfully!');
     }
@@ -207,6 +211,29 @@ $this->authorize('manage', $lead);
 ]);
 
         }
+    }
+
+    /**
+     * Update the specified history resource in storage.
+     */
+    public function updateHistory(Request $request, string $id)
+    {
+        $request->validate([
+            'response' => 'required|string|max:1000',
+        ]);
+
+        $history = MyleadHistory::findOrFail($id);
+        
+        // Ensure the auth user owns this history or the lead
+        if ($history->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $history->update([
+            'response' => $request->response
+        ]);
+
+        return redirect()->back()->with('success', 'Timeline updated successfully!');
     }
 
     /**

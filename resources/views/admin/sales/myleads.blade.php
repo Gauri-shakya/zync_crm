@@ -1,243 +1,311 @@
 @extends('components.layout')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 py-2 xs:py-3 sm:py-4 md:py-6 lg:py-8">
+<div class="min-h-screen bg-gray-50 py-2 xs:py-3 sm:py-4 md:py-6 lg:py-8 overflow-x-hidden">
     <div class="max-w-full xs:max-w-full sm:max-w-full md:max-w-6xl mx-auto px-2 xs:px-3 sm:px-4 md:px-6 lg:px-8">
-        <h2 class="text-lg xs:text-xl sm:text-2xl font-bold text-gray-800 mb-3 xs:mb-4 sm:mb-5 md:mb-6">My Leads</h2>
+        <!-- Title moved to container header -->
         
-        <!-- Filter Section -->
-        <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100 mb-8">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-semibold text-gray-700 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                    </svg>
-                    Filter Leads
+        @php
+            $myTotalLeadsCount = 0;
+            $myFollowUpCount = 0;
+            $myClosedCount = 0;
+            $myNotInterestedCount = 0;
+            $myNonContactableCount = 0;
+            
+            // Get all leads for the current user to show accurate overall stats
+            $allMyLeads = \App\Models\Mylead::where('user_id', auth()->id())->get();
+
+            foreach($allMyLeads as $c) {
+                $myTotalLeadsCount++;
+                $cStatus = strtolower($c->status ?? '');
+                
+                if (in_array($cStatus, ['purchased', 'closed'])) {
+                    $myClosedCount++;
+                } elseif (in_array($cStatus, ['not interested', 'lost'])) {
+                    $myNotInterestedCount++;
+                } elseif (in_array($cStatus, ['non-contactable', 'not reachable'])) {
+                    $myNonContactableCount++;
+                } elseif (!empty($c->next_follow_up) || in_array($cStatus, ['will call back', 'interested', 'missed booked', 'proposal', 'negotiating'])) {
+                    $myFollowUpCount++;
+                }
+            }
+        @endphp
+
+        <!-- Dashboard Overview & Filters Container -->
+        <div class="mb-6 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            
+            <!-- Header -->
+            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2.5">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    My Leads Overview
                 </h3>
             </div>
-            
-            <form action="{{ route('myleads') }}" method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <!-- Client Name Search -->
-                <div class="group">
-                    <label for="client_name" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 ml-1">Client Name</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                        </div>
-                        <input type="text" name="client_name" id="client_name" value="{{ request('client_name') }}" 
-                               placeholder="Company or Contact Person..."
-                               class="block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 placeholder-gray-400">
-                    </div>
-                </div>
 
-                <!-- Response Search -->
-                <div class="group">
-                    <label for="response" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 ml-1">Response Content</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
+            <div class="p-5">
+                <!-- Dashboard Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+                    
+                    <!-- My Total Leads -->
+                    <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-blue-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden">
+                        <div class="absolute right-0 top-0 w-16 h-16 bg-blue-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-blue-600 transition-colors">My Total Leads</span>
+                            <div class="w-8 h-8 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            </div>
                         </div>
-                        <input type="text" name="response" id="response" value="{{ request('response') }}" 
-                               placeholder="Search within response..."
-                               class="block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 placeholder-gray-400">
-                    </div>
-                </div>
-
-                <!-- Status Filter -->
-                <div class="group">
-                    <label for="status" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 ml-1">Lead Status</label>
-                    <div class="relative">
-                        <select name="status" id="status" class="block w-full pl-3 pr-8 py-2.5 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 appearance-none">
-                            <option value="">All Statuses</option>
-                            <option value="interested" {{ request('status') == 'interested' ? 'selected' : '' }}>Interested</option>
-                            <option value="not interested" {{ request('status') == 'not interested' ? 'selected' : '' }}>Not Interested</option>
-                            <option value="missed booked" {{ request('status') == 'missed booked' ? 'selected' : '' }}>Meeting Booked</option>
-                            <option value="proposal" {{ request('status') == 'proposal' ? 'selected' : '' }}>Proposal</option>
-                            <option value="negotiating" {{ request('status') == 'negotiating' ? 'selected' : '' }}>Negotiating</option>
-                            <option value="purchased" {{ request('status') == 'purchased' ? 'selected' : '' }}>Purchased</option>
-                            <option value="will call back" {{ request('status') == 'will call back' ? 'selected' : '' }}>Will Call Back</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
+                        <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myTotalLeadsCount }}">
+                            {{ $myTotalLeadsCount >= 1000 ? number_format($myTotalLeadsCount) : $myTotalLeadsCount }}
                         </div>
                     </div>
-                </div>
 
-                <!-- Project Type Filter -->
-                <div class="group">
-                    <label for="project_type" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 ml-1">Project Type</label>
-                    <div class="relative">
-                        <select name="project_type" id="project_type" class="block w-full pl-3 pr-8 py-2.5 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 appearance-none">
-                            <option value="">All Project Types</option>
-                            <option value="web_development" {{ request('project_type') == 'web_development' ? 'selected' : '' }}>Web Development</option>
-                            <option value="mobile_app" {{ request('project_type') == 'mobile_app' ? 'selected' : '' }}>Mobile App</option>
-                            <option value="ecommerce" {{ request('project_type') == 'ecommerce' ? 'selected' : '' }}>E-commerce</option>
-                            <option value="ui_ux_design" {{ request('project_type') == 'ui_ux_design' ? 'selected' : '' }}>UI/UX Design</option>
-                            <option value="digital_marketing" {{ request('project_type') == 'digital_marketing' ? 'selected' : '' }}>Digital Marketing</option>
-                            <option value="seo" {{ request('project_type') == 'seo' ? 'selected' : '' }}>SEO</option>
-                            <option value="custom_software" {{ request('project_type') == 'custom_software' ? 'selected' : '' }}>Custom Software</option>
-                            <option value="other" {{ request('project_type') == 'other' ? 'selected' : '' }}>Other</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
+                    <!-- My Follow Up -->
+                    <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-indigo-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden">
+                        <div class="absolute right-0 top-0 w-16 h-16 bg-indigo-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">My Follow Up</span>
+                            <div class="w-8 h-8 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myFollowUpCount }}">
+                            {{ $myFollowUpCount >= 1000 ? number_format($myFollowUpCount) : $myFollowUpCount }}
                         </div>
                     </div>
-                </div>
 
-                <!-- Next Follow Up Date -->
-                <div class="group">
-                    <label for="next_follow_up_date" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 ml-1">Next Follow Up</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
+                    <!-- My Closed -->
+                    <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-teal-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden">
+                        <div class="absolute right-0 top-0 w-16 h-16 bg-teal-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-teal-600 transition-colors">My Closed</span>
+                            <div class="w-8 h-8 rounded-md bg-teal-100 text-teal-600 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
                         </div>
-                        <input type="date" name="next_follow_up_date" id="next_follow_up_date" value="{{ request('next_follow_up_date') }}" 
-                               class="block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 placeholder-gray-400">
+                        <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myClosedCount }}">
+                            {{ $myClosedCount >= 1000 ? number_format($myClosedCount) : $myClosedCount }}
+                        </div>
                     </div>
+
+                    <!-- My Not Interested -->
+                    <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-rose-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden">
+                        <div class="absolute right-0 top-0 w-16 h-16 bg-rose-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-rose-600 transition-colors">Not Interest</span>
+                            <div class="w-8 h-8 rounded-md bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myNotInterestedCount }}">
+                            {{ $myNotInterestedCount >= 1000 ? number_format($myNotInterestedCount) : $myNotInterestedCount }}
+                        </div>
+                    </div>
+
+                    <!-- My Non-contactable -->
+                    <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-orange-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden">
+                        <div class="absolute right-0 top-0 w-16 h-16 bg-orange-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-orange-600 transition-colors">Non-contact</span>
+                            <div class="w-8 h-8 rounded-md bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.122-3.536m-4.243-4.243a8.976 8.976 0 013.536-2.122m3.536-2.122a4.978 4.978 0 012.83-1.414M12 12v.01"></path></svg>
+                            </div>
+                        </div>
+                        <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myNonContactableCount }}">
+                            {{ $myNonContactableCount >= 1000 ? number_format($myNonContactableCount) : $myNonContactableCount }}
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- Filter Actions -->
-                <div class="flex items-end gap-3 lg:col-span-5 justify-end mt-2 pt-4 border-t border-gray-100">
-                    <a href="{{ route('myleads') }}" class="inline-flex items-center px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
-                        <svg class="w-4 h-4 mr-2 -ml-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Reset Filters
-                    </a>
-                    <button type="submit" class="inline-flex items-center px-6 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-[1.02]">
-                        <svg class="w-4 h-4 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        Apply Filters
-                    </button>
-                </div>
-            </form>
+                <!-- Filter Section -->
+                <form action="{{ route('myleads') }}" method="GET" class="border-t border-slate-100 pt-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                        <h4 class="text-sm font-semibold text-slate-600">Filter Leads</h4>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                        <!-- Client Name Search -->
+                        <div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                </div>
+                                <input type="text" name="client_name" id="client_name" value="{{ request('client_name') }}" 
+                                       placeholder="Company / Contact"
+                                       class="block w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 hover:bg-white transition-all placeholder-slate-400 outline-none">
+                            </div>
+                        </div>
+
+                        <!-- Response Search -->
+                        <div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                </div>
+                                <input type="text" name="response" id="response" value="{{ request('response') }}" 
+                                       placeholder="Search Response"
+                                       class="block w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 hover:bg-white transition-all placeholder-slate-400 outline-none">
+                            </div>
+                        </div>
+
+                        <!-- Status Filter -->
+                        <div>
+                            <div class="relative">
+                                <select name="status" id="status" class="block w-full pl-3 pr-8 py-2 bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 hover:bg-white transition-all appearance-none outline-none font-medium cursor-pointer">
+                                    <option value="">Lead (All)</option>
+                                    <option value="follow up" {{ request('status') == 'follow up' ? 'selected' : '' }}>Follow Up</option>
+                                    <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Closed</option>
+                                    <option value="not interested" {{ request('status') == 'not interested' ? 'selected' : '' }}>Not Interested</option>
+                                    <option value="non-contactable" {{ request('status') == 'non-contactable' ? 'selected' : '' }}>Non-contactable</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Project Type Filter -->
+                        <div>
+                            <div class="relative">
+                                <select name="project_type" id="project_type" class="block w-full pl-3 pr-8 py-2 bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 hover:bg-white transition-all appearance-none outline-none font-medium cursor-pointer">
+                                    <option value="">All Project Types</option>
+                                    <option value="web_development" {{ request('project_type') == 'web_development' ? 'selected' : '' }}>Web Development</option>
+                                    <option value="mobile_app" {{ request('project_type') == 'mobile_app' ? 'selected' : '' }}>Mobile App</option>
+                                    <option value="ecommerce" {{ request('project_type') == 'ecommerce' ? 'selected' : '' }}>E-commerce</option>
+                                    <option value="ui_ux_design" {{ request('project_type') == 'ui_ux_design' ? 'selected' : '' }}>UI/UX Design</option>
+                                    <option value="digital_marketing" {{ request('project_type') == 'digital_marketing' ? 'selected' : '' }}>Digital Marketing</option>
+                                    <option value="seo" {{ request('project_type') == 'seo' ? 'selected' : '' }}>SEO</option>
+                                    <option value="custom_software" {{ request('project_type') == 'custom_software' ? 'selected' : '' }}>Custom Software</option>
+                                    <option value="other" {{ request('project_type') == 'other' ? 'selected' : '' }}>Other</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Next Follow Up Date -->
+                        <div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                </div>
+                                <input type="date" name="next_follow_up_date" id="next_follow_up_date" value="{{ request('next_follow_up_date') }}" 
+                                       class="block w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 hover:bg-white transition-all outline-none cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Actions -->
+                    <div class="flex items-center gap-2 mt-4 justify-end">
+                        <a href="{{ route('myleads') }}" class="px-4 py-2 text-sm font-medium rounded-lg text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors focus:ring-2 focus:ring-slate-200 outline-none">
+                            Reset
+                        </a>
+                        <button type="submit" class="px-5 py-2 text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm hover:shadow transition-all focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 outline-none flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            Apply Filters
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         @if($myleads->count())
             <!-- Mobile Cards View (Hidden on md and above) -->
-            <div class="block md:hidden space-y-3 xs:space-y-4">
+            <div class="block md:hidden space-y-4">
                 @foreach($myleads as $index => $lead)
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 xs:p-4">
-                        <div class="flex justify-between items-start mb-3">
-                            <div>
-                                <span class="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md mb-1">
-                                    #{{ $index + 1 }}
-                                </span>
-                                <h3 class="font-semibold text-gray-900 text-sm xs:text-base">
-                                    {{ $lead->client->company_name ?? 'N/A' }}
-                                </h3>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 relative overflow-hidden transition-all hover:shadow-md">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                                    {{ strtoupper(substr($lead->client->company_name ?? 'C', 0, 1)) }}
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-[15px] leading-tight mb-1">
+                                        {{ $lead->client->company_name ?? 'N/A' }}
+                                    </h3>
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                                        Lead #{{ $index + 1 }}
+                                    </span>
+                                </div>
                             </div>
-                            <span class="px-2 py-1 rounded-full text-xs font-medium
-                                @if($lead->status == 'connected') bg-green-100 text-green-700
-                                @elseif($lead->status == 'missed') bg-red-100 text-red-700
-                                @else bg-yellow-100 text-yellow-700 @endif">
+                            
+                            @php
+                                $statusColors = [
+                                    'connected' => 'bg-emerald-100 text-emerald-800',
+                                    'missed' => 'bg-rose-100 text-rose-800',
+                                    'follow_up' => 'bg-blue-100 text-blue-800',
+                                    'closed' => 'bg-gray-100 text-gray-800',
+                                ];
+                                $defaultColor = 'bg-amber-100 text-amber-800';
+                                $statusColor = $statusColors[strtolower($lead->status)] ?? $defaultColor;
+                            @endphp
+                            <span class="inline-flex items-center px-2 py-1 rounded {{ $statusColor }} font-bold text-[10px] uppercase tracking-wider whitespace-nowrap ml-2">
                                 {{ ucfirst(str_replace('_', ' ', $lead->status)) }}
                             </span>
                         </div>
                         
-                        <div class="space-y-2 text-xs xs:text-sm text-gray-600 mb-4">
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Response:</span>
-                                <span class="font-medium">{{ $lead->response }}</span>
+                        <div class="space-y-2 bg-slate-50 p-3 rounded border border-slate-100 mb-4">
+                            <div class="flex justify-between items-start gap-4">
+                                <span class="text-[12px] font-semibold text-slate-500">Response</span>
+                                <span class="text-[13px] font-medium text-slate-700 text-right line-clamp-2">{{ $lead->response }}</span>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Follow-Up:</span>
-                                <span class="font-medium">{{ $lead->follow_up_time }}</span>
+                            <div class="flex justify-between items-center">
+                                <span class="text-[12px] font-semibold text-slate-500">Follow-Up Time</span>
+                                <span class="text-[13px] font-medium text-slate-700">{{ $lead->follow_up_time ? \Carbon\Carbon::parse($lead->follow_up_time)->format('h:i A') : '-' }}</span>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Next Follow-Up:</span>
-                                <span class="font-medium">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[12px] font-semibold text-slate-500">Next Date</span>
+                                <span class="text-[13px] font-bold text-slate-800">
                                     {{ $lead->next_follow_up ? $lead->next_follow_up->format('d M, Y') : '—' }}
                                 </span>
                             </div>
                         </div>
                         
                         <!-- Action Buttons for Mobile -->
-                        <div class="flex flex-wrap gap-2 xs:gap-3 pt-3 border-t border-gray-100">
-                            <!-- View Button -->
+                        <div class="flex flex-col gap-2 pt-1">
+                            <!-- Open Lead Button -->
                             <a href="{{ route('myleads.show', $lead->id) }}"
-                               class="flex-1 min-w-[70px] xs:min-w-[80px] flex items-center justify-center gap-1.5 xs:gap-2 px-2 xs:px-3 py-1.5 xs:py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs xs:text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-95">
-                                <svg class="w-3 h-3 xs:w-3.5 xs:h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                               class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold transition-colors duration-200 uppercase tracking-wider">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                 </svg>
-                                <span>View</span>
-                            </a>
-                            
-                            <!-- Edit Button -->
-                            <a href="{{ route('myleads.edit', $lead->id) }}"
-                               class="flex-1 min-w-[70px] xs:min-w-[80px] flex items-center justify-center gap-1.5 xs:gap-2 px-2 xs:px-3 py-1.5 xs:py-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg text-xs xs:text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-95">
-                                <svg class="w-3 h-3 xs:w-3.5 xs:h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M21.7312 2.26884C20.706 1.24372 19.044 1.24372 18.0188 2.26884L16.8617 3.42599L20.574 7.1383L21.7312 5.98116C22.7563 4.95603 22.7563 3.29397 21.7312 2.26884Z"/>
-                                    <path d="M19.5133 8.19896L15.801 4.48665L7.40019 12.8875C6.78341 13.5043 6.33002 14.265 6.081 15.101L5.28122 17.7859C5.2026 18.0498 5.27494 18.3356 5.46967 18.5303C5.6644 18.725 5.95019 18.7974 6.21412 18.7188L8.89901 17.919C9.73498 17.67 10.4957 17.2166 11.1125 16.5998L19.5133 8.19896Z"/>
-                                    <path d="M5.25 5.24999C3.59315 5.24999 2.25 6.59314 2.25 8.24999V18.75C2.25 20.4068 3.59315 21.75 5.25 21.75H15.75C17.4069 21.75 18.75 20.4068 18.75 18.75V13.5C18.75 13.0858 18.4142 12.75 18 12.75C17.5858 12.75 17.25 13.0858 17.25 13.5V18.75C17.25 19.5784 16.5784 20.25 15.75 20.25H5.25C4.42157 20.25 3.75 19.5784 3.75 18.75V8.24999C3.75 7.42156 4.42157 6.74999 5.25 6.74999H10.5C10.9142 6.74999 11.25 6.41421 11.25 5.99999C11.25 5.58578 10.9142 5.24999 10.5 5.24999H5.25Z"/>
-                                </svg>
-                                <span>Edit</span>
-                            </a>
-                            
-                            <!-- History Button -->
-                            <a href="{{ route('myleads.history', $lead->id) }}"
-                               class="flex-1 min-w-[70px] xs:min-w-[80px] flex items-center justify-center gap-1.5 xs:gap-2 px-2 xs:px-3 py-1.5 xs:py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs xs:text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-95">
-                                <svg class="w-3 h-3 xs:w-3.5 xs:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span>History</span>
+                                <span>Open Lead Details</span>
                             </a>
                             
                             <!-- Communication Buttons -->
-                            @if($lead->client->phone ?? 'N/A')
-                            <div class="flex gap-2 w-full mt-2">
+                            @if(($lead->client->phone ?? null) || ($lead->client->email ?? null))
+                            <div class="flex gap-2 w-full mt-1">
+                                @if($lead->client->phone ?? 'N/A')
                                 <!-- WhatsApp -->
                                 <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $lead->client->phone ?? 'N/A') }}"
                                    target="_blank"
-                                   class="flex-1 flex items-center justify-center gap-1.5 xs:gap-2 px-2 xs:px-3 py-1.5 xs:py-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg text-xs xs:text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-95">
-                                    <svg class="w-3 h-3 xs:w-3.5 xs:h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.209-3.553-8.485"/>
+                                   class="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-[12px] font-bold transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
                                     </svg>
                                     <span class="hidden xs:inline">WhatsApp</span>
                                 </a>
                                 
                                 <!-- Call -->
                                 <a href="tel:{{ $lead->client->phone ?? 'N/A' }}"
-                                   class="flex-1 flex items-center justify-center gap-1.5 xs:gap-2 px-2 xs:px-3 py-1.5 xs:py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs xs:text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-95">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 xs:w-3.5 xs:h-3.5">
-                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                                    </svg>
+                                   class="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-[12px] font-bold transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                                     <span class="hidden xs:inline">Call</span>
                                 </a>
+                                @endif
                                 
-                                <!-- SMS -->
-                                <a href="sms:{{ $lead->client->phone ?? 'N/A' }}"
-                                   class="flex-1 flex items-center justify-center gap-1.5 xs:gap-2 px-2 xs:px-3 py-1.5 xs:py-2 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-lg text-xs xs:text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-95">
-                                    <svg class="w-3 h-3 xs:w-3.5 xs:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                                    </svg>
-                                    <span class="hidden xs:inline">SMS</span>
-                                </a>
-                            </div>
-                            @endif
-                            
-                            @if($lead->client->email ?? 'N/A')
-                            <div class="w-full mt-2">
+                                @if($lead->client->email ?? 'N/A')
                                 <!-- Email -->
                                 <a href="mailto:{{ $lead->client->email ?? 'N/A' }}"
-                                   class="w-full flex items-center justify-center gap-1.5 xs:gap-2 px-2 xs:px-3 py-1.5 xs:py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs xs:text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-95">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 xs:w-3.5 xs:h-3.5">
-                                        <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                                    </svg>
+                                   class="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-[12px] font-bold transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
                                     <span class="hidden xs:inline">Email</span>
                                 </a>
+                                @endif
                             </div>
                             @endif
                         </div>
@@ -246,221 +314,207 @@
             </div>
             
             <!-- Desktop Table View (Hidden on mobile) -->
-            <div class="hidden md:block overflow-x-auto bg-white shadow rounded-lg">
-                <div class="table-responsive-wrapper">
-                    <div class="table-scroll-container">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-100 sticky-mobile">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[40px]">#</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[150px]">Client Name</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[120px]">Response</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[100px]">Follow-Up</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[140px]">Next Follow-Up</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[100px]">Status</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[300px]">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-100">
-                                @foreach($myleads as $index => $lead)
-                                    <tr class="hover:bg-gray-50 transition-colors duration-150">
-                                        <td class="px-4 py-4 text-sm text-gray-700 font-medium">{{ $index + 1 }}</td>
-                                        <td class="px-4 py-4 text-sm text-gray-900 font-medium">
-                                            {{ $lead->client->company_name ?? 'N/A' }}
-                                        </td>
-                                        <td class="px-4 py-4 text-sm text-gray-700">{{ $lead->response }}</td>
-                                        <td class="px-4 py-4 text-sm text-gray-700">{{ $lead->follow_up_time ? \Carbon\Carbon::parse($lead->follow_up_time)->format('h:i A') : '-' }}</td>
-                                        <td class="px-4 py-4 text-sm text-gray-700 font-medium">
-                                            {{ $lead->next_follow_up ? $lead->next_follow_up->format('d M, Y') : '—' }}
-                                        </td>
-                                        <td class="px-4 py-4 text-sm">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                @if($lead->status == 'connected') bg-green-100 text-green-800
-                                                @elseif($lead->status == 'missed') bg-red-100 text-red-800
-                                                @else bg-yellow-100 text-yellow-800 @endif">
-                                                {{ ucfirst(str_replace('_', ' ', $lead->status)) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-4">
-                                            <div class="flex items-center justify-center space-x-2">
-                                                <!-- View Button -->
-                                                <a href="{{ route('myleads.show', $lead->id) }}"
-                                                   class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-blue-50 hover:bg-blue-100 transition-all duration-200 hover:scale-110 active:scale-95 group relative"
-                                                   title="View Details">
-                                                    <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                                                    </svg>
-                                                    <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                                                        View
-                                                    </span>
-                                                </a>
-                                                
-                                                <!-- Edit Button -->
-                                                <a href="{{ route('myleads.edit', $lead->id) }}"
-                                                   class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-green-50 hover:bg-green-100 transition-all duration-200 hover:scale-110 active:scale-95 group relative"
-                                                   title="Edit Lead">
-                                                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M21.7312 2.26884C20.706 1.24372 19.044 1.24372 18.0188 2.26884L16.8617 3.42599L20.574 7.1383L21.7312 5.98116C22.7563 4.95603 22.7563 3.29397 21.7312 2.26884Z"/>
-                                                        <path d="M19.5133 8.19896L15.801 4.48665L7.40019 12.8875C6.78341 13.5043 6.33002 14.265 6.081 15.101L5.28122 17.7859C5.2026 18.0498 5.27494 18.3356 5.46967 18.5303C5.6644 18.725 5.95019 18.7974 6.21412 18.7188L8.89901 17.919C9.73498 17.67 10.4957 17.2166 11.1125 16.5998L19.5133 8.19896Z"/>
-                                                        <path d="M5.25 5.24999C3.59315 5.24999 2.25 6.59314 2.25 8.24999V18.75C2.25 20.4068 3.59315 21.75 5.25 21.75H15.75C17.4069 21.75 18.75 20.4068 18.75 18.75V13.5C18.75 13.0858 18.4142 12.75 18 12.75C17.5858 12.75 17.25 13.0858 17.25 13.5V18.75C17.25 19.5784 16.5784 20.25 15.75 20.25H5.25C4.42157 20.25 3.75 19.5784 3.75 18.75V8.24999C3.75 7.42156 4.42157 6.74999 5.25 6.74999H10.5C10.9142 6.74999 11.25 6.41421 11.25 5.99999C11.25 5.58578 10.9142 5.24999 10.5 5.24999H5.25Z"/>
-                                                    </svg>
-                                                    <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                                                        Edit
-                                                    </span>
-                                                </a>
-                                                
-                                                <!-- History Button -->
-                                                <a href="{{ route('myleads.history', $lead->id) }}"
-                                                   class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-gray-50 hover:bg-gray-100 transition-all duration-200 hover:scale-110 active:scale-95 group relative"
-                                                   title="View History">
-                                                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                    </svg>
-                                                    <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                                                        History
-                                                    </span>
-                                                </a>
-                                                
-                                                @if($lead->client->phone ?? 'N/A')
-                                                <!-- WhatsApp -->
-                                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $lead->client->phone ?? 'N/A') }}"
-                                                   target="_blank"
-                                                   class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-green-50 hover:bg-green-100 transition-all duration-200 hover:scale-110 active:scale-95 group relative"
-                                                   title="WhatsApp">
-                                                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.209-3.553-8.485"/>
-                                                    </svg>
-                                                    <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                                                        WhatsApp
-                                                    </span>
-                                                </a>
-                                                
-                                                <!-- Call -->
-                                                <a href="tel:{{ $lead->client->phone ?? 'N/A' }}"
-                                                   class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-blue-50 hover:bg-blue-100 transition-all duration-200 hover:scale-110 active:scale-95 group relative"
-                                                   title="Call">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-blue-600">
-                                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                                                    </svg>
-                                                    <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                                                        Call
-                                                    </span>
-                                                </a>
-                                                
-                                                <!-- SMS -->
-                                                <a href="sms:{{ $lead->client->phone ?? 'N/A' }}"
-                                                   class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-purple-50 hover:bg-purple-100 transition-all duration-200 hover:scale-110 active:scale-95 group relative"
-                                                   title="SMS">
-                                                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                                                    </svg>
-                                                    <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                                                        SMS
-                                                    </span>
-                                                </a>
-                                                @endif
-                                                
-                                                @if($lead->client->email ?? 'N/A')
-                                                <!-- Email -->
-                                                <a href="mailto:{{ $lead->client->email ?? 'N/A' }}"
-                                                   class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-red-50 hover:bg-red-100 transition-all duration-200 hover:scale-110 active:scale-95 group relative"
-                                                   title="Email">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-red-600">
-                                                        <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                                                    </svg>
-                                                    <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                                                        Email
-                                                    </span>
-                                                </a>
-                                                @endif
+            <div class="hidden md:block overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 ring-1 ring-black ring-opacity-5">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-800">
+                            <tr>
+                                <th scope="col" class="px-4 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">#</th>
+                                <th scope="col" class="px-4 py-4 text-xs font-bold text-white uppercase tracking-wider min-w-[200px]">Client Name</th>
+                                <th scope="col" class="px-4 py-4 text-xs font-bold text-white uppercase tracking-wider min-w-[150px]">Response</th>
+                                <th scope="col" class="px-4 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Follow-Up</th>
+                                <th scope="col" class="px-4 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Next Date</th>
+                                <th scope="col" class="px-4 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Status</th>
+                                <th scope="col" class="px-4 py-4 text-center text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            @foreach($myleads as $index => $lead)
+                                <tr class="hover:bg-indigo-50/60 transition-colors duration-200 {{ $index % 2 == 0 ? 'bg-white' : 'bg-slate-50' }}">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-500">{{ $index + 1 }}</td>
+                                    <td class="px-4 py-4 align-top">
+                                        <div class="flex items-start gap-3">
+                                            <div class="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 border border-indigo-200 flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5">
+                                                <span class="text-sm font-bold text-indigo-700">{{ strtoupper(substr($lead->client->company_name ?? 'C', 0, 1)) }}</span>
                                             </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                            <div class="flex flex-col pt-1">
+                                                <span class="text-sm font-bold text-gray-900 break-words line-clamp-2" title="{{ $lead->client->company_name ?? 'N/A' }}">
+                                                    {{ $lead->client->company_name ?? 'N/A' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4 align-top pt-5">
+                                        <div class="text-sm text-gray-700 break-words whitespace-normal leading-relaxed line-clamp-3" title="{{ $lead->response }}">
+                                            {{ $lead->response }}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600 align-top pt-5">
+                                        <div class="flex items-center gap-1.5">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            {{ $lead->follow_up_time ? \Carbon\Carbon::parse($lead->follow_up_time)->format('h:i A') : '-' }}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap align-top pt-5">
+                                        @if($lead->next_follow_up)
+                                            <div class="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                                                <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                {{ $lead->next_follow_up->format('d M, Y') }}
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400 font-medium">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap align-top pt-5">
+                                        @php
+                                            $statusColors = [
+                                                'connected' => 'bg-green-50 text-green-700 border-green-200',
+                                                'missed' => 'bg-red-50 text-red-700 border-red-200',
+                                                'follow_up' => 'bg-blue-50 text-blue-700 border-blue-200',
+                                                'closed' => 'bg-gray-100 text-gray-700 border-gray-200',
+                                            ];
+                                            $defaultColor = 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                                            $statusColor = $statusColors[strtolower($lead->status)] ?? $defaultColor;
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $statusColor }} border shadow-sm">
+                                            {{ ucfirst(str_replace('_', ' ', $lead->status)) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-center align-top pt-4">
+                                        <div class="flex items-center justify-center gap-2">
+                                            <!-- Open Button -->
+                                            <a href="{{ route('myleads.show', $lead->id) }}"
+                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition-colors duration-200 text-xs font-semibold shadow-sm"
+                                               title="Open Lead">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                Open
+                                            </a>
+                                            
+                                            @if($lead->client->phone ?? 'N/A')
+                                            <!-- WhatsApp -->
+                                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $lead->client->phone ?? 'N/A') }}"
+                                               target="_blank"
+                                               class="inline-flex items-center justify-center w-8 h-8 rounded-md bg-white border border-gray-300 text-gray-500 hover:text-green-600 hover:border-green-300 hover:bg-green-50 transition-colors duration-200 shadow-sm"
+                                               title="WhatsApp">
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.209-3.553-8.485"/></svg>
+                                            </a>
+                                            
+                                            <!-- Call -->
+                                            <a href="tel:{{ $lead->client->phone ?? 'N/A' }}"
+                                               class="inline-flex items-center justify-center w-8 h-8 rounded-md bg-white border border-gray-300 text-gray-500 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors duration-200 shadow-sm"
+                                               title="Call">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                            </a>
+                                            
+                                            <!-- SMS -->
+                                            <a href="sms:{{ $lead->client->phone ?? 'N/A' }}"
+                                               class="inline-flex items-center justify-center w-8 h-8 rounded-md bg-white border border-gray-300 text-gray-500 hover:text-purple-600 hover:border-purple-300 hover:bg-purple-50 transition-colors duration-200 shadow-sm"
+                                               title="SMS">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                                            </a>
+                                            @endif
+                                            
+                                            @if($lead->client->email ?? 'N/A')
+                                            <!-- Email -->
+                                            <a href="mailto:{{ $lead->client->email ?? 'N/A' }}"
+                                               class="inline-flex items-center justify-center w-8 h-8 rounded-md bg-white border border-gray-300 text-gray-500 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors duration-200 shadow-sm"
+                                               title="Email">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                                            </a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
             <!-- Tablet Optimized View (Hidden on mobile and desktop) -->
-            <div class="hidden sm:block md:hidden overflow-x-auto bg-white shadow rounded-lg">
-                <div class="table-responsive-wrapper">
-                    <div class="table-scroll-container">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[40px]">#</th>
-                                    <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[120px]">Client</th>
-                                    <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[100px]">Response</th>
-                                    <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[120px]">Next Follow-Up</th>
-                                    <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[80px]">Status</th>
-                                    <th class="px-3 py-2.5 text-center text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap min-w-[200px]">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-100">
-                                @foreach($myleads as $index => $lead)
-                                    <tr>
-                                        <td class="px-3 py-3 text-sm text-gray-700 font-medium">{{ $index + 1 }}</td>
-                                        <td class="px-3 py-3 text-sm text-gray-900 font-medium truncate max-w-[120px]" title="{{ $lead->client->company_name ?? 'N/A' }}">
-                                            {{ $lead->client->company_name ?? 'N/A' }}
-                                        </td>
-                                        <td class="px-3 py-3 text-sm text-gray-700 truncate max-w-[100px]" title="{{ $lead->response }}">
-                                            {{ $lead->response }}
-                                        </td>
-                                        <td class="px-3 py-3 text-sm text-gray-700 font-medium">
-                                            {{ $lead->next_follow_up ? $lead->next_follow_up->format('d M') : '—' }}
-                                        </td>
-                                        <td class="px-3 py-3 text-sm">
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                                @if($lead->status == 'connected') bg-green-100 text-green-800
-                                                @elseif($lead->status == 'missed') bg-red-100 text-red-800
-                                                @else bg-yellow-100 text-yellow-800 @endif">
-                                                {{ strtoupper(substr($lead->status, 0, 1)) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-3 py-3">
-                                            <div class="flex items-center justify-center space-x-1.5">
-                                                <!-- View Button -->
-                                                <a href="{{ route('myleads.show', $lead->id) }}"
-                                                   class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-50 hover:bg-blue-100 transition-all duration-200 hover:scale-110"
-                                                   title="View">
-                                                    <svg class="w-3.5 h-3.5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                                                    </svg>
-                                                </a>
-                                                
-                                                <!-- Edit Button -->
-                                                <a href="{{ route('myleads.edit', $lead->id) }}"
-                                                   class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-green-50 hover:bg-green-100 transition-all duration-200 hover:scale-110"
-                                                   title="Edit">
-                                                    <svg class="w-3.5 h-3.5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M21.7312 2.26884C20.706 1.24372 19.044 1.24372 18.0188 2.26884L16.8617 3.42599L20.574 7.1383L21.7312 5.98116C22.7563 4.95603 22.7563 3.29397 21.7312 2.26884Z"/>
-                                                        <path d="M19.5133 8.19896L15.801 4.48665L7.40019 12.8875C6.78341 13.5043 6.33002 14.265 6.081 15.101L5.28122 17.7859C5.2026 18.0498 5.27494 18.3356 5.46967 18.5303C5.6644 18.725 5.95019 18.7974 6.21412 18.7188L8.89901 17.919C9.73498 17.67 10.4957 17.2166 11.1125 16.5998L19.5133 8.19896Z"/>
-                                                        <path d="M5.25 5.24999C3.59315 5.24999 2.25 6.59314 2.25 8.24999V18.75C2.25 20.4068 3.59315 21.75 5.25 21.75H15.75C17.4069 21.75 18.75 20.4068 18.75 18.75V13.5C18.75 13.0858 18.4142 12.75 18 12.75C17.5858 12.75 17.25 13.0858 17.25 13.5V18.75C17.25 19.5784 16.5784 20.25 15.75 20.25H5.25C4.42157 20.25 3.75 19.5784 3.75 18.75V8.24999C3.75 7.42156 4.42157 6.74999 5.25 6.74999H10.5C10.9142 6.74999 11.25 6.41421 11.25 5.99999C11.25 5.58578 10.9142 5.24999 10.5 5.24999H5.25Z"/>
-                                                    </svg>
-                                                </a>
-                                                
-                                                <!-- WhatsApp -->
-                                                @if($lead->client->phone ?? 'N/A')
-                                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $lead->client->phone ?? 'N/A') }}"
-                                                   target="_blank"
-                                                   class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-green-50 hover:bg-green-100 transition-all duration-200 hover:scale-110"
-                                                   title="WhatsApp">
-                                                    <svg class="w-3.5 h-3.5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.209-3.553-8.485"/>
-                                                    </svg>
-                                                </a>
-                                                @endif
+            <div class="hidden sm:block md:hidden overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 ring-1 ring-black ring-opacity-5">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-800">
+                            <tr>
+                                <th scope="col" class="px-4 py-3.5 text-[12px] font-bold text-white uppercase tracking-wider whitespace-nowrap">#</th>
+                                <th scope="col" class="px-4 py-3.5 text-[12px] font-bold text-white uppercase tracking-wider whitespace-nowrap">Client Name</th>
+                                <th scope="col" class="px-4 py-3.5 text-[12px] font-bold text-white uppercase tracking-wider whitespace-nowrap">Response</th>
+                                <th scope="col" class="px-4 py-3.5 text-[12px] font-bold text-white uppercase tracking-wider whitespace-nowrap">Next Date</th>
+                                <th scope="col" class="px-4 py-3.5 text-[12px] font-bold text-white uppercase tracking-wider whitespace-nowrap">Status</th>
+                                <th scope="col" class="px-4 py-3.5 text-center text-[12px] font-bold text-white uppercase tracking-wider whitespace-nowrap">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            @foreach($myleads as $index => $lead)
+                                <tr class="hover:bg-gray-50/80 transition-colors duration-150">
+                                    <td class="px-4 py-4 whitespace-nowrap text-xs font-medium text-gray-500">{{ $index + 1 }}</td>
+                                    <td class="px-4 py-4">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="h-7 w-7 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
+                                                <span class="text-xs font-bold text-indigo-600">{{ strtoupper(substr($lead->client->company_name ?? 'C', 0, 1)) }}</span>
                                             </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                            <span class="text-sm font-bold text-gray-900 truncate max-w-[150px]" title="{{ $lead->client->company_name ?? 'N/A' }}">
+                                                {{ $lead->client->company_name ?? 'N/A' }}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4 text-xs text-gray-600 max-w-[120px] truncate" title="{{ $lead->response }}">{{ $lead->response }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        @if($lead->next_follow_up)
+                                            <div class="flex items-center gap-1.5 text-xs font-medium text-gray-700">
+                                                <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                {{ $lead->next_follow_up->format('d M') }}
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400 font-medium text-xs">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        @php
+                                            $statusColors = [
+                                                'connected' => 'bg-green-50 text-green-700 border-green-200',
+                                                'missed' => 'bg-red-50 text-red-700 border-red-200',
+                                                'follow_up' => 'bg-blue-50 text-blue-700 border-blue-200',
+                                                'closed' => 'bg-gray-100 text-gray-700 border-gray-200',
+                                            ];
+                                            $defaultColor = 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                                            $statusColor = $statusColors[strtolower($lead->status)] ?? $defaultColor;
+                                        @endphp
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold {{ $statusColor }} border">
+                                            {{ ucfirst(str_replace('_', ' ', $lead->status)) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-center">
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <!-- Open Button -->
+                                            <a href="{{ route('myleads.show', $lead->id) }}"
+                                               class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-indigo-600 transition-colors duration-200 shadow-sm"
+                                               title="Open Lead">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                            </a>
+                                            
+                                            @if($lead->client->phone ?? 'N/A')
+                                            <!-- WhatsApp -->
+                                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $lead->client->phone ?? 'N/A') }}"
+                                               target="_blank"
+                                               class="inline-flex items-center justify-center w-7 h-7 rounded-md bg-white border border-gray-300 text-gray-500 hover:text-green-600 hover:border-green-300 hover:bg-green-50 transition-colors duration-200 shadow-sm"
+                                               title="WhatsApp">
+                                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.209-3.553-8.485"/></svg>
+                                            </a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="mt-6 px-4">
+                {{ $myleads->links() }}
             </div>
             
         @else

@@ -332,108 +332,6 @@
 
                 </div>
             </div>
-            @elseif(auth()->check())
-            @php
-                $myTotalLeadsCount = 0;
-                $myFollowUpCount = 0;
-                $myClosedCount = 0;
-                $myNotInterestedCount = 0;
-                $myNonContactableCount = 0;
-                $userId = auth()->id();
-
-                foreach($clients as $c) {
-                    if ($c->leadAction && $c->leadAction->user_id == $userId) {
-                        $myTotalLeadsCount++;
-                        $cStatus = strtolower($c->status ?? '');
-                        $aStatus = strtolower($c->leadAction->status ?? '');
-                        
-                        if (in_array($cStatus, ['client', 'purchased', 'closed']) || in_array($aStatus, ['client', 'purchased', 'closed'])) {
-                            $myClosedCount++;
-                        } elseif (in_array($cStatus, ['not interested', 'lost']) || in_array($aStatus, ['not interested', 'lost'])) {
-                            $myNotInterestedCount++;
-                        } elseif (in_array($cStatus, ['non-contactable', 'not reachable']) || in_array($aStatus, ['non-contactable', 'not reachable'])) {
-                            $myNonContactableCount++;
-                        } elseif (!empty($c->next_follow_up) || !empty($c->leadAction->next_follow_up) || in_array($aStatus, ['will call back', 'interested', 'missed booked', 'follow up', 'lead', 'proposal', 'negotiation'])) {
-                            $myFollowUpCount++;
-                        }
-                    }
-                }
-            @endphp
-            <div class="mb-4 mt-2">
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-5">
-                    
-                    <!-- My Total Leads -->
-                    <div class="filter-dashboard-card active-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('my_all', this)">
-                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
-                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-blue-200 text-blue-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-blue-50 transition-all duration-300 shrink-0 bg-white">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Total Leads</span>
-                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-blue-600 transition-colors">{{ $myTotalLeadsCount }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- My Follow Up -->
-                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('my_follow_up', this)">
-                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
-                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-indigo-200 text-indigo-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-indigo-50 transition-all duration-300 shrink-0 bg-white">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Follow Up</span>
-                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-indigo-600 transition-colors">{{ $myFollowUpCount }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- My Closed -->
-                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('my_closed', this)">
-                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-teal-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
-                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-teal-200 text-teal-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-teal-50 transition-all duration-300 shrink-0 bg-white">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Closed</span>
-                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-teal-600 transition-colors">{{ $myClosedCount }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- My Not Interested -->
-                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('my_not_interested', this)">
-                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-rose-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
-                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-rose-200 text-rose-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-rose-50 transition-all duration-300 shrink-0 bg-white">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Not Interest</span>
-                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-rose-600 transition-colors">{{ $myNotInterestedCount }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- My Non-contactable -->
-                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('my_non_contactable', this)">
-                        <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-orange-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div class="relative z-10 flex items-start gap-3 sm:gap-4">
-                            <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-orange-200 text-orange-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-orange-50 transition-all duration-300 shrink-0 bg-white">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.122-3.536m-4.243-4.243a8.976 8.976 0 013.536-2.122m3.536-2.122a4.978 4.978 0 012.83-1.414M12 12v.01"></path></svg>
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-[13px] font-medium text-slate-500 mb-0.5 group-hover:text-slate-700 transition-colors">Non-contact</span>
-                                <span class="text-3xl font-semibold text-slate-800 tracking-tight leading-none group-hover:text-orange-600 transition-colors">{{ $myNonContactableCount }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
             @endif
 
             <style>
@@ -1137,10 +1035,10 @@
                 <div class="space-y-1.5">
                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Lead Status</label>
                     <div class="relative group">
-                        <select name="status" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 pr-10 text-sm text-slate-800 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all duration-200 outline-none appearance-none cursor-pointer">
+                        <select name="status" required class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 pr-10 text-sm text-slate-800 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all duration-200 outline-none appearance-none cursor-pointer">
                             <option value="">-- Select Status --</option>
                             <option value="lead">Lead</option>
-                            <option value="follow up">Follow Up</option>
+                            <option value="follow up" selected>Follow Up</option>
                             <option value="closed">Closed</option>
                             <option value="not interested">Not Interested</option>
                             <option value="non-contactable">Non-contactable</option>
@@ -2292,19 +2190,17 @@ document.getElementById('deleteForm')?.addEventListener('submit', function(e) {
 
         let html = '';
         notes.forEach(note => {
-            const isMe = note.user_name === '{{ auth()->user()->name }}'; // simplistic check
-            
             html += `
-            <div class="flex gap-3 ${isMe ? 'flex-row-reverse' : ''} mb-4">
-                <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
+            <div class="flex gap-3 mb-4">
+                <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold text-xs ring-2 ring-white">
                     ${note.user_name.charAt(0).toUpperCase()}
                 </div>
-                <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%]">
-                    <div class="flex items-baseline gap-2 mb-1 ${isMe ? 'flex-row-reverse' : ''}">
+                <div class="flex-1 bg-gray-50 rounded-lg p-3 border border-gray-100 shadow-sm">
+                    <div class="flex items-center justify-between mb-1.5">
                         <span class="text-xs font-semibold text-gray-700">${note.user_name}</span>
-                        <span class="text-[10px] text-gray-400">${note.created_at}</span>
+                        <span class="text-[10px] text-gray-500 font-medium">${note.created_at}</span>
                     </div>
-                    <div class="px-3 py-2 rounded-2xl text-sm ${isMe ? 'bg-indigo-600 text-white rounded-tr-sm' : 'bg-gray-100 text-gray-800 rounded-tl-sm'} shadow-sm whitespace-pre-wrap word-break">${note.response}</div>
+                    <div class="text-sm text-gray-800 whitespace-pre-wrap break-words leading-relaxed">${note.response}</div>
                 </div>
             </div>`;
         });
@@ -2345,16 +2241,16 @@ document.getElementById('deleteForm')?.addEventListener('submit', function(e) {
                 
                 // Append new note
                 const noteHtml = `
-                <div class="flex gap-3 flex-row-reverse mb-4 animate-fade-in-up">
-                    <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                <div class="flex gap-3 mb-4 animate-fade-in-up">
+                    <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold text-xs ring-2 ring-white">
                         ${data.note.user_name.charAt(0).toUpperCase()}
                     </div>
-                    <div class="flex flex-col items-end max-w-[80%]">
-                        <div class="flex items-baseline gap-2 mb-1 flex-row-reverse">
+                    <div class="flex-1 bg-gray-50 rounded-lg p-3 border border-gray-100 shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
                             <span class="text-xs font-semibold text-gray-700">${data.note.user_name}</span>
-                            <span class="text-[10px] text-gray-400">${data.note.created_at}</span>
+                            <span class="text-[10px] text-gray-500 font-medium">${data.note.created_at}</span>
                         </div>
-                        <div class="px-3 py-2 rounded-2xl text-sm bg-indigo-600 text-white rounded-tr-sm shadow-sm whitespace-pre-wrap word-break">${data.note.response}</div>
+                        <div class="text-sm text-gray-800 whitespace-pre-wrap break-words leading-relaxed">${data.note.response}</div>
                     </div>
                 </div>`;
                 

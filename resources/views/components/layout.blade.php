@@ -246,7 +246,7 @@
 
 
         <!-- Main Content -->
-        <div id="main-content" class="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+        <div id="main-content" class="flex-1 min-w-0 flex flex-col lg:ml-64 transition-all duration-300">
 
             <!-- Header -->
             @include('components.header')

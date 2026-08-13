@@ -245,6 +245,7 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
         Route::put('/myleads/{id}', [MyLeadsController::class, 'update'])->name('myleads.update');
         Route::get('/myleads/{id}', [MyLeadsController::class, 'show'])->name('myleads.show');
         Route::get('/myleads/{id}/history', [MyLeadsController::class, 'history'])->name('myleads.history');
+        Route::put('/myleads/history/{id}', [MyLeadsController::class, 'updateHistory'])->name('myleads.history.update');
     });
 
 
