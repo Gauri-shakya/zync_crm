@@ -86,8 +86,10 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+    Route::post('/dashboard/preferences', [DashboardController::class, 'updatePreferences'])
+        ->name('dashboard.preferences');
+        
     // ->middleware('permission:dashboard');
-
 
     // Clients
     Route::middleware('permission:besdex')->group(function () {

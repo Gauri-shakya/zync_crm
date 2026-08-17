@@ -156,4 +156,23 @@ class DashboardController extends Controller
             'contactsList'
         ));
     }
+
+    public function updatePreferences(Request $request)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login.show');
+        }
+
+        $request->validate([
+            'dashboard_cards' => 'nullable|array',
+            'dashboard_cards.*' => 'string'
+        ]);
+
+        $user = Auth::user();
+        $user->update([
+            'dashboard_preferences' => $request->dashboard_cards ?? []
+        ]);
+
+        return redirect()->back()->with('success', 'Dashboard preferences updated successfully!');
+    }
 }

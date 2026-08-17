@@ -4,14 +4,37 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<div class="flex-1 overflow-auto p-3 sm:p-4 md:p-5 lg:p-6">
-    <div class="max-w-7xl mx-auto space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6">
-        <!-- Page Header -->
-        <div class="px-2 sm:px-3 md:px-0">
-            <h2 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">Dashboard Overview</h2>
-            <p class="text-xs sm:text-sm md:text-base text-gray-500 mt-1 sm:mt-1.5 md:mt-2 leading-relaxed">Track your marketing performance and client relationships</p>
+<div class="flex-1 overflow-auto p-3 sm:p-4 md:p-5 lg:p-6 relative bg-slate-50/30">
+    @unless(auth()->user()->hasRole('admin'))
+    <!-- Particles Canvas (Only for non-admin) -->
+    <canvas id="dashboard-particles" class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-60"></canvas>
+    @endunless
+
+    <div class="max-w-7xl mx-auto space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6 relative z-10">
+        <!-- Welcome Banner -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl sm:rounded-2xl p-4 sm:p-5 text-white shadow-[0_8px_30px_-4px_rgba(79,70,229,0.3)] flex items-center justify-between relative overflow-hidden mx-2 sm:mx-3 md:mx-0">
+            <!-- Decorative shapes -->
+            <div class="absolute right-0 top-0 w-48 h-48 bg-white opacity-10 rounded-full transform translate-x-16 -translate-y-16 pointer-events-none"></div>
+            <div class="absolute right-32 bottom-0 w-32 h-32 bg-white opacity-5 rounded-full transform translate-y-12 pointer-events-none"></div>
+            
+            <div class="relative z-10">
+                <h2 class="text-base sm:text-lg md:text-xl lg:text-2xl font-bold leading-tight flex items-center gap-2">
+                    Welcome back, {{ auth()->user()->name }}! <span class="animate-bounce inline-block">👋</span>
+                </h2>
+                <p class="text-[10px] sm:text-xs md:text-sm text-indigo-100 mt-0.5 sm:mt-1">Here's what's happening with your projects today.</p>
+            </div>
+            
+            @unless(auth()->user()->hasRole('admin'))
+            <div class="relative z-10">
+                <button onclick="document.getElementById('customizeCardsModal').classList.remove('hidden')" class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-white/20 hover:bg-white/30 rounded-lg sm:rounded-xl transition-all duration-300 backdrop-blur-md border border-white/30 shadow-sm hover:shadow-md hover:scale-105 active:scale-95">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Customize
+                </button>
+            </div>
+            @endunless
         </div>
 
+        @hasrole('admin')
         <!-- Stats Cards - Mobile optimized grid -->
         <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 px-2 sm:px-3 md:px-0">
             <!-- Revenue Card -->
@@ -133,6 +156,69 @@
                 </div>
             </div>
         </div>
+
+        @else
+        <!-- User Dashboard (Non-Admin) -->
+        <div class="mb-4 px-2 sm:px-3 md:px-0">
+            <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 leading-tight">My Shortcuts</h3>
+        </div>
+
+        <!-- Stats Cards - Shortcut Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 px-2 sm:px-3 md:px-0 mb-6">
+            @php
+            $sidebarItems = [
+                ['name' => 'Users', 'route' => 'users', 'permission' => 'users', 'bg' => 'from-blue-50 to-blue-100 border-blue-100', 'text' => 'text-blue-600', 'icon' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'],
+                ['name' => 'Roles', 'route' => 'roles', 'permission' => 'roles', 'bg' => 'from-indigo-50 to-indigo-100 border-indigo-100', 'text' => 'text-indigo-600', 'icon' => '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'],
+                ['name' => 'Besdex', 'route' => 'clients.index', 'permission' => 'besdex', 'bg' => 'from-purple-50 to-purple-100 border-purple-100', 'text' => 'text-purple-600', 'icon' => '<path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>'],
+                ['name' => 'Attendance Records', 'route' => 'attendance-record.index', 'permission' => 'Attendance Records', 'bg' => 'from-emerald-50 to-emerald-100 border-emerald-100', 'text' => 'text-emerald-600', 'icon' => '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>'],
+                ['name' => 'My Leads', 'route' => 'myleads', 'permission' => 'my leads', 'bg' => 'from-blue-50 to-blue-100 border-blue-100', 'text' => 'text-blue-600', 'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="23 11 20 14 17 11"/>'],
+                ['name' => 'Proposal', 'route' => 'proposal', 'permission' => 'proposal', 'bg' => 'from-pink-50 to-pink-100 border-pink-100', 'text' => 'text-pink-600', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>'],
+                ['name' => 'My Attendance', 'route' => 'my-attendance.index', 'permission' => 'My Attendance', 'bg' => 'from-teal-50 to-teal-100 border-teal-100', 'text' => 'text-teal-600', 'icon' => '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'],
+                ['name' => 'Salary', 'route' => 'salary.index', 'permission' => 'salary', 'bg' => 'from-green-50 to-green-100 border-green-100', 'text' => 'text-green-600', 'icon' => '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'],
+                ['name' => 'To-Do', 'route' => 'todo.index', 'permission' => 'To-Do', 'bg' => 'from-yellow-50 to-yellow-100 border-yellow-100', 'text' => 'text-yellow-600', 'icon' => '<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'],
+                ['name' => 'Tasks', 'route' => 'tasks.index', 'permission' => 'task', 'bg' => 'from-orange-50 to-orange-100 border-orange-100', 'text' => 'text-orange-600', 'icon' => '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>'],
+                ['name' => 'Calendar', 'route' => 'calendar.index', 'permission' => 'Calendar', 'bg' => 'from-red-50 to-red-100 border-red-100', 'text' => 'text-red-600', 'icon' => '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'],
+                ['name' => 'Links and Remarks', 'route' => 'linksandremark.index', 'permission' => 'Links and Remarks', 'bg' => 'from-cyan-50 to-cyan-100 border-cyan-100', 'text' => 'text-cyan-600', 'icon' => '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'],
+                ['name' => 'Invoice', 'route' => 'invoices.index', 'permission' => 'invoice', 'bg' => 'from-slate-50 to-slate-100 border-slate-100', 'text' => 'text-slate-600', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>'],
+                ['name' => 'Leave Record', 'route' => 'employeeportal.index', 'permission' => 'Leave Record', 'bg' => 'from-lime-50 to-lime-100 border-lime-100', 'text' => 'text-lime-600', 'icon' => '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>'],
+                ['name' => 'Leave Apply', 'route' => 'employeeportal.index', 'permission' => 'Leave Apply', 'bg' => 'from-rose-50 to-rose-100 border-rose-100', 'text' => 'text-rose-600', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>'],
+                ['name' => 'Contact', 'route' => 'contacts.index', 'permission' => 'contact', 'bg' => 'from-sky-50 to-sky-100 border-sky-100', 'text' => 'text-sky-600', 'icon' => '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>'],
+                ['name' => 'Report', 'route' => 'rr.index', 'permission' => 'report', 'bg' => 'from-violet-50 to-violet-100 border-violet-100', 'text' => 'text-violet-600', 'icon' => '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>'],
+                ['name' => 'Notepad', 'route' => 'notepad.index', 'permission' => 'notepad', 'bg' => 'from-amber-50 to-amber-100 border-amber-100', 'text' => 'text-amber-600', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>'],
+                ['name' => 'My Tickets', 'route' => 'user.support.ticket.index', 'permission' => 'Raise Ticket', 'bg' => 'from-stone-50 to-stone-100 border-stone-100', 'text' => 'text-stone-600', 'icon' => '<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>'],
+                ['name' => 'Upgrade Plan', 'route' => 'upgrade.index', 'permission' => null, 'bg' => 'from-orange-50 to-orange-100 border-orange-100', 'text' => 'text-orange-600', 'icon' => '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>']
+            ];
+            @endphp
+            
+            @php 
+                $displayedCards = 0; 
+                $preferences = auth()->user()->dashboard_preferences;
+            @endphp
+            @foreach($sidebarItems as $item)
+                @if(!$item['permission'] || auth()->user()->hasRole('admin') || auth()->user()->can($item['permission']))
+                    @php 
+                        if (is_array($preferences)) {
+                            if (!in_array($item['name'], $preferences)) continue;
+                        } else {
+                            // Default behavior: show first 6 allowed items
+                            if($displayedCards >= 6) continue;
+                        }
+                        $displayedCards++;
+                    @endphp
+                <div onclick="window.location.href='{{ route($item['route']) }}'" class="cursor-pointer bg-white rounded-xl sm:rounded-2xl border border-gray-100/80 p-4 sm:p-5 md:p-6 relative overflow-hidden shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_32px_-12px_rgba(79,70,229,0.15)] hover:-translate-y-1.5 hover:border-indigo-200 transition-all duration-300 group flex items-center justify-between">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br {{ $item['bg'] }} rounded-full opacity-30 group-hover:scale-150 transition-transform duration-500 blur-xl z-0 pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <p class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 group-hover:text-indigo-400 transition-colors">Shortcut</p>
+                        <h3 class="text-sm sm:text-base md:text-lg font-extrabold text-gray-800 leading-tight group-hover:text-indigo-900 transition-colors">{{ $item['name'] }}</h3>
+                    </div>
+                    <div class="relative z-10 p-2.5 sm:p-3 rounded-2xl bg-gradient-to-br {{ $item['bg'] }} border border-white/50 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6 {{ $item['text'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! $item['icon'] !!}</svg>
+                    </div>
+                </div>
+                @endif
+            @endforeach
+        </div>
+        @endhasrole
 
         <!-- Recent Activity -->
         <div class="bg-white rounded-lg sm:rounded-xl border border-gray-200 shadow-sm mx-2 sm:mx-3 md:mx-0">
@@ -574,10 +660,221 @@
             });
         });
     })();
+
+    // Particles Animation (wrapped in DOMContentLoaded to ensure canvas is found)
+    document.addEventListener("DOMContentLoaded", function() {
+        const canvas = document.getElementById('dashboard-particles');
+        if(canvas) {
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            
+            function resize() {
+                width = canvas.width = canvas.parentElement.offsetWidth;
+                height = canvas.height = canvas.parentElement.offsetHeight;
+            }
+            
+            window.addEventListener('resize', resize);
+            resize();
+            
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.size = Math.random() * 3 + 1; // slightly larger
+                    this.speedX = Math.random() * 0.6 - 0.3; // slightly faster
+                    this.speedY = Math.random() * -0.8 - 0.3;
+                    this.opacity = Math.random() * 0.5 + 0.2; // more visible
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if(this.y < 0) {
+                        this.y = height;
+                        this.x = Math.random() * width;
+                    }
+                    if(this.x < 0) this.x = width;
+                    if(this.x > width) this.x = 0;
+                }
+                draw() {
+                    ctx.fillStyle = `rgba(99, 102, 241, ${this.opacity})`; // indigo color matching theme
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            function init() {
+                particles = [];
+                // More particles for a better effect
+                let count = window.innerWidth < 768 ? 40 : 80;
+                for(let i = 0; i < count; i++) {
+                    particles.push(new Particle());
+                }
+            }
+            
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+            
+            init();
+            animate();
+        }
+    });
+
+    // Modal logic for customizing cards
+    function closeCustomizeModal() {
+        document.getElementById('customizeCardsModal').classList.add('hidden');
+    }
+</script>
+
+<!-- Customize Cards Modal -->
+@unless(auth()->user()->hasRole('admin'))
+<div id="customizeCardsModal" class="hidden fixed inset-0 z-[200] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeCustomizeModal()"></div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div id="customizeModalContent" class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle w-full max-w-[95%] sm:max-w-lg md:max-w-xl relative">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-100">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-50 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">Customize Dashboard Cards</h3>
+                        <p class="text-sm text-gray-500 mt-1">Select the shortcuts you want to appear on your dashboard.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="customizePreferencesForm" action="{{ route('dashboard.preferences') }}" method="POST">
+                @csrf
+                <div class="bg-slate-50/50 px-4 py-5 sm:p-6 max-h-[65vh] overflow-y-auto">
+                    <div class="space-y-3">
+                        @php 
+                            $preferences = auth()->user()->dashboard_preferences;
+                            $defaultCardsCount = 0;
+                        @endphp
+                        @foreach($sidebarItems as $item)
+                            @if(!$item['permission'] || auth()->user()->can($item['permission']))
+                                @php
+                                    // Determine if this card is checked
+                                    if (is_array($preferences)) {
+                                        $isChecked = in_array($item['name'], $preferences);
+                                    } else {
+                                        $isChecked = ($defaultCardsCount < 6);
+                                        $defaultCardsCount++;
+                                    }
+                                @endphp
+                                <label class="flex items-center p-3 sm:p-4 border border-gray-200 rounded-xl bg-white cursor-pointer hover:bg-slate-50 hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+                                    <input type="checkbox" name="dashboard_cards[]" value="{{ $item['name'] }}" class="peer w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 z-10 transition-transform hover:scale-110 cursor-pointer" {{ $isChecked ? 'checked' : '' }}>
+                                    <div class="ml-3 sm:ml-4 flex items-center gap-3 sm:gap-4 z-10 w-full">
+                                        <div class="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br {{ $item['bg'] }} shrink-0 shadow-sm group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+                                            <svg class="w-4 h-4 sm:w-5 sm:h-5 {{ $item['text'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! $item['icon'] !!}</svg>
+                                        </div>
+                                        <span class="text-sm sm:text-base font-bold text-gray-700 group-hover:text-gray-900 transition-colors">{{ $item['name'] }}</span>
+                                    </div>
+                                    <!-- Checked state overlay -->
+                                    <div class="absolute inset-0 border-2 border-transparent peer-checked:border-indigo-500 peer-checked:bg-indigo-50/40 rounded-xl transition-all duration-300 pointer-events-none"></div>
+                                </label>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+                <div class="bg-white px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-100 z-10 relative">
+                    <button type="submit" id="savePreferencesBtn" class="w-full inline-flex justify-center items-center rounded-xl border border-transparent shadow-[0_4px_14px_0_rgba(99,102,241,0.39)] px-4 py-2 sm:py-2.5 text-base font-bold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-300 hover:shadow-[0_6px_20px_rgba(99,102,241,0.23)] hover:-translate-y-0.5 relative overflow-hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 bg-[length:200%_auto] animate-gradient-shift">
+                        <span class="relative z-10 flex items-center gap-2">
+                            <svg class="w-4 h-4 animate-[spin_4s_linear_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Save Preferences
+                        </span>
+                    </button>
+                    <button type="button" onclick="closeCustomizeModal()" class="mt-3 w-full inline-flex justify-center items-center rounded-xl border border-gray-200 shadow-sm px-4 py-2 sm:py-2.5 bg-white text-base font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-300 hover:border-gray-300 hover:shadow-md">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endunless
+
+<script>
+    // Customize Modal Animation Logic
+    document.addEventListener("DOMContentLoaded", function() {
+        const form = document.getElementById('customizePreferencesForm');
+        if(form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // Pause submission
+                
+                const btn = document.getElementById('savePreferencesBtn');
+                const originalWidth = btn.offsetWidth;
+                
+                // Change button state
+                btn.style.width = originalWidth + 'px'; // maintain width
+                btn.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                `;
+                btn.classList.add('opacity-90', 'cursor-not-allowed', 'scale-95');
+
+                // Create bubble animation inside modal
+                const modalContent = document.getElementById('customizeModalContent');
+                const bubble = document.createElement('div');
+                bubble.className = 'absolute bg-indigo-500 rounded-full z-50 pointer-events-none';
+                
+                // Position at the button's center
+                const btnRect = btn.getBoundingClientRect();
+                const modalRect = modalContent.getBoundingClientRect();
+                const centerX = btnRect.left - modalRect.left + (btnRect.width / 2);
+                const centerY = btnRect.top - modalRect.top + (btnRect.height / 2);
+                
+                bubble.style.width = '20px';
+                bubble.style.height = '20px';
+                bubble.style.left = centerX + 'px';
+                bubble.style.top = centerY + 'px';
+                bubble.style.transform = 'translate(-50%, -50%)';
+                bubble.style.opacity = '0.8';
+                bubble.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                
+                modalContent.appendChild(bubble);
+                
+                // Trigger animation
+                setTimeout(() => {
+                    bubble.style.width = '1200px';
+                    bubble.style.height = '1200px';
+                    bubble.style.opacity = '0';
+                }, 10);
+                
+                // Submit form after animation finishes
+                setTimeout(() => {
+                    form.submit();
+                }, 600);
+            });
+        }
+    });
 </script>
 
 <!-- Additional responsive CSS for very small screens -->
 <style>
+    @keyframes gradient-shift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+    .animate-gradient-shift {
+        animation: gradient-shift 3s ease infinite;
+    }
+
     /* Mobile-first responsive design */
     * {
         -webkit-tap-highlight-color: transparent;

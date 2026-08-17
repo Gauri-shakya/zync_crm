@@ -408,7 +408,7 @@
             $dashboardCategory = 'follow_up';
         }
     @endphp
-    <div class="client-card rounded-lg border border-slate-200/60 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group" data-status="{{ $client->status }}" data-category="{{ $dashboardCategory }}" data-assigned-user="{{ $client->leadAction->user_id ?? '' }}">
+    <div class="client-card rounded-lg border border-slate-200/60 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group" data-status="{{ $client->status }}" data-category="{{ $dashboardCategory }}" data-assigned-user="{{ ($client->leadAction && $client->leadAction->status !== 'unlocked') ? $client->leadAction->user_id : '' }}">
         <div class="flex flex-col space-y-1.5 p-6 pb-3">
             <div class="flex items-start justify-between">
                 <div class="flex items-start gap-3 flex-1 min-w-0">
@@ -645,7 +645,7 @@
                         <p class="text-xs text-slate-500"> <strong>Notes:</strong> {{ $client->notes }}</p>
                     </div>
                     <div class="mt-1">
-                        <button onclick="openNotesModal({{ $client->id }}, '{{ addslashes($client->company_name) }}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-md transition-colors shadow-sm">
+                        <button onclick="openNotesModal({{ $client->id }}, '{{ addslashes($client->company_name) }}', {{ (!isset($client->leadAction) || $client->leadAction->user_id == auth()->id() || auth()->user()->hasRole('admin')) ? 'true' : 'false' }})" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-md transition-colors shadow-sm">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                             Edit Comments
                         </button>
@@ -754,7 +754,7 @@
                     $dashboardCategory = 'follow_up';
                 }
             @endphp
-            <tr class="client-table-row border-b border-slate-100 hover:bg-slate-50/80 transition-all duration-200 group" data-status="{{ $client->status }}" data-category="{{ $dashboardCategory }}" data-assigned-user="{{ $client->leadAction->user_id ?? '' }}">
+            <tr class="client-table-row border-b border-slate-100 hover:bg-slate-50/80 transition-all duration-200 group" data-status="{{ $client->status }}" data-category="{{ $dashboardCategory }}" data-assigned-user="{{ ($client->leadAction && $client->leadAction->status !== 'unlocked') ? $client->leadAction->user_id : '' }}">
                 <td class="px-5 py-4">
                     <div class="flex items-center gap-3.5">
                         <div class="hidden sm:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br {{ $avatarColors }} font-bold shadow-sm ring-4">
@@ -819,7 +819,7 @@
                         <a href="{{ $canSeeFullDetails ? 'https://wa.me/' . preg_replace('/[^0-9]/', '', $client->phone) : 'javascript:void(0)' }}" target="{{ $canSeeFullDetails ? '_blank' : '' }}" class="p-2 text-white bg-green-500 rounded-full transition-all sm:inline-flex {{ $canSeeFullDetails ? 'hover:bg-green-600 hover:shadow-md hover:scale-110' : 'opacity-50 cursor-not-allowed' }}" title="WhatsApp">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.209-3.553-8.485"/></svg>
                         </a>
-                        <button onclick="openNotesModal({{ $client->id }}, '{{ addslashes($client->company_name) }}')" class="p-2 text-white bg-indigo-500 rounded-full transition-all sm:inline-flex hover:bg-indigo-600 hover:shadow-md hover:scale-110" title="Edit Comments">
+                        <button onclick="openNotesModal({{ $client->id }}, '{{ addslashes($client->company_name) }}', {{ (!isset($client->leadAction) || $client->leadAction->user_id == auth()->id() || auth()->user()->hasRole('admin')) ? 'true' : 'false' }})" class="p-2 text-white bg-indigo-500 rounded-full transition-all sm:inline-flex hover:bg-indigo-600 hover:shadow-md hover:scale-110" title="Edit Comments">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                         </button>
                         <div class="relative inline-block text-left ">
@@ -1380,7 +1380,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const assignedUserId = card.getAttribute('data-assigned-user');
 
             const matchesSearch = clientText.includes(searchTerm);
-            const matchesFilter = actualFilter === 'all' || clientStatus === actualFilter || clientCategory === actualFilter;
+            let matchesFilter = false;
+            if (currentFilter === 'all') {
+                matchesFilter = (assignedUserId === '');
+            } else if (currentFilter === 'lead' || currentFilter === 'my_all') {
+                matchesFilter = (assignedUserId !== '');
+            } else {
+                matchesFilter = (clientStatus === actualFilter || clientCategory === actualFilter);
+            }
             const matchesUser = !isUserDashboard || (assignedUserId === currentUserId);
 
             card.style.display = (matchesSearch && matchesFilter && matchesUser) ? 'block' : 'none';
@@ -1395,7 +1402,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const assignedUserId = row.getAttribute('data-assigned-user');
 
             const matchesSearch = clientText.includes(searchTerm);
-            const matchesFilter = actualFilter === 'all' || clientStatus === actualFilter || clientCategory === actualFilter;
+            let matchesFilter = false;
+            if (currentFilter === 'all') {
+                matchesFilter = (assignedUserId === '');
+            } else if (currentFilter === 'lead' || currentFilter === 'my_all') {
+                matchesFilter = (assignedUserId !== '');
+            } else {
+                matchesFilter = (clientStatus === actualFilter || clientCategory === actualFilter);
+            }
             const matchesUser = !isUserDashboard || (assignedUserId === currentUserId);
 
             row.style.display = (matchesSearch && matchesFilter && matchesUser) ? 'table-row' : 'none';
@@ -1444,6 +1458,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // Run filter on page load to apply default "All" logic
+    filterClients();
 
     // Open modal for editing client
     // Use event delegation on document (works for dynamic elements)
@@ -2146,12 +2163,27 @@ document.getElementById('deleteForm')?.addEventListener('submit', function(e) {
     const newNoteText = document.getElementById('newNoteText');
     const notesModalClientName = document.getElementById('notesModalClientName');
 
-    function openNotesModal(clientId, clientName) {
+    function openNotesModal(clientId, clientName, canComment = true) {
         notesModal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
         noteClientId.value = clientId;
         notesModalClientName.textContent = clientName;
         newNoteText.value = '';
+        
+        // Disable input if user doesn't have permission (lead taken by someone else)
+        if (!canComment) {
+            newNoteText.disabled = true;
+            newNoteText.placeholder = "Lead taken (read-only)";
+            newNoteText.classList.add('bg-gray-100', 'cursor-not-allowed');
+            addNoteForm.querySelector('button[type="submit"]').disabled = true;
+            addNoteForm.querySelector('button[type="submit"]').classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            newNoteText.disabled = false;
+            newNoteText.placeholder = "Add a comment...";
+            newNoteText.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            addNoteForm.querySelector('button[type="submit"]').disabled = false;
+            addNoteForm.querySelector('button[type="submit"]').classList.remove('opacity-50', 'cursor-not-allowed');
+        }
         
         // Show loader
         notesTimelineContainer.innerHTML = '<div class="flex justify-center py-8"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div></div>';
@@ -2191,16 +2223,23 @@ document.getElementById('deleteForm')?.addEventListener('submit', function(e) {
         let html = '';
         notes.forEach(note => {
             html += `
-            <div class="flex gap-3 mb-4">
-                <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold text-xs ring-2 ring-white">
-                    ${note.user_name.charAt(0).toUpperCase()}
-                </div>
-                <div class="flex-1 bg-gray-50 rounded-lg p-3 border border-gray-100 shadow-sm">
-                    <div class="flex items-center justify-between mb-1.5">
-                        <span class="text-xs font-semibold text-gray-700">${note.user_name}</span>
-                        <span class="text-[10px] text-gray-500 font-medium">${note.created_at}</span>
+            <div class="py-3.5 border-b border-gray-100/80 last:border-0 hover:bg-slate-50/80 transition-all duration-200 -mx-5 px-5 group">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 mt-0.5">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-indigo-700 bg-gradient-to-br from-indigo-50 to-indigo-100 ring-4 ring-white shadow-sm group-hover:shadow transition-all duration-200">
+                            ${note.user_name.charAt(0).toUpperCase()}
+                        </div>
                     </div>
-                    <div class="text-sm text-gray-800 whitespace-pre-wrap break-words leading-relaxed">${note.response}</div>
+                    <div class="flex-1 min-w-0 pt-0.5">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2">
+                            <h4 class="text-[15px] font-bold text-gray-800 tracking-tight">${note.user_name}</h4>
+                            <p class="text-[11px] text-gray-400 font-medium flex items-center gap-1.5 whitespace-nowrap bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100/50">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                ${note.created_at}
+                            </p>
+                        </div>
+                        <p class="text-[14px] text-gray-600 whitespace-pre-wrap break-words leading-relaxed mt-1 group-hover:text-gray-800 transition-colors duration-200">${note.response}</p>
+                    </div>
                 </div>
             </div>`;
         });
@@ -2241,16 +2280,23 @@ document.getElementById('deleteForm')?.addEventListener('submit', function(e) {
                 
                 // Append new note
                 const noteHtml = `
-                <div class="flex gap-3 mb-4 animate-fade-in-up">
-                    <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold text-xs ring-2 ring-white">
-                        ${data.note.user_name.charAt(0).toUpperCase()}
-                    </div>
-                    <div class="flex-1 bg-gray-50 rounded-lg p-3 border border-gray-100 shadow-sm">
-                        <div class="flex items-center justify-between mb-1.5">
-                            <span class="text-xs font-semibold text-gray-700">${data.note.user_name}</span>
-                            <span class="text-[10px] text-gray-500 font-medium">${data.note.created_at}</span>
+                <div class="py-3.5 border-b border-gray-100/80 last:border-0 hover:bg-slate-50/80 transition-all duration-200 -mx-5 px-5 group animate-fade-in-up">
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-indigo-700 bg-gradient-to-br from-indigo-50 to-indigo-100 ring-4 ring-white shadow-sm group-hover:shadow transition-all duration-200">
+                                ${data.note.user_name.charAt(0).toUpperCase()}
+                            </div>
                         </div>
-                        <div class="text-sm text-gray-800 whitespace-pre-wrap break-words leading-relaxed">${data.note.response}</div>
+                        <div class="flex-1 min-w-0 pt-0.5">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2">
+                                <h4 class="text-[15px] font-bold text-gray-800 tracking-tight">${data.note.user_name}</h4>
+                                <p class="text-[11px] text-gray-400 font-medium flex items-center gap-1.5 whitespace-nowrap bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100/50">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    ${data.note.created_at}
+                                </p>
+                            </div>
+                            <p class="text-[14px] text-gray-600 whitespace-pre-wrap break-words leading-relaxed mt-1 group-hover:text-gray-800 transition-colors duration-200">${data.note.response}</p>
+                        </div>
                     </div>
                 </div>`;
                 
