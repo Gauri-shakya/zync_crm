@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRM Admin | @yield('title')</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon_io/apple-touch-icon.png') }}">
@@ -208,10 +209,68 @@
                     <div class="h-8 w-px bg-slate-200"></div>
 
                     <!-- Notifications -->
-                    <!--<button class="relative p-2 text-slate-400 hover:text-blue-600 transition-colors rounded-full hover:bg-blue-50">-->
-                    <!--    <i class="far fa-bell text-xl"></i>-->
-                    <!--    <span class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>-->
-                    <!--</button>-->
+                    @php
+                        $superadminUser = auth('superadmin')->user();
+                        $notifications = $superadminUser ? $superadminUser->notifications()->latest()->get() : collect();
+                        $unreadCount = $superadminUser ? $superadminUser->unreadNotifications->count() : 0;
+                    @endphp
+                    <div class="relative">
+                        <button id="notificationBtn" class="relative p-2 text-slate-400 hover:text-blue-600 transition-colors rounded-full hover:bg-blue-50 focus:outline-none">
+                            <i class="far fa-bell text-xl"></i>
+                            @if($unreadCount > 0)
+                                <span id="notificationPing" class="absolute top-0.5 right-0.5 w-4 h-4 bg-red-400 rounded-full animate-ping opacity-75"></span>
+                                <span id="notificationBadge" class="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
+                            @endif
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="notificationDropdown" class="hidden absolute -right-16 sm:right-0 mt-2 w-[300px] sm:w-80 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden z-50 transform origin-top-right transition-all">
+                            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                                <h3 class="text-sm font-bold text-slate-800">Notifications</h3>
+                                @if($unreadCount > 0)
+                                    <span id="newNotifLabel" class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">{{ $unreadCount }} New</span>
+                                @endif
+                            </div>
+                            
+                            <div class="max-h-80 overflow-y-auto custom-scrollbar">
+                                @forelse($notifications as $notification)
+                                    <a href="{{ $notification->data['url'] ?? '#' }}" class="notif-item block px-4 py-3 border-b border-gray-50 transition-colors group {{ $notification->read_at ? 'bg-gray-50/50 grayscale-[0.8] opacity-75' : 'hover:bg-indigo-50/50 bg-white' }}">
+                                        <div class="flex gap-3">
+                                            <div class="w-8 h-8 rounded-full {{ $notification->read_at ? 'bg-indigo-50 text-indigo-400' : 'bg-indigo-100 text-indigo-600' }} flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                <i class="fas fa-{{ $notification->data['icon'] ?? 'bell' }} text-xs"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex justify-between items-start mb-0.5">
+                                                    <p class="text-xs {{ $notification->read_at ? 'font-medium text-gray-800' : 'font-bold text-gray-900' }} truncate">
+                                                        {{ $notification->data['title'] ?? 'Notification' }}
+                                                    </p>
+                                                    <span class="text-[9px] font-medium text-gray-400 whitespace-nowrap ml-2 uppercase tracking-wider">
+                                                        {{ $notification->created_at->timezone('Asia/Kolkata')->format('h:i A') }}
+                                                    </span>
+                                                </div>
+                                                <p class="text-[11px] {{ $notification->read_at ? 'text-gray-500' : 'text-gray-600' }} leading-tight line-clamp-2">
+                                                    {{ $notification->data['message'] ?? '' }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                @empty
+                                    <div class="px-4 py-8 text-center">
+                                        <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-300">
+                                            <i class="fas fa-bell-slash text-xl"></i>
+                                        </div>
+                                        <p class="text-xs font-medium text-gray-500">No notifications</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                            
+                            <div id="markAllContainer" class="px-4 py-2 text-center bg-gray-50/50 border-t {{ $unreadCount > 0 ? '' : 'hidden' }}">
+                                <button onclick="markNotificationsRead()" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-widest transition-colors">
+                                    Mark all as read
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Profile -->
                     <div class="flex items-center gap-3 pl-2">
@@ -270,6 +329,95 @@
             animation: fadeInDown 0.3s ease-out forwards;
         }
     </style>
-    <!--@yield('scripts')-->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Notification Dropdown Toggle Logic
+            const notifBtn = document.getElementById('notificationBtn');
+            const notifDropdown = document.getElementById('notificationDropdown');
+            
+            if (notifBtn && notifDropdown) {
+                notifBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    notifDropdown.classList.toggle('hidden');
+                    
+                    // Auto-hide the count badge when they view the notifications
+                    const badge = document.getElementById('notificationBadge');
+                    const ping = document.getElementById('notificationPing');
+                    const newLabel = document.getElementById('newNotifLabel');
+                    
+                    if (badge && badge.style.display !== 'none') {
+                        badge.style.display = 'none';
+                        if (ping) ping.style.display = 'none';
+                        if (newLabel) newLabel.style.display = 'none';
+                        
+                        // Send silent background request to mark as read in DB
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                        fetch('/superadmin/notifications/read', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        }).catch(console.error);
+                    }
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+                        notifDropdown.classList.add('hidden');
+                    }
+                });
+            }
+        });
+        
+        function markNotificationsRead() {
+            const badge = document.getElementById('notificationBadge');
+            const ping = document.getElementById('notificationPing');
+            const newLabel = document.getElementById('newNotifLabel');
+            const markAllContainer = document.getElementById('markAllContainer');
+            
+            if (badge) badge.style.display = 'none';
+            if (ping) ping.style.display = 'none';
+            if (newLabel) newLabel.style.display = 'none';
+            if (markAllContainer) markAllContainer.classList.add('hidden');
+            
+            // Update items styling to read state
+            document.querySelectorAll('.notif-item').forEach(item => {
+                // Change classes for read state
+                item.className = 'notif-item block px-4 py-3 border-b border-gray-50 transition-colors group bg-gray-50/50 grayscale-[0.8] opacity-75';
+                
+                // Change icon circle colors
+                const iconCircle = item.querySelector('.w-8.h-8.rounded-full');
+                if (iconCircle) {
+                    iconCircle.classList.remove('bg-indigo-100', 'text-indigo-600');
+                    iconCircle.classList.add('bg-indigo-50', 'text-indigo-400');
+                }
+                
+                // Change text colors
+                const titleText = item.querySelector('p.truncate');
+                if (titleText) {
+                    titleText.classList.remove('font-bold', 'text-gray-900');
+                    titleText.classList.add('font-medium', 'text-gray-800');
+                }
+                const msgText = item.querySelectorAll('p')[1];
+                if (msgText) {
+                    msgText.classList.remove('text-gray-600');
+                    msgText.classList.add('text-gray-500');
+                }
+            });
+            
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            fetch('/superadmin/notifications/read', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            }).catch(console.error);
+        }
+    </script>
+    @yield('scripts')
 </body>
 </html>

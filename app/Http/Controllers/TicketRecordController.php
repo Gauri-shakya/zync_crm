@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\HelpAndSupport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
 use Illuminate\Support\Facades\Storage;
+use App\Models\User;
+use App\Notifications\SystemNotification;
 
 class TicketRecordController extends Controller
 {
@@ -116,6 +117,18 @@ class TicketRecordController extends Controller
             $request->boolean('is_internal'),
             $attachmentPaths
         );
+
+        if (!$request->boolean('is_internal') && $ticket->client_id) {
+            $client = User::find($ticket->client_id);
+            if ($client) {
+                $client->notify(new SystemNotification([
+                    'title' => 'Support Team Reply',
+                    'message' => 'New response on your ticket: ' . $ticket->title,
+                    'url' => route('user.support.ticket.show', $ticket->id),
+                    'icon' => 'headset'
+                ]));
+            }
+        }
 
         return back()->with('success', 'Reply sent successfully');
     }

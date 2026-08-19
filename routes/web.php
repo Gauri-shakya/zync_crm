@@ -848,6 +848,13 @@ Route::post('/notifications/{id}/read', function ($id) {
     return response()->json(['success' => true]);
 });
 
+Route::post('/superadmin/notifications/read', function () {
+    if (auth('superadmin')->check()) {
+        auth('superadmin')->user()->unreadNotifications->markAsRead();
+    }
+    return response()->json(['success' => true]);
+});
+
 Route::get('/notifications/fetch', function () {
     // Get last 10 notifications (both read and unread)
     $notifications = auth()->user()->notifications()->latest()->take(10)->get()->map(function($n) {

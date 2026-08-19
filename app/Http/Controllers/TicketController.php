@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Permission;
+use App\Models\User;
+use App\Notifications\SystemNotification;
 
 class TicketController extends Controller
 {
@@ -77,6 +79,17 @@ class TicketController extends Controller
             // Add initial conversation with attachments
             $ticket->addConversation($request->description, Auth::id(), false, $attachmentData);
 
+            // Notify superadmins
+            $superadmins = \App\Models\SuperAdmin\Superadmin::all();
+            foreach ($superadmins as $admin) {
+                $admin->notify(new SystemNotification([
+                    'title' => 'New Ticket: ' . $ticket->title,
+                    'message' => Auth::user()->name . ' created a new support ticket.',
+                    'url' => route('ticket.record.show', encrypt($ticket->id)),
+                    'icon' => 'ticket-alt'
+                ]));
+            }
+
             return redirect()->route('user.support.ticket.index')->with('success', 'Ticket created successfully');
 
         } catch (\Exception $e) {
@@ -126,6 +139,17 @@ class TicketController extends Controller
             false, // Not internal
             $attachmentPaths
         );
+
+        // Notify superadmins
+        $superadmins = \App\Models\SuperAdmin\Superadmin::all();
+        foreach ($superadmins as $admin) {
+            $admin->notify(new SystemNotification([
+                'title' => 'Ticket Reply from ' . Auth::user()->name,
+                'message' => 'New response on ticket: ' . $ticket->title,
+                'url' => route('ticket.record.show', encrypt($ticket->id)),
+                'icon' => 'comment-dots'
+            ]));
+        }
 
         return back()->with('success', 'Reply sent successfully');
     }
