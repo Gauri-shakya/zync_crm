@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->json('dashboard_preferences')->nullable()->after('remember_token');
+            if (!Schema::hasColumn('users', 'dashboard_preferences')) {
+                $table->json('dashboard_preferences')->nullable()->after('remember_token');
+            }
         });
     }
 

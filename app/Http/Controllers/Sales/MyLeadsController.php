@@ -97,6 +97,17 @@ class MyLeadsController extends Controller
     return back()->with('success', 'Lead response saved successfully!');
 }
 
+    public function closedLeads()
+    {
+        $closedLeads = \App\Models\ClosedLead::with(['lead.client', 'user'])
+            ->where('company_id', Auth::user()->company_id)
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->paginate(15);
+            
+        return view('admin.sales.closed-leads', compact('closedLeads'));
+    }
+
     /**
      * Display the specified resource.
      */
@@ -175,9 +186,24 @@ $this->authorize('manage', $lead);
         // Log history after update
         $this->logHistory($lead, $oldData, $request->all());
 
+        if ($request->has('is_closed_deal') && strtolower($request->status) === 'closed') {
+            \App\Models\ClosedLead::create([
+                'company_id' => auth()->user()->company_id ?? null,
+                'lead_id' => $lead->id,
+                'user_id' => auth()->id(),
+                'service_name' => $request->service_name,
+                'closed_date' => $request->closed_date,
+                'payment_type' => $request->payment_type,
+                'total_amount' => $request->total_amount,
+                'paid_amount' => $request->paid_amount ?? 0,
+                'due_amount' => $request->due_amount ?? 0,
+                'next_payment_date' => $request->next_payment_date,
+            ]);
+        }
+
         // Optional: Redirect with success message
         if ($request->has('redirect_to') && $request->redirect_to === 'show') {
-            return redirect()->back()->with('success', 'Lead updated successfully!');
+            return redirect()->back()->with('success', 'Lead updated and closed successfully!');
         }
         
         return redirect()->route('myleads')

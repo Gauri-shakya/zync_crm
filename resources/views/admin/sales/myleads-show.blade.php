@@ -202,11 +202,93 @@
                                             <input type="hidden" name="project_type" value="{{ $lead->project_type }}">
                                             <input type="hidden" name="follow_up_time" value="{{ $lead->follow_up_time }}">
                                         </div>
-                                        <button type="submit" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md shadow-indigo-200 hover:-translate-y-0.5 transition-all text-sm">
+                                        <button type="button" id="btn-save-update" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md shadow-indigo-200 hover:-translate-y-0.5 transition-all text-sm">
                                             Save Update
                                         </button>
                                     </div>
                                 </form>
+                            </div>
+                        </div>
+
+                        <!-- Lead Closed Modal -->
+                        <div id="lead-closed-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                            <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                                <div class="fixed inset-0 transition-opacity bg-slate-900/75 backdrop-blur-sm" aria-hidden="true"></div>
+                                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-200">
+                                    <div class="px-6 py-5 bg-gradient-to-r from-emerald-500 to-teal-500">
+                                        <h3 class="text-xl font-bold leading-6 text-white flex items-center gap-2" id="modal-title">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            Lead Closed Form (Deal Won)
+                                        </h3>
+                                    </div>
+                                    <div class="px-6 py-6 bg-slate-50">
+                                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                            <!-- Read Only Info -->
+                                            <div class="col-span-2 bg-white p-4 rounded-xl border border-slate-200 grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <p class="text-xs font-bold text-slate-400 uppercase">Client Name</p>
+                                                    <p class="font-semibold text-slate-800">{{ $lead->client->name ?? 'N/A' }}</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-xs font-bold text-slate-400 uppercase">Phone</p>
+                                                    <p class="font-semibold text-slate-800">{{ $lead->client->phone ?? 'N/A' }}</p>
+                                                </div>
+                                                <div class="col-span-2">
+                                                    <p class="text-xs font-bold text-slate-400 uppercase">Email</p>
+                                                    <p class="font-semibold text-slate-800">{{ $lead->client->email ?? 'N/A' }}</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Form Fields -->
+                                            <div class="col-span-2 sm:col-span-1">
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">Closed For (Service) <span class="text-red-500">*</span></label>
+                                                <select id="modal_service_name" class="w-full bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-emerald-500 p-2.5 outline-none">
+                                                    <option value="Mobile App">Mobile App</option>
+                                                    <option value="Website Development">Website Development</option>
+                                                    <option value="SEO & Marketing">SEO & Marketing</option>
+                                                    <option value="CRM/ERP System">CRM/ERP System</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-span-2 sm:col-span-1">
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">Closed Date <span class="text-red-500">*</span></label>
+                                                <input type="date" id="modal_closed_date" value="{{ date('Y-m-d') }}" class="w-full bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-emerald-500 p-2.5 outline-none">
+                                            </div>
+                                            <div class="col-span-2 sm:col-span-1">
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">Payment Type <span class="text-red-500">*</span></label>
+                                                <select id="modal_payment_type" class="w-full bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-emerald-500 p-2.5 outline-none">
+                                                    <option value="one_time">One Time Payment</option>
+                                                    <option value="recurring">Recurring / Milestone</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-span-2 sm:col-span-1">
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">Total Amount <span class="text-red-500">*</span></label>
+                                                <input type="number" id="modal_total_amount" step="0.01" placeholder="e.g. 50000" class="w-full bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-emerald-500 p-2.5 outline-none">
+                                            </div>
+                                            <div class="col-span-2 sm:col-span-1">
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">Paid Amount (Advance)</label>
+                                                <input type="number" id="modal_paid_amount" step="0.01" value="0" class="w-full bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-emerald-500 p-2.5 outline-none">
+                                            </div>
+                                            <div class="col-span-2 sm:col-span-1">
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">Due Amount</label>
+                                                <input type="number" id="modal_due_amount" step="0.01" value="0" class="w-full bg-slate-100 border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5 outline-none cursor-not-allowed" readonly>
+                                            </div>
+                                            <div class="col-span-2">
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">Next Payment Date (If Due)</label>
+                                                <input type="date" id="modal_next_payment_date" class="w-full bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-emerald-500 p-2.5 outline-none">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="px-6 py-4 bg-white border-t border-slate-200 sm:flex sm:flex-row-reverse rounded-b-2xl">
+                                        <button type="button" id="btn-submit-modal" class="inline-flex justify-center w-full px-6 py-2.5 text-base font-bold text-white bg-emerald-600 border border-transparent rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                                            Confirm & Close Lead
+                                        </button>
+                                        <button type="button" id="btn-cancel-modal" class="inline-flex justify-center w-full px-6 py-2.5 mt-3 text-base font-bold text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -456,4 +538,85 @@
 </script>
 @endif
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusSelect = document.querySelector('select[name="status"]');
+        const mainForm = document.querySelector('form[action="{{ route('myleads.update', $lead->id) }}"]');
+        const btnSaveUpdate = document.getElementById('btn-save-update');
+        const modal = document.getElementById('lead-closed-modal');
+        const btnCancelModal = document.getElementById('btn-cancel-modal');
+        const btnSubmitModal = document.getElementById('btn-submit-modal');
+
+        // Due amount calculation
+        const totalInput = document.getElementById('modal_total_amount');
+        const paidInput = document.getElementById('modal_paid_amount');
+        const dueInput = document.getElementById('modal_due_amount');
+
+        function calculateDue() {
+            const total = parseFloat(totalInput.value) || 0;
+            const paid = parseFloat(paidInput.value) || 0;
+            dueInput.value = (total - paid).toFixed(2);
+        }
+
+        totalInput.addEventListener('input', calculateDue);
+        paidInput.addEventListener('input', calculateDue);
+
+        // Intercept form submission
+        btnSaveUpdate.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Validate main form first (required textarea)
+            if(!mainForm.reportValidity()) {
+                return;
+            }
+
+            if (statusSelect.value.toLowerCase() === 'closed') {
+                modal.classList.remove('hidden');
+            } else {
+                mainForm.submit();
+            }
+        });
+
+        // Cancel Modal
+        btnCancelModal.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+
+        // Submit from Modal
+        btnSubmitModal.addEventListener('click', function() {
+            // Validate modal required fields
+            const service = document.getElementById('modal_service_name').value;
+            const total = document.getElementById('modal_total_amount').value;
+            
+            if(!total || total <= 0) {
+                alert('Please enter a valid Total Amount.');
+                return;
+            }
+
+            // Append modal data to main form as hidden inputs
+            const fields = ['service_name', 'closed_date', 'payment_type', 'total_amount', 'paid_amount', 'due_amount', 'next_payment_date'];
+            
+            fields.forEach(field => {
+                // Remove existing if any
+                let existing = mainForm.querySelector(`input[name="${field}"]`);
+                if(existing) existing.remove();
+
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = field;
+                input.value = document.getElementById(`modal_${field}`).value;
+                mainForm.appendChild(input);
+            });
+
+            // Add a flag to indicate it's a modal close submission
+            let flag = document.createElement('input');
+            flag.type = 'hidden';
+            flag.name = 'is_closed_deal';
+            flag.value = '1';
+            mainForm.appendChild(flag);
+
+            // Finally submit the main form
+            mainForm.submit();
+        });
+    });
+</script>
 @endsection

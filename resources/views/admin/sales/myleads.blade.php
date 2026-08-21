@@ -75,18 +75,20 @@
                     </div>
 
                     <!-- My Closed -->
-                    <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-teal-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden">
-                        <div class="absolute right-0 top-0 w-16 h-16 bg-teal-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-teal-600 transition-colors">My Closed</span>
-                            <div class="w-8 h-8 rounded-md bg-teal-100 text-teal-600 flex items-center justify-center shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <a href="{{ route('myleads.closed') }}" class="block">
+                        <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-teal-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden h-full">
+                            <div class="absolute right-0 top-0 w-16 h-16 bg-teal-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-teal-600 transition-colors">My Closed</span>
+                                <div class="w-8 h-8 rounded-md bg-teal-100 text-teal-600 flex items-center justify-center shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                            </div>
+                            <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myClosedCount }}">
+                                {{ $myClosedCount >= 1000 ? number_format($myClosedCount) : $myClosedCount }}
                             </div>
                         </div>
-                        <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myClosedCount }}">
-                            {{ $myClosedCount >= 1000 ? number_format($myClosedCount) : $myClosedCount }}
-                        </div>
-                    </div>
+                    </a>
 
                     <!-- My Not Interested -->
                     <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-rose-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden">

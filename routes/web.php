@@ -242,6 +242,7 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
     // My Leads
     Route::middleware('permission:my leads')->group(function () {
         Route::get('/myleads', [MyLeadsController::class, 'index'])->name('myleads');
+        Route::get('/myleads/closed', [MyLeadsController::class, 'closedLeads'])->name('myleads.closed');
         Route::post('/myleads/store', [MyLeadsController::class, 'store'])->name('myleads.store');
         Route::get('/myleads/edit/{id}', [MyLeadsController::class, 'edit'])->name('myleads.edit');
         Route::put('/myleads/{id}', [MyLeadsController::class, 'update'])->name('myleads.update');
