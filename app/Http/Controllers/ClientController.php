@@ -17,14 +17,32 @@ class ClientController extends Controller
 }
 
     public function index()
-{
-    $clients = $this->baseQuery()
-        ->with(['leadAction.user'])
-        ->latest()
-        ->get();
+    {
+        $clients = $this->baseQuery()
+            ->with(['leadAction.user'])
+            ->latest()
+            ->get();
 
-    return view('admin.client', compact('clients'));
-}
+        $closedLeads = \App\Models\ClosedLead::with(['lead.client', 'user', 'updater'])
+            ->where('company_id', auth()->user()->company_id)
+            ->latest()
+            ->get();
+
+        $servicesList = [
+            'Web Development',
+            'Mobile App',
+            'E-commerce',
+            'UI/UX Design',
+            'Digital Marketing',
+            'SEO',
+            'Custom Software',
+            'Other'
+        ];
+
+        $users = \App\Models\User::where('company_id', auth()->user()->company_id)->get();
+
+        return view('admin.client', compact('clients', 'closedLeads', 'servicesList', 'users'));
+    }
 
 
     public function store(Request $request): JsonResponse
@@ -590,5 +608,54 @@ public function destroy($id)
         }
 
         return response()->json(['success' => true, 'message' => 'Lead successfully unlocked!']);
+    }
+
+    public function assignLead(Request $request, $id)
+    {
+        $client = Client::findOrFail($id);
+        
+        // Ensure only admin/superadmin can assign
+        if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('superadmin')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized access'], 403);
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id'
+        ]);
+
+        $assignedUser = \App\Models\User::findOrFail($request->user_id);
+
+        if ($client->leadAction) {
+            $client->leadAction->update([
+                'user_id' => $assignedUser->id,
+                'status' => 'follow up'
+            ]);
+            $leadAction = $client->leadAction;
+        } else {
+            $leadAction = \App\Models\Mylead::create([
+                'company_id' => auth()->user()->company_id,
+                'client_id' => $client->id,
+                'user_id' => $assignedUser->id,
+                'status' => 'follow up',
+                'description' => 'Lead assigned by Admin.'
+            ]);
+        }
+        
+        \App\Models\MyleadHistory::create([
+            'company_id' => auth()->user()->company_id,
+            'mylead_id' => $leadAction->id,
+            'user_id' => auth()->id(),
+            'response' => 'Admin assigned this lead to ' . $assignedUser->name,
+            'changes' => json_encode(['assigned_to' => $assignedUser->name])
+        ]);
+
+        $assignedUser->notify(new \App\Notifications\SystemNotification([
+            'title' => 'New Lead Assigned',
+            'message' => 'Admin has assigned a lead to you ('. $client->company_name .').',
+            'url' => route('myleads.show', $leadAction->id),
+            'icon' => 'user-plus'
+        ]));
+
+        return response()->json(['success' => true, 'message' => 'Lead successfully assigned to ' . $assignedUser->name . '!']);
     }
 }

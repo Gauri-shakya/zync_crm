@@ -21,6 +21,7 @@ class ClosedLead extends Model
         'due_amount',
         'next_payment_date',
         'is_due_dismissed',
+        'updated_by',
     ];
 
     protected $casts = [
@@ -45,5 +46,10 @@ class ClosedLead extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 }

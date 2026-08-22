@@ -154,19 +154,30 @@
                             </td>
                             <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
                                 <div class="text-center">
-                                    @if($sale->due_amount <= 0)
-                                        <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-                                            Fully Paid
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-                                            Due Pending
-                                        </span>
-                                    @endif
-                                </div>
+                                                @if($sale->due_amount <= 0)
+                                                    <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                                                        Fully Paid
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                                                        Due Pending
+                                                    </span>
+                                                @endif
+                                                @if($sale->updated_by)
+                                                    <div class="mt-1 text-[10px] text-slate-500 italic">
+                                                        Updated by {{ $sale->updater->name ?? 'Admin' }}
+                                                    </div>
+                                                @endif
+                                            </div>
                             </td>
                             <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                                <div class="text-center">
+                                <div class="text-center flex items-center justify-center gap-2">
+                                    <a href="{{ route('myleads.show', $sale->lead_id) }}" class="text-emerald-500 hover:text-emerald-600 bg-emerald-50 hover:bg-emerald-100 p-1.5 rounded-full transition-colors" title="Open Lead">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
                                     @if(Auth::user()->hasRole('admin') || Auth::user()->hasRole('superadmin') || $sale->user_id == Auth::id())
                                         <button onclick="document.getElementById('edit-modal-{{ $sale->id }}').classList.remove('hidden')" class="text-indigo-500 hover:text-indigo-600 bg-indigo-50 hover:bg-indigo-100 p-1.5 rounded-full transition-colors" title="Edit">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

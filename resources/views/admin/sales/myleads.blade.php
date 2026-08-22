@@ -12,6 +12,8 @@
             $myNotInterestedCount = 0;
             $myNonContactableCount = 0;
             
+            $myClosedCount = \App\Models\ClosedLead::where('user_id', auth()->id())->count();
+            
             // Get all leads for the current user to show accurate overall stats
             $allMyLeads = \App\Models\Mylead::where('user_id', auth()->id())->get();
 
@@ -19,9 +21,7 @@
                 $myTotalLeadsCount++;
                 $cStatus = strtolower($c->status ?? '');
                 
-                if (in_array($cStatus, ['purchased', 'closed'])) {
-                    $myClosedCount++;
-                } elseif (in_array($cStatus, ['not interested', 'lost'])) {
+                if (in_array($cStatus, ['not interested', 'lost'])) {
                     $myNotInterestedCount++;
                 } elseif (in_array($cStatus, ['non-contactable', 'not reachable'])) {
                     $myNonContactableCount++;

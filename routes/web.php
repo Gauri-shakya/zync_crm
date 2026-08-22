@@ -109,6 +109,8 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
         
         // Admin Unlock Lead
         Route::post('/clients/{id}/unlock', [ClientController::class, 'unlockLead'])->name('clients.unlock');
+        // Admin Assign Lead
+        Route::post('/clients/{id}/assign', [ClientController::class, 'assignLead'])->name('clients.assign');
     });
 
     // Campaigns

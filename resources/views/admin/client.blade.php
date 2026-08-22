@@ -34,11 +34,7 @@
         if ($isThisMonth) $thisMonth['total']++;
         if ($isLastMonth) $lastMonth['total']++;
         
-        if (in_array($cStatus, ['client', 'purchased']) || in_array($aStatus, ['client', 'purchased'])) {
-            $closedCount++;
-            if ($isThisMonth) $thisMonth['closed']++;
-            if ($isLastMonth) $lastMonth['closed']++;
-        } elseif (in_array($cStatus, ['not interested', 'lost']) || in_array($aStatus, ['not interested', 'lost'])) {
+        if (in_array($cStatus, ['not interested', 'lost']) || in_array($aStatus, ['not interested', 'lost'])) {
             $notInterestedCount++;
             if ($isThisMonth) $thisMonth['notInterested']++;
             if ($isLastMonth) $lastMonth['notInterested']++;
@@ -46,10 +42,21 @@
             $nonContactableCount++;
             if ($isThisMonth) $thisMonth['nonContactable']++;
             if ($isLastMonth) $lastMonth['nonContactable']++;
-        } elseif (!empty($c->next_follow_up) || !empty($c->leadAction->next_follow_up) || in_array($aStatus, ['will call back', 'interested', 'missed booked'])) {
+        } elseif (!empty($c->next_follow_up) || !empty($c->leadAction->next_follow_up) || in_array($aStatus, ['will call back', 'interested', 'missed booked', 'proposal', 'negotiating'])) {
             $followUpCount++;
             if ($isThisMonth) $thisMonth['followUp']++;
             if ($isLastMonth) $lastMonth['followUp']++;
+        }
+    }
+
+    $closedCount = count($closedLeads);
+    foreach($closedLeads as $cl) {
+        $clDate = \Carbon\Carbon::parse($cl->closed_date);
+        if ($clDate->format('Y-m') === $now->format('Y-m')) {
+            $thisMonth['closed']++;
+        }
+        if ($clDate->format('Y-m') === $now->copy()->subMonth()->format('Y-m')) {
+            $lastMonth['closed']++;
         }
     }
 
@@ -380,6 +387,195 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Closed Leads Full Table (Hidden by default) -->
+            <div id="closed-summary-container" class="hidden mb-6">
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+                        <h2 class="font-semibold text-slate-800">Sales Records <span class="text-slate-400 font-medium">({{ count($closedLeads) }})</span></h2>
+                    </div>
+                    <div class="p-3">
+                        <div class="overflow-x-auto">
+                            <table class="table-auto w-full">
+                                <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="font-semibold text-left">Client</div>
+                                        </th>
+                                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="font-semibold text-left">Service</div>
+                                        </th>
+                                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="font-semibold text-left">Closed By</div>
+                                        </th>
+                                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="font-semibold text-left">Date</div>
+                                        </th>
+                                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="font-semibold text-right">Total Amount</div>
+                                        </th>
+                                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="font-semibold text-right">Paid</div>
+                                        </th>
+                                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="font-semibold text-right">Due</div>
+                                        </th>
+                                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="font-semibold text-center">Status</div>
+                                        </th>
+                                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="font-semibold text-center">Actions</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm divide-y divide-slate-200">
+                                    @forelse($closedLeads as $sale)
+                                    <tr>
+                                        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="font-medium text-slate-800">{{ $sale->lead->client->company_name ?? 'N/A' }}</div>
+                                            <div class="text-xs text-slate-500">{{ $sale->lead->client->email ?? '' }}</div>
+                                        </td>
+                                        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="text-left font-medium text-indigo-500">{{ $sale->service_name }}</div>
+                                            <div class="text-xs text-slate-500 capitalize">{{ str_replace('_', ' ', $sale->payment_type) }}</div>
+                                        </td>
+                                        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="text-left text-slate-700">{{ $sale->user->name ?? 'Unknown' }}</div>
+                                        </td>
+                                        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="text-left">{{ $sale->closed_date->format('d M, Y') }}</div>
+                                        </td>
+                                        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="text-right font-medium text-emerald-600">₹{{ number_format($sale->total_amount, 2) }}</div>
+                                        </td>
+                                        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="text-right text-slate-700">₹{{ number_format($sale->paid_amount, 2) }}</div>
+                                        </td>
+                                        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="text-right text-rose-500 font-medium">₹{{ number_format($sale->due_amount, 2) }}</div>
+                                            @if($sale->due_amount > 0 && $sale->next_payment_date)
+                                                <div class="text-[10px] text-slate-400">Due: {{ \Carbon\Carbon::parse($sale->next_payment_date)->format('d M') }}</div>
+                                            @endif
+                                        </td>
+                                        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="text-center">
+                                                @if($sale->due_amount <= 0)
+                                                    <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                                                        Fully Paid
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                                                        Due Pending
+                                                    </span>
+                                                @endif
+                                                @if($sale->updated_by)
+                                                    <div class="mt-1 text-[10px] text-slate-500 italic">
+                                                        Updated by {{ $sale->updater->name ?? 'Admin' }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                                            <div class="text-center flex items-center justify-center gap-2">
+                                                <a href="{{ route('myleads.show', $sale->lead_id) }}" class="text-emerald-500 hover:text-emerald-600 bg-emerald-50 hover:bg-emerald-100 p-1.5 rounded-full transition-colors" title="Open Lead">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                </a>
+                                                @if(Auth::user()->hasRole('admin') || Auth::user()->hasRole('superadmin') || $sale->user_id == Auth::id())
+                                                    <button type="button" onclick="document.getElementById('edit-modal-besdex-{{ $sale->id }}').classList.remove('hidden')" class="text-indigo-500 hover:text-indigo-600 bg-indigo-50 hover:bg-indigo-100 p-1.5 rounded-full transition-colors" title="Edit">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                        </svg>
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Edit Modal for this sale -->
+                                    <div id="edit-modal-besdex-{{ $sale->id }}" class="hidden fixed inset-0 z-[110] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                                        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="document.getElementById('edit-modal-besdex-{{ $sale->id }}').classList.add('hidden')"></div>
+                                            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-100">
+                                                <div class="bg-white px-6 pt-6 pb-6">
+                                                    <div class="sm:flex sm:items-start">
+                                                        <div class="text-center sm:text-left w-full">
+                                                            <h3 class="text-xl leading-6 font-bold text-slate-800 mb-6" id="modal-title">
+                                                                Edit Closed Lead
+                                                            </h3>
+                                                            <form method="POST" action="{{ route('myleads.closed.update', $sale->id) }}" id="edit-form-besdex-{{ $sale->id }}">
+                                                                @csrf
+                                                                @method('PUT')
+                                                                <input type="hidden" name="redirect_to" value="clients">
+                                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                                                    <div>
+                                                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Service Name</label>
+                                                                        <select name="service_name" class="block w-full rounded-lg border-slate-300 bg-slate-50 text-slate-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                                                                            <option value="">-- Select Type --</option>
+                                                                            @foreach($servicesList as $s)
+                                                                                <option value="{{ $s }}" {{ $sale->service_name == $s ? 'selected' : '' }}>{{ $s }}</option>
+                                                                            @endforeach
+                                                                        </select>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Closed Date</label>
+                                                                        <input type="date" name="closed_date" value="{{ \Carbon\Carbon::parse($sale->closed_date)->format('Y-m-d') }}" class="block w-full rounded-lg border-slate-300 bg-slate-50 text-slate-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Payment Type</label>
+                                                                        <select name="payment_type" class="block w-full rounded-lg border-slate-300 bg-slate-50 text-slate-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                                                                            <option value="one_time" {{ $sale->payment_type == 'one_time' ? 'selected' : '' }}>One Time</option>
+                                                                            <option value="recurring" {{ $sale->payment_type == 'recurring' ? 'selected' : '' }}>Recurring</option>
+                                                                        </select>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Total Amount</label>
+                                                                        <input type="number" step="0.01" name="total_amount" value="{{ $sale->total_amount }}" class="block w-full rounded-lg border-slate-300 bg-slate-50 text-slate-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Paid Amount</label>
+                                                                        <input type="number" step="0.01" name="paid_amount" value="{{ $sale->paid_amount }}" class="block w-full rounded-lg border-slate-300 bg-slate-50 text-slate-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Due Amount</label>
+                                                                        <input type="number" step="0.01" name="due_amount" value="{{ $sale->due_amount }}" class="block w-full rounded-lg border-slate-300 bg-slate-50 text-slate-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                                                                    </div>
+                                                                    <div class="md:col-span-2">
+                                                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Next Payment Date (If Due)</label>
+                                                                        <input type="date" name="next_payment_date" value="{{ $sale->next_payment_date ? \Carbon\Carbon::parse($sale->next_payment_date)->format('Y-m-d') : '' }}" class="block w-full rounded-lg border-slate-300 bg-slate-50 text-slate-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                                    </div>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="bg-slate-50 px-6 py-4 sm:flex sm:flex-row-reverse border-t border-slate-100">
+                                                    <button type="submit" form="edit-form-besdex-{{ $sale->id }}" class="w-full inline-flex justify-center rounded-lg shadow-sm shadow-indigo-500/30 px-5 py-2.5 bg-indigo-600 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto transition-colors">
+                                                        Save Changes
+                                                    </button>
+                                                    <button type="button" onclick="document.getElementById('edit-modal-besdex-{{ $sale->id }}').classList.add('hidden')" class="mt-3 w-full inline-flex justify-center rounded-lg border border-slate-300 shadow-sm px-5 py-2.5 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto transition-colors">
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @empty
+                                    <tr>
+                                        <td colspan="9" class="px-2 first:pl-5 last:pr-5 py-8 text-center text-slate-500">
+                                            No closed deals found yet.
+                                        </td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
            <!-- Client Cards Grid -->
 <div id="clients-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
@@ -398,7 +594,7 @@
         $cStatus = strtolower($client->status ?? '');
         $aStatus = strtolower($client->leadAction->status ?? '');
         $dashboardCategory = 'other';
-        if (in_array($cStatus, ['client', 'purchased']) || in_array($aStatus, ['client', 'purchased'])) {
+        if (in_array($cStatus, ['client', 'purchased', 'closed']) || in_array($aStatus, ['client', 'purchased', 'closed'])) {
             $dashboardCategory = 'closed';
         } elseif (in_array($cStatus, ['not interested', 'lost']) || in_array($aStatus, ['not interested', 'lost'])) {
             $dashboardCategory = 'not_interested';
@@ -676,10 +872,13 @@
 </strong>
   </div>
   
-  @if(auth()->user()->hasRole('admin'))
-  <div class="mt-2 text-center">
+  @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('superadmin'))
+  <div class="mt-2 text-center flex flex-col gap-1.5">
       <button onclick="unlockLead({{ $client->id }})" class="text-xs text-red-600 hover:text-red-800 font-medium underline decoration-red-300 hover:decoration-red-600 transition-colors">
           Unlock Lead (Re-open for all)
+      </button>
+      <button onclick="openAssignModal({{ $client->id }})" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium underline decoration-indigo-300 hover:decoration-indigo-600 transition-colors">
+          Assign Lead to Executive
       </button>
   </div>
   @endif
@@ -691,6 +890,14 @@
     class="block w-full text-center px-4 py-2 text-sm font-medium border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200">
     Take Action
   </button>
+  
+  @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('superadmin'))
+  <div class="mt-2 text-center">
+      <button onclick="openAssignModal({{ $client->id }})" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium underline decoration-indigo-300 hover:decoration-indigo-600 transition-colors">
+          Assign Lead to Executive
+      </button>
+  </div>
+  @endif
 
   <div class="mt-2 px-3 py-1 bg-gray-50 border border-gray-300 rounded-md text-gray-600 text-sm">
     @if($client->leadAction && $client->leadAction->status === 'unlocked')
@@ -744,7 +951,7 @@
                 $cStatus = strtolower($client->status ?? '');
                 $aStatus = strtolower($client->leadAction->status ?? '');
                 $dashboardCategory = 'other';
-                if (in_array($cStatus, ['client', 'purchased']) || in_array($aStatus, ['client', 'purchased'])) {
+                if (in_array($cStatus, ['client', 'purchased', 'closed']) || in_array($aStatus, ['client', 'purchased', 'closed'])) {
                     $dashboardCategory = 'closed';
                 } elseif (in_array($cStatus, ['not interested', 'lost']) || in_array($aStatus, ['not interested', 'lost'])) {
                     $dashboardCategory = 'not_interested';
@@ -1371,6 +1578,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const isUserDashboard = currentFilter.startsWith('my_');
         const actualFilter = isUserDashboard ? currentFilter.replace('my_', '') : currentFilter;
         
+        // Handle Closed Summary Table visibility
+        const closedSummary = document.getElementById('closed-summary-container');
+        if (closedSummary) {
+            if (actualFilter === 'closed') {
+                closedSummary.classList.remove('hidden');
+            } else {
+                closedSummary.classList.add('hidden');
+            }
+        }
+
         // Filter Grid View
         const clientCards = document.querySelectorAll('.client-card');
         clientCards.forEach(card => {
@@ -1381,7 +1598,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const matchesSearch = clientText.includes(searchTerm);
             let matchesFilter = false;
-            if (currentFilter === 'all') {
+            if (actualFilter === 'closed') {
+                matchesFilter = false; // Hide cards, use the detailed table instead
+            } else if (currentFilter === 'all') {
                 matchesFilter = (assignedUserId === '');
             } else if (currentFilter === 'lead' || currentFilter === 'my_all') {
                 matchesFilter = (assignedUserId !== '');
@@ -1403,7 +1622,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const matchesSearch = clientText.includes(searchTerm);
             let matchesFilter = false;
-            if (currentFilter === 'all') {
+            if (actualFilter === 'closed') {
+                matchesFilter = false; // Hide list rows, use the detailed table instead
+            } else if (currentFilter === 'all') {
                 matchesFilter = (assignedUserId === '');
             } else if (currentFilter === 'lead' || currentFilter === 'my_all') {
                 matchesFilter = (assignedUserId !== '');
@@ -2348,5 +2569,99 @@ document.getElementById('deleteForm')?.addEventListener('submit', function(e) {
             showToast('Error unlocking lead', 'error');
         });
     }
+
+    let currentAssignClientId = null;
+    function openAssignModal(clientId) {
+        currentAssignClientId = clientId;
+        document.getElementById('assignModal').classList.remove('hidden');
+    }
+    
+    function closeAssignModal() {
+        document.getElementById('assignModal').classList.add('hidden');
+        document.getElementById('assign_user_id').value = '';
+        currentAssignClientId = null;
+    }
+    
+    function submitAssignLead(btn) {
+        if (!currentAssignClientId) return;
+        const userId = document.getElementById('assign_user_id').value;
+        if (!userId) {
+            alert('Please select an executive to assign this lead to.');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.innerHTML = 'Assigning...';
+        
+        fetch(`/clients/${currentAssignClientId}/assign`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message);
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast(data.message || 'Failed to assign lead', 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Assign Lead';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Error assigning lead', 'error');
+            btn.disabled = false;
+            btn.innerHTML = 'Assign Lead';
+        });
+    }
 </script>
+<!-- Assign Modal -->
+<div id="assignModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full border border-gray-100">
+            <div class="bg-white px-6 pt-6 pb-6">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-50 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">
+                            Assign Lead
+                        </h3>
+                        <div class="mt-4 text-left">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Select Executive</label>
+                            <select id="assign_user_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                <option value="">-- Choose an Executive --</option>
+                                @foreach($users as $u)
+                                    <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 flex flex-col sm:flex-row-reverse sm:gap-2 gap-3 border-t border-gray-100">
+                <button type="button" id="submitAssignBtn" onclick="submitAssignLead(this)" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm transition-colors">
+                    Assign Lead
+                </button>
+                <button type="button" onclick="closeAssignModal()" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:w-auto sm:text-sm transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection

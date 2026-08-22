@@ -99,12 +99,9 @@ class MyLeadsController extends Controller
 
     public function closedLeads(Request $request)
     {
-        $query = \App\Models\ClosedLead::with(['lead.client', 'user'])
-            ->where('company_id', Auth::user()->company_id);
-            
-        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('superadmin')) {
-            $query->where('user_id', Auth::id());
-        }
+        $query = \App\Models\ClosedLead::with(['lead.client', 'user', 'updater'])
+            ->where('company_id', Auth::user()->company_id)
+            ->where('user_id', Auth::id());
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -170,6 +167,16 @@ class MyLeadsController extends Controller
             'paid_amount' => $request->paid_amount,
             'due_amount' => $request->due_amount,
             'next_payment_date' => $request->next_payment_date,
+            'updated_by' => Auth::id(),
+        ]);
+
+        $statusStr = $request->due_amount <= 0 ? 'Fully Paid' : 'Due Pending';
+        \App\Models\MyleadHistory::create([
+            'company_id' => auth()->user()->company_id,
+            'mylead_id' => $closedLead->lead_id,
+            'user_id' => Auth::id(),
+            'changes' => json_encode(['action_taken' => "Closed Deal Updated: {$statusStr}"]),
+            'response' => "Closed lead details updated by " . Auth::user()->name . " (Paid: ₹{$request->paid_amount}, Due: ₹{$request->due_amount})",
         ]);
 
         return redirect()->back()->with('success', 'Closed lead details updated successfully!');
@@ -180,9 +187,11 @@ class MyLeadsController extends Controller
      */
     public function show(string $id)
     {
-       $lead = $this->baseQuery()
-    ->where('user_id', Auth::id())
-    ->findOrFail($id);
+        $query = $this->baseQuery();
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('superadmin')) {
+            $query->where('user_id', Auth::id());
+        }
+        $lead = $query->findOrFail($id);
 
 $this->authorize('manage', $lead);
 
@@ -194,9 +203,11 @@ $this->authorize('manage', $lead);
      */
     public function history(string $id)
     {
-       $lead = $this->baseQuery()
-    ->where('user_id', Auth::id())
-    ->findOrFail($id);
+        $query = $this->baseQuery();
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('superadmin')) {
+            $query->where('user_id', Auth::id());
+        }
+        $lead = $query->findOrFail($id);
 
 $this->authorize('manage', $lead);
 
@@ -209,9 +220,11 @@ $this->authorize('manage', $lead);
      */
     public function edit(string $id)
     {
-        $lead = $this->baseQuery()
-    ->where('user_id', Auth::id())
-    ->findOrFail($id);
+        $query = $this->baseQuery();
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('superadmin')) {
+            $query->where('user_id', Auth::id());
+        }
+        $lead = $query->findOrFail($id);
 
 $this->authorize('manage', $lead);
 
@@ -223,9 +236,11 @@ $this->authorize('manage', $lead);
      */
     public function update(Request $request, string $id)
     {
-       $lead = $this->baseQuery()
-    ->where('user_id', Auth::id())
-    ->findOrFail($id);
+        $query = $this->baseQuery();
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('superadmin')) {
+            $query->where('user_id', Auth::id());
+        }
+        $lead = $query->findOrFail($id);
 
 $this->authorize('manage', $lead);
 
