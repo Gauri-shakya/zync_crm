@@ -245,11 +245,14 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
         Route::get('/myleads/closed', [MyLeadsController::class, 'closedLeads'])->name('myleads.closed');
         Route::post('/myleads/store', [MyLeadsController::class, 'store'])->name('myleads.store');
         Route::get('/myleads/edit/{id}', [MyLeadsController::class, 'edit'])->name('myleads.edit');
+        Route::put('/myleads/closed/{id}', [MyLeadsController::class, 'updateClosedLead'])->name('myleads.closed.update');
         Route::put('/myleads/{id}', [MyLeadsController::class, 'update'])->name('myleads.update');
         Route::get('/myleads/{id}', [MyLeadsController::class, 'show'])->name('myleads.show');
         Route::get('/myleads/{id}/history', [MyLeadsController::class, 'history'])->name('myleads.history');
         Route::put('/myleads/history/{id}', [MyLeadsController::class, 'updateHistory'])->name('myleads.history.update');
     });
+
+    Route::post('/dashboard/dismiss-pending-payment/{id}', [DashboardController::class, 'dismissPendingPayment'])->name('dashboard.dismiss-pending-payment');
 
 
 

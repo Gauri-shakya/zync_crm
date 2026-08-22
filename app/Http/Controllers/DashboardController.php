@@ -10,6 +10,7 @@ use App\Models\MyAttendance;
 use App\Models\Client;
 use App\Models\Contact;
 use App\Models\Task;
+use App\Models\ClosedLead;
 
 class DashboardController extends Controller
 {
@@ -107,6 +108,19 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(6)
             ->get();
+            
+        // Pending Payment Notifications (Closed Leads)
+        $pendingPaymentsQuery = ClosedLead::with(['lead.client'])
+            ->where('company_id', $companyId)
+            ->where('due_amount', '>', 0)
+            ->where('is_due_dismissed', false)
+            ->whereNotNull('next_payment_date');
+            
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('superadmin')) {
+            $pendingPaymentsQuery->where('user_id', Auth::id());
+        }
+        
+        $pendingPayments = $pendingPaymentsQuery->orderBy('next_payment_date', 'asc')->get();
 
         // Detailed lists for sidebar
         $usersList = User::with('roles')->where('company_id', $companyId)->get(['id', 'name', 'email']);
@@ -146,6 +160,7 @@ class DashboardController extends Controller
             'attChartLabels',
             'attChartData',
             'recentTasks',
+            'pendingPayments',
             'userGrowth',
             'clientGrowth',
             'contactGrowth',
@@ -174,5 +189,23 @@ class DashboardController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Dashboard preferences updated successfully!');
+    }
+
+    public function dismissPendingPayment(Request $request, $id)
+    {
+        if (!Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $closedLead = ClosedLead::findOrFail($id);
+        
+        // Ensure user owns it or is admin
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('superadmin') && $closedLead->user_id !== Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $closedLead->update(['is_due_dismissed' => true]);
+
+        return response()->json(['success' => true, 'message' => 'Notification dismissed']);
     }
 }

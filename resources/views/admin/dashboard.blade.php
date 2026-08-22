@@ -232,6 +232,36 @@
             </div>
             <div class="p-3 sm:p-4 md:p-5 lg:p-6">
                 <div class="space-y-3 sm:space-y-4">
+                    @if(isset($pendingPayments) && count($pendingPayments) > 0)
+                        @foreach($pendingPayments as $payment)
+                        <div id="payment-notification-{{ $payment->id }}" class="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 pb-3 sm:pb-4 border-b border-orange-100 bg-orange-50/30 p-2 sm:p-3 rounded-xl mb-3">
+                            <div class="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                                <div class="p-1.5 sm:p-2 rounded-lg bg-orange-100 flex-shrink-0">
+                                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs sm:text-sm font-medium text-orange-900 truncate">Payment Due: {{ $payment->lead->client->name ?? 'Unknown Client' }} - {{ $payment->service_name }}</p>
+                                    <p class="text-xs text-orange-700 mt-0.5 sm:mt-1 leading-relaxed">
+                                        Amount: ₹{{ number_format($payment->due_amount, 2) }} | Due Date: {{ \Carbon\Carbon::parse($payment->next_payment_date)->format('M d, Y') }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 self-start sm:self-auto mt-1 sm:mt-0">
+                                <span class="text-xs font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 bg-orange-100 text-orange-800 rounded-full">
+                                    Pending Payment
+                                </span>
+                                <button onclick="dismissPayment('{{ $payment->id }}')" class="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition-colors" title="Dismiss">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        @endforeach
+                    @endif
+
                     @forelse($recentTasks as $task)
                         <div class="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 pb-3 sm:pb-4 border-b border-gray-100 last:border-0 last:pb-0">
                             <div class="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
@@ -250,7 +280,9 @@
                             </span>
                         </div>
                     @empty
-                        <p class="text-xs sm:text-sm text-gray-500 text-center py-3 sm:py-4">No recent tasks found.</p>
+                        @if(!isset($pendingPayments) || count($pendingPayments) === 0)
+                            <p class="text-xs sm:text-sm text-gray-500 text-center py-3 sm:py-4">No recent activity found.</p>
+                        @endif
                     @endforelse
                 </div>
             </div>
@@ -445,18 +477,45 @@
         lastTouchEnd = now;
     }, false);
 
-    // Ensure font size is 16px for inputs to prevent iOS zoom
     document.addEventListener('DOMContentLoaded', function() {
         const style = document.createElement('style');
-        style.textContent = `
+        style.innerHTML = `
             @media screen and (max-width: 767px) {
-                input, select, textarea {
-                    font-size: 16px !important;
-                }
+                input, select, textarea { font-size: 16px !important; }
             }
         `;
         document.head.appendChild(style);
     });
+
+    // Dismiss Pending Payment Notification
+    function dismissPayment(id) {
+        if (!confirm('Are you sure you want to dismiss this notification?')) return;
+        
+        fetch(`/dashboard/dismiss-pending-payment/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const el = document.getElementById('payment-notification-' + id);
+                if (el) {
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 300);
+                }
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Something went wrong!');
+        });
+    }
 
     (function () {
         // Wait for DOM to be fully loaded

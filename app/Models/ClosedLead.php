@@ -20,6 +20,7 @@ class ClosedLead extends Model
         'paid_amount',
         'due_amount',
         'next_payment_date',
+        'is_due_dismissed',
     ];
 
     protected $casts = [

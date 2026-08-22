@@ -97,15 +97,82 @@ class MyLeadsController extends Controller
     return back()->with('success', 'Lead response saved successfully!');
 }
 
-    public function closedLeads()
+    public function closedLeads(Request $request)
     {
-        $closedLeads = \App\Models\ClosedLead::with(['lead.client', 'user'])
-            ->where('company_id', Auth::user()->company_id)
-            ->where('user_id', Auth::id())
-            ->latest()
-            ->paginate(15);
+        $query = \App\Models\ClosedLead::with(['lead.client', 'user'])
+            ->where('company_id', Auth::user()->company_id);
             
-        return view('admin.sales.closed-leads', compact('closedLeads'));
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('superadmin')) {
+            $query->where('user_id', Auth::id());
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('lead.client', function($q) use ($search) {
+                $q->where('contact_person', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('service_name')) {
+            $query->where('service_name', 'like', "%{$request->service_name}%");
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('closed_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('closed_date', '<=', $request->date_to);
+        }
+
+        $closedLeads = $query->latest()->paginate(10)->withQueryString();
+        
+        $clientsList = \App\Models\Client::where('company_id', Auth::user()->company_id)->get(['id', 'company_name', 'contact_person']);
+        $servicesList = [
+            'Web Development',
+            'Mobile App',
+            'E-commerce',
+            'UI/UX Design',
+            'Digital Marketing',
+            'SEO',
+            'Custom Software',
+            'Other'
+        ];
+            
+        return view('admin.sales.closed-leads', compact('closedLeads', 'clientsList', 'servicesList'));
+    }
+
+    public function updateClosedLead(Request $request, $id)
+    {
+        $closedLead = \App\Models\ClosedLead::findOrFail($id);
+        
+        // Authorization check
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('superadmin') && $closedLead->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'service_name' => 'required|string',
+            'closed_date' => 'required|date',
+            'payment_type' => 'required|in:one_time,recurring',
+            'total_amount' => 'required|numeric|min:0',
+            'paid_amount' => 'required|numeric|min:0',
+            'due_amount' => 'required|numeric|min:0',
+            'next_payment_date' => 'nullable|date',
+        ]);
+
+        $closedLead->update([
+            'service_name' => $request->service_name,
+            'closed_date' => $request->closed_date,
+            'payment_type' => $request->payment_type,
+            'total_amount' => $request->total_amount,
+            'paid_amount' => $request->paid_amount,
+            'due_amount' => $request->due_amount,
+            'next_payment_date' => $request->next_payment_date,
+        ]);
+
+        return redirect()->back()->with('success', 'Closed lead details updated successfully!');
     }
 
     /**

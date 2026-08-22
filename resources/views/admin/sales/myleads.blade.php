@@ -47,32 +47,36 @@
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
                     
                     <!-- My Total Leads -->
-                    <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-blue-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden">
-                        <div class="absolute right-0 top-0 w-16 h-16 bg-blue-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-blue-600 transition-colors">My Total Leads</span>
-                            <div class="w-8 h-8 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <a href="{{ route('myleads') }}" class="block h-full">
+                        <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-blue-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden h-full">
+                            <div class="absolute right-0 top-0 w-16 h-16 bg-blue-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-blue-600 transition-colors">My Total Leads</span>
+                                <div class="w-8 h-8 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                </div>
+                            </div>
+                            <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myTotalLeadsCount }}">
+                                {{ $myTotalLeadsCount >= 1000 ? number_format($myTotalLeadsCount) : $myTotalLeadsCount }}
                             </div>
                         </div>
-                        <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myTotalLeadsCount }}">
-                            {{ $myTotalLeadsCount >= 1000 ? number_format($myTotalLeadsCount) : $myTotalLeadsCount }}
-                        </div>
-                    </div>
+                    </a>
 
                     <!-- My Follow Up -->
-                    <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-indigo-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden">
-                        <div class="absolute right-0 top-0 w-16 h-16 bg-indigo-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">My Follow Up</span>
-                            <div class="w-8 h-8 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <a href="{{ route('myleads', ['status' => 'follow up']) }}" class="block h-full">
+                        <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-indigo-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden h-full">
+                            <div class="absolute right-0 top-0 w-16 h-16 bg-indigo-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">My Follow Up</span>
+                                <div class="w-8 h-8 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                            </div>
+                            <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myFollowUpCount }}">
+                                {{ $myFollowUpCount >= 1000 ? number_format($myFollowUpCount) : $myFollowUpCount }}
                             </div>
                         </div>
-                        <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myFollowUpCount }}">
-                            {{ $myFollowUpCount >= 1000 ? number_format($myFollowUpCount) : $myFollowUpCount }}
-                        </div>
-                    </div>
+                    </a>
 
                     <!-- My Closed -->
                     <a href="{{ route('myleads.closed') }}" class="block">
@@ -90,33 +94,37 @@
                         </div>
                     </a>
 
-                    <!-- My Not Interested -->
-                    <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-rose-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden">
-                        <div class="absolute right-0 top-0 w-16 h-16 bg-rose-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-rose-600 transition-colors">Not Interest</span>
-                            <div class="w-8 h-8 rounded-md bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                        </div>
-                        <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myNotInterestedCount }}">
-                            {{ $myNotInterestedCount >= 1000 ? number_format($myNotInterestedCount) : $myNotInterestedCount }}
-                        </div>
-                    </div>
 
-                    <!-- My Non-contactable -->
-                    <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-orange-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden">
-                        <div class="absolute right-0 top-0 w-16 h-16 bg-orange-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-orange-600 transition-colors">Non-contact</span>
-                            <div class="w-8 h-8 rounded-md bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.122-3.536m-4.243-4.243a8.976 8.976 0 013.536-2.122m3.536-2.122a4.978 4.978 0 012.83-1.414M12 12v.01"></path></svg>
+                    <a href="{{ route('myleads', ['status' => 'not interested']) }}" class="block h-full">
+                        <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-rose-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden h-full">
+                            <div class="absolute right-0 top-0 w-16 h-16 bg-rose-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-rose-600 transition-colors">Not Interest</span>
+                                <div class="w-8 h-8 rounded-md bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                            </div>
+                            <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myNotInterestedCount }}">
+                                {{ $myNotInterestedCount >= 1000 ? number_format($myNotInterestedCount) : $myNotInterestedCount }}
                             </div>
                         </div>
-                        <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myNonContactableCount }}">
-                            {{ $myNonContactableCount >= 1000 ? number_format($myNonContactableCount) : $myNonContactableCount }}
+                    </a>
+
+                    <!-- Non-Contactable -->
+                    <a href="{{ route('myleads', ['status' => 'non-contactable']) }}" class="block h-full">
+                        <div class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] hover:border-orange-300 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] transition-all group relative overflow-hidden h-full">
+                            <div class="absolute right-0 top-0 w-16 h-16 bg-orange-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-orange-600 transition-colors">Non-Contact</span>
+                                <div class="w-8 h-8 rounded-md bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                </div>
+                            </div>
+                            <div class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight truncate" title="{{ $myNonContactableCount }}">
+                                {{ $myNonContactableCount >= 1000 ? number_format($myNonContactableCount) : $myNonContactableCount }}
+                            </div>
                         </div>
-                    </div>
+                    </a>
 
                 </div>
 
