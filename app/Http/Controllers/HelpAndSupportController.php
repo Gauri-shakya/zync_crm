@@ -108,6 +108,7 @@ class HelpAndSupportController extends Controller
                 'category' => $request->category,
                 'priority' => $request->priority,
                 'client_id' => Auth::id(),
+                'company_id' => Auth::user()->company_id,
                 'sla_due_at' => $this->calculateSLADueDate($request->priority),
             ]);
 
@@ -125,6 +126,17 @@ class HelpAndSupportController extends Controller
                         $file->getSize()
                     );
                 }
+            }
+
+            // Notify superadmins
+            $superadmins = \App\Models\SuperAdmin\Superadmin::all();
+            foreach ($superadmins as $admin) {
+                $admin->notify(new \App\Notifications\SystemNotification([
+                    'title' => 'New Ticket: ' . $ticket->title,
+                    'message' => Auth::user()->name . ' created a new support ticket.',
+                    'url' => route('ticket.record.show', encrypt($ticket->id)),
+                    'icon' => 'ticket-alt'
+                ]));
             }
 
             return response()->json([

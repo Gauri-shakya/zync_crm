@@ -85,6 +85,18 @@ class TicketRecordController extends Controller
             $user?->id,
             true
         );
+
+        if ($ticket->client_id) {
+            $client = User::find($ticket->client_id);
+            if ($client) {
+                $client->notify(new SystemNotification([
+                    'title' => 'Ticket Status Updated',
+                    'message' => "Your ticket '{$ticket->title}' is now {$request->status}.",
+                    'url' => route('user.support.ticket.show', $ticket->id),
+                    'icon' => 'info-circle'
+                ]));
+            }
+        }
     }
 
     return back()->with('success', 'Ticket updated successfully');
