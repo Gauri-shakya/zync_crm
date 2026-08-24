@@ -287,9 +287,9 @@
                         </div>
                         
                         <!-- Timeline Content -->
-                        <div class="mt-8 ml-2">
+                        <div class="mt-8 ml-0 sm:ml-2">
                             @if(false)
-                                <div class="relative before:absolute before:inset-0 before:ml-[5.5rem] before:-translate-x-px before:h-full before:w-[2px] before:bg-indigo-100">
+                                <div class="relative before:absolute before:inset-0 before:ml-[50px] sm:before:ml-[5.5rem] before:-translate-x-px before:h-full before:w-[2px] before:bg-indigo-100">
                                     
                                     @php $lastDate = null; @endphp
                                     @foreach($client->histories()->latest()->get() as $index => $history)
@@ -299,14 +299,14 @@
                                             $lastDate = $currentDate;
                                         @endphp
                                         
-                                        <div class="relative flex items-start gap-4 sm:gap-6 group mb-6">
+                                        <div class="relative flex items-start gap-1.5 sm:gap-6 group mb-6">
                                             <!-- Time on the left -->
-                                            <div class="w-16 shrink-0 text-right mt-1 relative z-10 bg-slate-50/50 py-1 rounded-l-lg">
-                                                <div class="text-[10px] sm:text-[11px] font-bold text-slate-500 flex items-center justify-end gap-1">
-                                                    {{ $history->created_at->format('h:i A') }}
+                                            <div class="w-[38px] sm:w-16 shrink-0 text-right mt-1 relative z-10 bg-slate-50/50 py-1 rounded-l-lg">
+                                                <div class="text-[9px] sm:text-[11px] font-bold text-slate-500 flex items-center justify-end gap-0.5 sm:gap-1 leading-tight sm:leading-normal tracking-tight">
+                                                    {{ $history->created_at->format('h:i') }}<br class="sm:hidden">{{ $history->created_at->format('A') }}
                                                 </div>
                                                 @if($showDate)
-                                                    <div class="text-[9px] font-extrabold text-indigo-400 mt-0.5 uppercase">{{ $history->created_at->format('d M') }}</div>
+                                                    <div class="text-[8px] sm:text-[9px] font-extrabold text-indigo-400 mt-0.5 sm:mt-0.5 uppercase tracking-tighter">{{ $history->created_at->format('d M') }}</div>
                                                 @endif
                                             </div>
                                             

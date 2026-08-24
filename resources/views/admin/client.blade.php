@@ -352,26 +352,30 @@
             </style>
 
             <!-- Search and Filter -->
-            <div class="flex flex-col lg:flex-row gap-3 lg:gap-4 items-center mt-2">
-                <div class="relative flex-1 w-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.3-4.3"></path>
-                    </svg>
-                    <input id="search-input" class="flex h-9 sm:h-10 w-full rounded-md border border-slate-200 px-3 py-2 pl-10 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Search clients..." value="">
-                </div>
+            <div class="flex flex-col lg:flex-row gap-3 lg:gap-4 items-center mt-2 w-full">
                 
-                <!-- View Switcher -->
-                <div class="flex items-center bg-white p-1 rounded-md border border-slate-200 shadow-sm">
-                    <button id="grid-view-btn" class="p-1 sm:p-1.5 rounded-sm transition-all duration-200 bg-indigo-50 text-indigo-600 shadow-sm" title="Grid View">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sm:w-5 sm:h-5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                    </button>
-                    <button id="table-view-btn" class="p-1 sm:p-1.5 rounded-sm transition-all duration-200 text-slate-400 hover:text-slate-600" title="Table View">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sm:w-5 sm:h-5"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                    </button>
+                <div class="flex w-full lg:flex-1 gap-2 sm:gap-3 lg:gap-4 flex-row order-1">
+                    <!-- View Switcher (First on mobile, Second on desktop) -->
+                    <div class="flex items-center bg-white p-1 rounded-md border border-slate-200 shadow-sm shrink-0 order-1 lg:order-2">
+                        <button id="grid-view-btn" class="p-1 sm:p-1.5 rounded-sm transition-all duration-200 bg-indigo-50 text-indigo-600 shadow-sm" title="Grid View">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sm:w-5 sm:h-5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        </button>
+                        <button id="table-view-btn" class="p-1 sm:p-1.5 rounded-sm transition-all duration-200 text-slate-400 hover:text-slate-600" title="Table View">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sm:w-5 sm:h-5"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                        </button>
+                    </div>
+
+                    <!-- Search Input (Second on mobile, First on desktop) -->
+                    <div class="relative flex-1 w-full order-2 lg:order-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                        </svg>
+                        <input id="search-input" class="flex h-9 sm:h-10 w-full rounded-md border border-slate-200 px-3 py-2 pl-9 sm:pl-10 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Search clients..." value="">
+                    </div>
                 </div>
 
-                <div class="w-full lg:w-auto">
+                <div class="w-full lg:w-auto order-2">
                     <div class="h-auto lg:h-10 items-center justify-center rounded-md p-1 bg-white w-full lg:w-auto grid grid-cols-3 sm:grid-cols-5 lg:flex gap-1 border border-slate-200 shadow-sm">
                         @if(auth()->check() && auth()->user()->hasRole('admin'))
                             <button class="filter-btn active inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors" data-status="all">All</button>

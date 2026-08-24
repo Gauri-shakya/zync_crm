@@ -62,6 +62,17 @@ class ClientController extends Controller
         ]);
 
         $client = Client::create($validated);
+        
+        // Notify all users except the creator
+        $usersToNotify = \App\Models\User::where('id', '!=', auth()->id() ?? 0)->get();
+        if ($usersToNotify->isNotEmpty()) {
+            \Illuminate\Support\Facades\Notification::send($usersToNotify, new \App\Notifications\SystemNotification([
+                'title' => 'New Lead Added',
+                'message' => 'A new lead (' . $client->company_name . ') has been added.',
+                'icon' => 'user-plus',
+                'url' => route('clients.index')
+            ]));
+        }
 
         return response()->json([
             'success' => true,
@@ -157,6 +168,18 @@ public function destroy($id)
         try {
             $file = $request->file('excel_file');
             $results = $this->processExcelFile($file);
+            
+            if ($results['imported'] > 0) {
+                $usersToNotify = \App\Models\User::where('id', '!=', auth()->id() ?? 0)->get();
+                if ($usersToNotify->isNotEmpty()) {
+                    \Illuminate\Support\Facades\Notification::send($usersToNotify, new \App\Notifications\SystemNotification([
+                        'title' => 'New Leads Imported',
+                        'message' => $results['imported'] . ' new leads have been imported and are available in the system.',
+                        'icon' => 'upload',
+                        'url' => route('clients.index')
+                    ]));
+                }
+            }
             
             return response()->json([
                 'success' => true,
