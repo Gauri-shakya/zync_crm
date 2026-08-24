@@ -188,9 +188,6 @@ class MyLeadsController extends Controller
     public function show(string $id)
     {
         $query = $this->baseQuery();
-        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('superadmin')) {
-            $query->where('user_id', Auth::id());
-        }
         $lead = $query->findOrFail($id);
 
 $this->authorize('manage', $lead);

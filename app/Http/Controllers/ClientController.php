@@ -76,6 +76,17 @@ class ClientController extends Controller
     return response()->json($client);
 }
 
+  public function details(Client $client)
+{
+    $this->authorize('manage', $client);
+    
+    // If it already has a lead action, just show the normal myleads.show
+    if ($client->leadAction) {
+        return redirect()->route('myleads.show', $client->leadAction->id);
+    }
+
+    return view('admin.sales.client-show', compact('client'));
+}
 
   public function edit(Client $client)
 {
@@ -504,7 +515,8 @@ public function destroy($id)
     private function validateSource($source)
     {
         $validSources = ['website', 'referral', 'cold_outreach', 'social_media', 'event', 'other'];
-        $source = strtolower(trim($source));
+        // Convert to lowercase and replace spaces with underscores (e.g. 'Social Media' -> 'social_media')
+        $source = str_replace(' ', '_', strtolower(trim($source)));
         return in_array($source, $validSources) ? $source : 'other';
     }
 

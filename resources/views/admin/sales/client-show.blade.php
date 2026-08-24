@@ -20,13 +20,13 @@
         }
     }
 
-    $leadStatuses = [
+    $clientStatuses = [
         'follow up' => 'Follow Up',
         'closed' => 'Closed',
         'not interested' => 'Not Interested',
         'non-contactable' => 'Non-contactable'
     ];
-    $currentStatus = strtolower($lead->status ?? '');
+    $currentStatus = strtolower($client->status ?? '');
 @endphp
 
 <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-4 sm:py-8">
@@ -44,7 +44,7 @@
             </a>
         </div>
 
-        @if($lead)
+        @if($client)
             <div class="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white overflow-hidden ring-1 ring-slate-100">
                 <!-- TOP HEADER SECTION -->
                 <div class="p-6 md:p-10 relative overflow-hidden">
@@ -54,28 +54,28 @@
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                         <div class="flex items-center gap-5 sm:gap-6">
                             <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center text-3xl font-extrabold shadow-lg shadow-indigo-200 transform hover:scale-105 transition-transform duration-300">
-                                {{ strtoupper(substr($lead->client->company_name ?? 'C', 0, 1)) }}
+                                {{ strtoupper(substr($client->company_name ?? 'C', 0, 1)) }}
                             </div>
                             <div>
-                                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-1">{{ $lead->client->company_name ?? 'N/A' }}</h2>
+                                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-1">{{ $client->company_name ?? 'N/A' }}</h2>
                                 <div class="flex items-center gap-2 text-sm font-semibold text-slate-500">
                                     <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                    {{ $lead->client->contact_person ?? 'No Contact Person' }}
+                                    {{ $client->contact_person ?? 'No Contact Person' }}
                                 </div>
                             </div>
                         </div>
                         
                         <div class="flex items-center gap-3">
-                            @if($lead->client->email)
-                                <a href="mailto:{{ $lead->client->email }}" onclick="logContactAction('Sent Email')" class="w-11 h-11 rounded-xl bg-white border-2 border-slate-100 flex items-center justify-center text-indigo-500 hover:bg-indigo-50 hover:border-indigo-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
+                            @if($client->email)
+                                <a href="mailto:{{ $client->email }}" onclick="logContactAction('Sent Email')" class="w-11 h-11 rounded-xl bg-white border-2 border-slate-100 flex items-center justify-center text-indigo-500 hover:bg-indigo-50 hover:border-indigo-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                                 </a>
                             @endif
-                            @if($lead->client->phone)
-                                <a href="tel:{{ $lead->client->phone }}" onclick="logContactAction('Initiated Phone Call')" class="w-11 h-11 rounded-xl bg-white border-2 border-slate-100 flex items-center justify-center text-indigo-500 hover:bg-indigo-50 hover:border-indigo-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
+                            @if($client->phone)
+                                <a href="tel:{{ $client->phone }}" onclick="logContactAction('Initiated Phone Call')" class="w-11 h-11 rounded-xl bg-white border-2 border-slate-100 flex items-center justify-center text-indigo-500 hover:bg-indigo-50 hover:border-indigo-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                                 </a>
-                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $lead->client->phone) }}" target="_blank" onclick="logContactAction('Initiated WhatsApp Conversation')" class="w-11 h-11 rounded-xl bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 hover:border-emerald-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
+                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $client->phone) }}" target="_blank" onclick="logContactAction('Initiated WhatsApp Conversation')" class="w-11 h-11 rounded-xl bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 hover:border-emerald-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.209-3.553-8.485"/>
                                     </svg>
@@ -88,23 +88,23 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-10">
                         <div>
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Project Type</span>
-                            <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg">{{ $lead->project_type ?? 'N/A' }}</span>
+                            <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg">{{ $client->project_type ?? 'N/A' }}</span>
                         </div>
                         <div>
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Email</span>
-                            <span class="text-sm font-bold text-slate-800 break-all">{{ $lead->client->email ?? 'N/A' }}</span>
+                            <span class="text-sm font-bold text-slate-800 break-all">{{ $client->email ?? 'N/A' }}</span>
                         </div>
                         <div>
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Phone</span>
-                            <span class="text-sm font-bold text-slate-800">{{ $lead->client->phone ?? 'N/A' }}</span>
+                            <span class="text-sm font-bold text-slate-800">{{ $client->phone ?? 'N/A' }}</span>
                         </div>
                         <div>
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Created At</span>
-                            <span class="text-sm font-bold text-slate-800">{{ $lead->created_at ? $lead->created_at->format('d M, Y') : 'N/A' }}</span>
+                            <span class="text-sm font-bold text-slate-800">{{ $client->created_at ? $client->created_at->format('d M, Y') : 'N/A' }}</span>
                         </div>
                         <div>
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Next Follow-Up</span>
-                            <span class="text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg">{{ $lead->next_follow_up ? $lead->next_follow_up->format('d M, Y') : 'N/A' }}</span>
+                            <span class="text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg">{{ $client->next_follow_up ? $client->next_follow_up->format('d M, Y') : 'N/A' }}</span>
                         </div>
                     </div>
                 </div>
@@ -113,7 +113,7 @@
                 <div class="px-6 md:px-10 pb-8 border-b border-slate-100">
                     <h4 class="text-sm font-extrabold text-slate-800 mb-4 uppercase tracking-wider">Lead Status</h4>
                     <div class="flex flex-col md:flex-row gap-2">
-                        @foreach($leadStatuses as $value => $label)
+                        @foreach($clientStatuses as $value => $label)
                             @if($currentStatus === $value || 
                                ($value === 'follow up' && in_array($currentStatus, ['connected', 'interested', 'proposal', 'negotiating', 'missed booked', 'will call back'])) || 
                                ($value === 'closed' && in_array($currentStatus, ['purchased', 'closed'])) || 
@@ -153,72 +153,56 @@
                         </div>
 
                         <!-- ADD NEW UPDATE FORM -->
-                        @if(Auth::id() === $lead->user_id || Auth::user()->hasRole('admin') || Auth::user()->hasRole('superadmin'))
-                            <div class="mb-10 relative group">
-                                
-                                @if(session('success'))
-                                    <div class="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl flex items-center gap-2">
-                                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        <span class="font-bold text-sm">{{ session('success') }}</span>
+                        <div class="mb-10 relative group">
+                            <div class="relative bg-white rounded-xl shadow-sm border border-indigo-100 p-5">
+                                <form action="{{ route('myleads.store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="client_id" value="{{ $client->id }}">
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-bold text-slate-700 mb-1">Response / Feedback <span class="text-rose-500">*</span></label>
+                                        <textarea name="response" rows="3" placeholder="What did you discuss? What are the next steps?" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-4 font-medium resize-none transition-all outline-none" required></textarea>
                                     </div>
-                                @endif
-
-                                @if($errors->any())
-                                    <div class="mb-4 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                            <span class="font-bold text-sm">Please fix the following errors:</span>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Project Type <span class="text-rose-500">*</span></label>
+                                            <select name="project_type" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg focus:ring-2 focus:ring-indigo-500 p-2.5 outline-none cursor-pointer" required>
+                                                <option value="">-- Select Type --</option>
+                                                <option value="web_development">Web Development</option>
+                                                <option value="mobile_app">Mobile App</option>
+                                                <option value="ecommerce">E-commerce</option>
+                                                <option value="ui_ux_design">UI/UX Design</option>
+                                                <option value="digital_marketing">Digital Marketing</option>
+                                                <option value="seo">SEO</option>
+                                                <option value="custom_software">Custom Software</option>
+                                                <option value="other">Other</option>
+                                            </select>
                                         </div>
-                                        <ul class="list-disc pl-7 text-xs font-medium space-y-1 mt-2">
-                                            @foreach($errors->all() as $error)
-                                                <li>{{ $error }}</li>
-                                            @endforeach
-                                        </ul>
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Lead Status <span class="text-rose-500">*</span></label>
+                                            <select name="status" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg focus:ring-2 focus:ring-indigo-500 p-2.5 outline-none cursor-pointer" required>
+                                                @foreach($clientStatuses ?? ['follow up' => 'Follow Up', 'closed' => 'Closed', 'not interested' => 'Not Interested', 'non-contactable' => 'Non-contactable'] as $val => $label)
+                                                    <option value="{{ $val }}" {{ $currentStatus === $val ? 'selected' : '' }}>{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Next Follow-Up</label>
+                                            <input type="date" name="next_follow_up" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg focus:ring-2 focus:ring-indigo-500 p-2.5 outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Time</label>
+                                            <input type="time" name="follow_up_time" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg focus:ring-2 focus:ring-indigo-500 p-2.5 outline-none">
+                                        </div>
                                     </div>
-                                @endif
-
-                                <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                                <div class="relative bg-white rounded-xl shadow-sm border border-indigo-100 p-5">
-                                    <form action="{{ route('myleads.update', $lead->id) }}" method="POST">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="redirect_to" value="show">
-                                        <div class="mb-3">
-                                            <label class="sr-only">Type your notes here...</label>
-                                            <textarea name="response" rows="3" placeholder="Type new update, client response, or notes here..." class="w-full bg-slate-50/50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-4 font-medium resize-none transition-all outline-none" required></textarea>
-                                        </div>
-                                        <div class="flex flex-col sm:flex-row items-center gap-4 justify-between">
-                                            <div class="flex gap-4 w-full sm:w-auto">
-                                                <div class="flex-1 sm:flex-none">
-                                                    <select name="status" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-lg focus:ring-2 focus:ring-indigo-500 p-2.5 outline-none cursor-pointer">
-                                                        @foreach($leadStatuses as $val => $label)
-                                                            <option value="{{ $val }}" {{ $currentStatus === $val ? 'selected' : '' }}>Mark as: {{ $label }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <div class="flex-1 sm:flex-none">
-                                                    <input type="date" name="next_follow_up" value="{{ $lead->next_follow_up ? $lead->next_follow_up->format('Y-m-d') : '' }}" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-lg focus:ring-2 focus:ring-indigo-500 p-2.5 outline-none cursor-pointer">
-                                                </div>
-                                                <!-- Hidden fields to preserve other required data -->
-                                                <input type="hidden" name="project_type" value="{{ $lead->project_type }}">
-                                                <input type="hidden" name="follow_up_time" value="{{ $lead->follow_up_time }}">
-                                            </div>
-                                            <button type="button" id="btn-save-update" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md shadow-indigo-200 hover:-translate-y-0.5 transition-all text-sm">
-                                                Save Update
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
+                                    <div class="flex justify-end mt-2 border-t border-slate-100 pt-4">
+                                        <button type="submit" class="inline-flex items-center justify-center px-8 py-3 text-sm font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 hover:-translate-y-0.5 transition-all">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                            Take Action
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
-                        @else
-                            <div class="mb-10 relative group">
-                                <div class="relative bg-slate-50 rounded-xl shadow-sm border border-slate-200 p-6 text-center">
-                                    <svg class="w-10 h-10 text-slate-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                    <h4 class="text-base font-bold text-slate-700 mb-1">View Only Mode</h4>
-                                    <p class="text-slate-500 text-sm max-w-md mx-auto">This lead is currently assigned to someone else. You can view its details and history, but you cannot log new updates.</p>
-                                </div>
-                            </div>
-                        @endif
+                        </div>
 
                         <!-- Lead Closed Modal -->
                         <div id="lead-closed-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -238,15 +222,15 @@
                                             <div class="col-span-2 bg-white p-4 rounded-xl border border-slate-200 grid grid-cols-2 gap-4">
                                                 <div>
                                                     <p class="text-xs font-bold text-slate-400 uppercase">Client Name</p>
-                                                    <p class="font-semibold text-slate-800">{{ $lead->client->name ?? 'N/A' }}</p>
+                                                    <p class="font-semibold text-slate-800">{{ $client->name ?? 'N/A' }}</p>
                                                 </div>
                                                 <div>
                                                     <p class="text-xs font-bold text-slate-400 uppercase">Phone</p>
-                                                    <p class="font-semibold text-slate-800">{{ $lead->client->phone ?? 'N/A' }}</p>
+                                                    <p class="font-semibold text-slate-800">{{ $client->phone ?? 'N/A' }}</p>
                                                 </div>
                                                 <div class="col-span-2">
                                                     <p class="text-xs font-bold text-slate-400 uppercase">Email</p>
-                                                    <p class="font-semibold text-slate-800">{{ $lead->client->email ?? 'N/A' }}</p>
+                                                    <p class="font-semibold text-slate-800">{{ $client->email ?? 'N/A' }}</p>
                                                 </div>
                                             </div>
 
@@ -304,11 +288,11 @@
                         
                         <!-- Timeline Content -->
                         <div class="mt-8 ml-2">
-                            @if($lead->histories->count())
+                            @if(false)
                                 <div class="relative before:absolute before:inset-0 before:ml-[5.5rem] before:-translate-x-px before:h-full before:w-[2px] before:bg-indigo-100">
                                     
                                     @php $lastDate = null; @endphp
-                                    @foreach($lead->histories()->latest()->get() as $index => $history)
+                                    @foreach($client->histories()->latest()->get() as $index => $history)
                                         @php
                                             $currentDate = $history->created_at->format('Y-m-d');
                                             $showDate = ($lastDate !== $currentDate);
@@ -474,7 +458,7 @@
                                     <span class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                     </span>
-                                    {{ $lead->next_follow_up ? $lead->next_follow_up->format('d M Y') : 'Not Scheduled' }}
+                                    {{ $client->next_follow_up ? $client->next_follow_up->format('d M Y') : 'Not Scheduled' }}
                                 </p>
                             </div>
                             
@@ -484,7 +468,7 @@
                                     <span class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     </span>
-                                    {{ $lead->follow_up_time ? \Carbon\Carbon::parse($lead->follow_up_time)->format('h:i A') : '--:--' }}
+                                    {{ $client->follow_up_time ? \Carbon\Carbon::parse($client->follow_up_time)->format('h:i A') : '--:--' }}
                                 </p>
                             </div>
                         </div>
@@ -509,7 +493,7 @@
     </div>
 </div>
 
-@if($lead)
+@if($client)
 <script>
     function logContactAction(actionType) {
         // Find existing CSRF token
@@ -519,7 +503,7 @@
         // Simple form post to log it without needing complex fetch headers
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = "{{ route('myleads.update', $lead->id) }}";
+        form.action = "{{ route('myleads.update', $client->id) }}";
         form.style.display = 'none';
 
         const fields = {
@@ -527,10 +511,10 @@
             _method: 'PUT',
             redirect_to: 'show',
             response: actionType,
-            status: "{{ $lead->status }}",
-            project_type: "{{ $lead->project_type }}",
-            next_follow_up: "{{ $lead->next_follow_up ? $lead->next_follow_up->format('Y-m-d') : '' }}",
-            follow_up_time: "{{ $lead->follow_up_time }}"
+            status: "{{ $client->status }}",
+            project_type: "{{ $client->project_type }}",
+            next_follow_up: "{{ $client->next_follow_up ? $client->next_follow_up->format('Y-m-d') : '' }}",
+            follow_up_time: "{{ $client->follow_up_time }}"
         };
 
         for (const key in fields) {
@@ -551,7 +535,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const statusSelect = document.querySelector('select[name="status"]');
-        const mainForm = document.querySelector('form[action="{{ route('myleads.update', $lead->id) }}"]');
+        const mainForm = document.querySelector('form[action="{{ route('myleads.update', $client->id) }}"]');
         const btnSaveUpdate = document.getElementById('btn-save-update');
         const modal = document.getElementById('lead-closed-modal');
         const btnCancelModal = document.getElementById('btn-cancel-modal');

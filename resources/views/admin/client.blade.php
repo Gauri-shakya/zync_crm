@@ -139,6 +139,9 @@
             @csrf
 
             <div class="p-6 space-y-4">
+                
+                <!-- Import Messages -->
+                <div id="import-messages" class="hidden mb-4 p-4 rounded-lg text-sm"></div>
 
                 <!-- File Upload -->
                 <div>
@@ -604,20 +607,23 @@
             $dashboardCategory = 'follow_up';
         }
     @endphp
-    <div class="client-card rounded-lg border border-slate-200/60 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group cursor-pointer" 
+    <div class="client-card relative rounded-lg border border-slate-200/60 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group cursor-pointer" 
          data-status="{{ $client->status }}" 
          data-category="{{ $dashboardCategory }}" 
          data-assigned-user="{{ ($client->leadAction && $client->leadAction->status !== 'unlocked') ? $client->leadAction->user_id : '' }}"
          onclick="if(!event.target.closest('button, a, [role=menu], .dropdown-menu, input, select')) { 
-             @if($isClaimed && $canSeeFullDetails)
+             @if($isClaimed)
                  window.location='{{ route('myleads.show', $client->leadAction->id) }}';
-             @elseif(!$isClaimed)
-                 showToast('No action taken yet. Please click \'Take Action\' first!', 'error');
              @else
-                 showToast('You do not have permission to view this lead.', 'error');
+                 window.location='{{ route('clients.details', $client->id) }}';
              @endif
          }">
         <div class="flex flex-col space-y-1.5 p-6 pb-3">
+            @if($client->created_at && $client->created_at->diffInHours(now()) < 24)
+                <div class="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg border-2 border-white animate-bounce z-10">
+                    NEW
+                </div>
+            @endif
             <div class="flex items-start justify-between">
                 <div class="flex items-start gap-3 flex-1 min-w-0">
                     <div class="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-xl flex items-center justify-center shadow-lg shrink-0">
@@ -1835,17 +1841,24 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                let message = `Successfully imported ${data.imported_count} clients.`;
                 if (data.skipped_count > 0) {
-                    message += ` ${data.skipped_count} rows were skipped.`;
-                    if (data.skipped_rows.length > 0) {
-                        message += '\n\nSkipped rows:\n' + data.skipped_rows.join('\n');
-                    }
+                    let messagesContainer = document.getElementById('import-messages');
+                    messagesContainer.classList.remove('hidden');
+                    messagesContainer.className = 'mb-4 p-4 rounded-lg text-sm bg-red-50 text-black border border-red-200';
+                    messagesContainer.innerHTML = `<strong>${data.skipped_count} duplicate row(s) found and automatically removed. Duplicates are not permitted in the system. The remaining valid leads have been uploaded successfully.</strong>`;
+                    
+                    document.getElementById('cancel-import').textContent = 'Close & Refresh';
+                    document.getElementById('submit-import').classList.add('hidden');
+                    
+                    const closeModal = () => location.reload();
+                    document.getElementById('cancel-import').onclick = closeModal;
+                    document.getElementById('close-import-modal').onclick = closeModal;
+                } else {
+                    importModal.classList.add('hidden');
+                    importForm.reset();
+                    showToast(`Successfully imported ${data.imported_count} clients.`, 'success');
+                    setTimeout(() => location.reload(), 1500);
                 }
-                alert(message);
-                importModal.classList.add('hidden');
-                importForm.reset();
-                location.reload(); // Refresh to show new data
             } else {
                 alert('Error: ' + data.message);
             }
