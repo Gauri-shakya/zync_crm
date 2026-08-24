@@ -581,9 +581,10 @@
     @foreach($clients as $client)
     @php
         $canSeeFullCompanyName = auth()->user()->hasRole('admin');
+        $isClaimed = isset($client->leadAction);
         
         $canSeeFullDetails = true;
-        if ($client->leadAction) {
+        if ($isClaimed) {
             $canSeeFullDetails = false;
             if (auth()->user()->hasRole('admin') || $client->leadAction->user_id == auth()->id()) {
                 $canSeeFullDetails = true;
@@ -603,7 +604,19 @@
             $dashboardCategory = 'follow_up';
         }
     @endphp
-    <div class="client-card rounded-lg border border-slate-200/60 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group" data-status="{{ $client->status }}" data-category="{{ $dashboardCategory }}" data-assigned-user="{{ ($client->leadAction && $client->leadAction->status !== 'unlocked') ? $client->leadAction->user_id : '' }}">
+    <div class="client-card rounded-lg border border-slate-200/60 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group cursor-pointer" 
+         data-status="{{ $client->status }}" 
+         data-category="{{ $dashboardCategory }}" 
+         data-assigned-user="{{ ($client->leadAction && $client->leadAction->status !== 'unlocked') ? $client->leadAction->user_id : '' }}"
+         onclick="if(!event.target.closest('button, a, [role=menu], .dropdown-menu, input, select')) { 
+             @if($isClaimed && $canSeeFullDetails)
+                 window.location='{{ route('myleads.show', $client->leadAction->id) }}';
+             @elseif(!$isClaimed)
+                 showToast('No action taken yet. Please click \'Take Action\' first!', 'error');
+             @else
+                 showToast('You do not have permission to view this lead.', 'error');
+             @endif
+         }">
         <div class="flex flex-col space-y-1.5 p-6 pb-3">
             <div class="flex items-start justify-between">
                 <div class="flex items-start gap-3 flex-1 min-w-0">
