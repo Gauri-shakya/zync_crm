@@ -131,7 +131,16 @@ public function destroy($id)
     public function import(Request $request): JsonResponse
     {
         $request->validate([
-            'excel_file' => 'required|file|mimes:xlsx,xls,csv'
+            'excel_file' => [
+                'required',
+                'file',
+                function ($attribute, $value, $fail) {
+                    $extension = strtolower($value->getClientOriginalExtension());
+                    if (!in_array($extension, ['csv', 'xls', 'xlsx'])) {
+                        $fail('The file must be a valid Excel or CSV file (xlsx, xls, csv). Notepad (.txt) files are not allowed.');
+                    }
+                },
+            ],
         ]);
 
         try {

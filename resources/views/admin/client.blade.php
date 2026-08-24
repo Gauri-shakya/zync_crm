@@ -164,8 +164,7 @@
                         </p>
 
                         <!-- Sample File Download -->
-                        <a href="{{ asset('samples/clients_import_sample.csv') }}"
-                           download
+                        <a href="{{ route('clients.sample.download') }}"
                            class="text-xs font-medium text-indigo-600 hover:text-indigo-800">
                             Download Sample File
                         </a>

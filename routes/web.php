@@ -101,6 +101,11 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
         Route::put('/clients/{client}', [ClientController::class, 'update'])->name('clients.update');
         Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
         Route::post('/clients/import', [ClientController::class, 'import'])->name('clients.import');
+        Route::get('/clients/sample/download', function () {
+            return response()->download(public_path('samples/clients_import_sample.csv'), 'clients_import_sample.csv', [
+                'Content-Type' => 'text/csv'
+            ]);
+        })->name('clients.sample.download');
         Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
         
         // Lead Notes (Instagram style)
