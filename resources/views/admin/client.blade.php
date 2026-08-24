@@ -619,7 +619,7 @@
              @endif
          }">
         <div class="flex flex-col space-y-1.5 p-6 pb-3">
-            @if($client->created_at && $client->created_at->diffInHours(now()) < 24)
+            @if(!$isClaimed && $client->created_at && $client->created_at->diffInHours(now()) < 24)
                 <div class="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg border-2 border-white animate-bounce z-10">
                     NEW
                 </div>
