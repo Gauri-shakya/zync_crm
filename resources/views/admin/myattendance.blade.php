@@ -271,6 +271,37 @@
             }
         }
 
+        async function postWithLocationFallback(route, actionType) {
+            let postData = { _token: csrfToken };
+            try {
+                return await ajaxPost(route, postData);
+            } catch (err) {
+                if (err.message === 'location_required') {
+                    updateActionsOverlay(false);
+                    const confirmLocation = await showLocationConfirmation(actionType);
+                    if (!confirmLocation) {
+                        return { user_cancelled: true };
+                    }
+                    
+                    updateActionsOverlay(true, 'Fetching location...');
+                    const locationData = await getLocation();
+
+                    if (locationData.error) {
+                        console.warn('Location access denied or unavailable.');
+                    }
+
+                    postData = createLocationPostData(locationData);
+                    postData._token = csrfToken;
+                    updateActionsOverlay(true, 'Processing action...');
+                    let result = await ajaxPost(route, postData);
+                    result.locationData = locationData; // pass this back so we can update display if needed
+                    return result;
+                } else {
+                    throw err;
+                }
+            }
+        }
+
         /* Location Modal */
         @media (max-width: 768px) {
             #location-modal .bg-white {
@@ -1353,19 +1384,10 @@
             }
 
             try {
-                const confirmLocation = await showLocationConfirmation('breakIn');
-                if (!confirmLocation) return;
-
                 updateActionsOverlay(true, 'Starting Break...');
-                const locationData = await getLocation();
-                const postData = createLocationPostData(locationData);
-                if (locationData.error || !locationData.isWithinRange) {
-                    updateActionsOverlay(true, 'Out of Range');
-                    alert(`📍 You are ${locationData.distance}km away from office (allowed: ${ALLOWED_DISTANCE_KM}km).`);
-                    return;
-                }
-
-                const result = await ajaxPost('{{ route("my-attendance.break-in") }}', postData);
+                
+                let result = await postWithLocationFallback('{{ route("my-attendance.break-in") }}', 'breakIn');
+                if (result.user_cancelled) return;
 
                 if (result.error) {
                     alert(result.error);
@@ -1404,20 +1426,10 @@
                 return;
             }
             try {
-                const confirmLocation = await showLocationConfirmation(actionType);
-                if (!confirmLocation) return;
-
                 updateActionsOverlay(true, 'Ending Break...');
-                const locationData = await getLocation();
-
-                if (locationData.error || !locationData.isWithinRange) {
-                    updateActionsOverlay(true, 'Out of Range');
-                    alert(`📍 You are ${locationData.distance}km away from office (allowed: ${ALLOWED_DISTANCE_KM}km).`);
-                    return;
-                }
-
-                const postData = createLocationPostData(locationData);
-                const result = await ajaxPost(route, postData);
+                
+                let result = await postWithLocationFallback(route, actionType);
+                if (result.user_cancelled) return;
 
                 if (result.error) {
                     alert(`❌ Error: ${result.error}`);
@@ -1488,29 +1500,24 @@
             const originalDisabled = btn ? btn.disabled : false;
             
             try {
-                const confirmLocation = await showLocationConfirmation(actionType);
-                if (!confirmLocation) return;
-
                 updateActionsOverlay(true, 'Processing action...');
                 if (btn) btn.disabled = true;
 
-                const locationData = await getLocation();
-
-                if (locationData.error || !locationData.isWithinRange) {
-                    updateActionsOverlay(true, 'Out of Range');
-                    alert(`📍 You are ${locationData.distance}km away from office (allowed: ${ALLOWED_DISTANCE_KM}km).`);
+                let result = await postWithLocationFallback(route, actionType);
+                if (result.user_cancelled) {
+                    if (btn) btn.disabled = originalDisabled;
+                    updateActionsOverlay(false);
                     return;
                 }
-
-                const postData = createLocationPostData(locationData);
-                const result = await ajaxPost(route, postData);
 
                 if (result.error) {
                     alert(`❌ Error: ${result.error}`);
                     return;
                 }
 
-                updateLocationDisplay(locationData);
+                if (result.locationData) {
+                    updateLocationDisplay(result.locationData);
+                }
 
 
                 const actionNames = {
@@ -1565,8 +1572,8 @@
         }
 
         function isMobileDevice() {
-            const ua = navigator.userAgent || '';
-            return /Android|iPhone|iPod/i.test(ua);
+            // Always allow punching (IP/Location check handles security in backend)
+            return true;
         }
 
         function enforceMobileOnly() {
@@ -1853,7 +1860,7 @@
                         <span class="text-[13px] font-bold text-gray-600">${record.punchOut || '--'}</span>
                     </td>
                     <td class="px-6 py-5 whitespace-nowrap">
-                        <span class="text-[13px] font-black text-gray-900">${record.workHours || '--'}</span>
+                        <span class="text-[13px] font-black text-gray-900" id="table-work-hours-${record.date}">${record.workHours || '--'}</span>
                     </td>
                     <td class="px-6 py-5 whitespace-nowrap">
                         <span class="px-3 py-1 text-[10px] font-black uppercase tracking-widest border rounded-full ${statusClass}">
@@ -1921,7 +1928,7 @@
                         </div>
                         <div>
                             <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Work Hours</p>
-                            <p class="text-sm font-black text-gray-900">${record.workHours || '--'}</p>
+                            <p class="text-sm font-black text-gray-900" id="mobile-work-hours-${record.date}">${record.workHours || '--'}</p>
                         </div>
                         <div>
                             <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Break</p>
@@ -2072,12 +2079,46 @@
             }
         }
 
-        // Optional: Keep these if you still use work timer display
+        function formatDuration(totalSeconds) {
+            const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (totalSeconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
         function startWorkTimer() {
             if (workTimer) return;
+            
+            const totalHoursEl = document.getElementById('total-hours');
+            if (totalHoursEl && totalWorkSeconds === 0) {
+                const parts = totalHoursEl.textContent.trim().split(':');
+                if (parts.length === 3) {
+                    totalWorkSeconds = (parseInt(parts[0], 10) * 3600) + (parseInt(parts[1], 10) * 60) + parseInt(parts[2], 10);
+                }
+            }
+
+            let todayNetSeconds = {{ $todayNetSeconds ?? 0 }};
+            const todayDateStr = '{{ \Carbon\Carbon::now("Asia/Kolkata")->format("d-m-Y") }}';
+
             workTimer = setInterval(() => {
-                workSeconds++;
-                // You can update work time display here if needed
+                if (attendanceData.breakRunning) return; // Don't tick if break is running
+                
+                totalWorkSeconds++;
+                todayNetSeconds++;
+
+                if (totalHoursEl) {
+                    totalHoursEl.textContent = formatDuration(totalWorkSeconds);
+                }
+
+                const tableCell = document.getElementById(`table-work-hours-${todayDateStr}`);
+                if (tableCell) {
+                    tableCell.textContent = formatDuration(todayNetSeconds);
+                }
+
+                const mobileCell = document.getElementById(`mobile-work-hours-${todayDateStr}`);
+                if (mobileCell) {
+                    mobileCell.textContent = formatDuration(todayNetSeconds);
+                }
             }, 1000);
         }
 

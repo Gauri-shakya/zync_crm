@@ -79,6 +79,24 @@
                     <p id="location-error" class="mt-2 text-sm text-red-600 hidden"></p>
                 </div>
 
+                <!-- Office Wi-Fi IP Address -->
+                <div class="space-y-4">
+                    <label class="block text-sm font-bold text-gray-700"> Office Wi-Fi IP Address </label>
+                    <p class="text-xs text-gray-500 italic">Save your office's public IP address. Employees connected to this Wi-Fi will be able to punch in without location checks.</p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="relative flex-1 rounded-xl shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-wifi text-gray-400"></i>
+                            </div>
+                            <input type="text" id="office_ip_address" name="office_ip_address" value="{{ $company->office_ip_address ?? '' }}" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 py-3 sm:text-sm border border-gray-200 rounded-xl transition-all font-bold text-gray-700" placeholder="e.g. 192.168.1.1">
+                        </div>
+                        <button type="button" onclick="getPublicIP()" class="w-full sm:w-auto flex justify-center items-center gap-2 py-2.5 px-4 border border-indigo-100 rounded-xl text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 focus:outline-none transition-all duration-200">
+                            <i class="fas fa-network-wired"></i> Auto Detect IP
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Working Days & Times -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -111,3 +129,31 @@
         </div>
     </div>
 </div>
+
+<script>
+    function getPublicIP() {
+        const ipInput = document.getElementById('office_ip_address');
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+        btn.disabled = true;
+
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                ipInput.value = data.ip;
+                btn.innerHTML = '<i class="fas fa-check"></i> Detected';
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }, 2000);
+            })
+            .catch(error => {
+                console.error('Error fetching IP:', error);
+                alert('Could not auto-detect IP. Please enter it manually.');
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            });
+    }
+</script>

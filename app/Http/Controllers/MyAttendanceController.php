@@ -42,6 +42,7 @@ class MyAttendanceController extends Controller
                 'total_working_days' => 'required|numeric',
                 'office_start_time' => 'required',
                 'office_end_time' => 'required',
+                'office_ip_address' => 'nullable|ip',
             ]);
 
             $company = Auth::user()->company;
@@ -55,6 +56,7 @@ class MyAttendanceController extends Controller
                 'total_working_days' => $request->total_working_days,
                 'office_start_time' => $request->office_start_time,
                 'office_end_time' => $request->office_end_time,
+                'office_ip_address' => $request->office_ip_address,
             ]);
 
             return response()->json(['success' => true, 'message' => 'Company details updated successfully.']);
@@ -167,12 +169,12 @@ class MyAttendanceController extends Controller
                 }
             }
 
-            $totalHours = $this->formatDuration($totalWorkSeconds);
 
             /* ──────────────────────────────
              | 🔧 FIX-3: TODAY PROGRESS
              ────────────────────────────── */
             $todayProgress = 0;
+            $todayNetSeconds = 0;
 
             if ($todayRecord && $todayRecord->punch_in) {
                 $recordDate = $todayRecord->date->format('Y-m-d');
@@ -187,7 +189,11 @@ class MyAttendanceController extends Controller
 
                 // 8 hours = 28800 seconds
                 $todayProgress = min(($netSeconds / 28800) * 100, 100);
+                $todayNetSeconds = $netSeconds;
             }
+
+            $totalWorkSeconds += $todayNetSeconds;
+            $totalHours = $this->formatDuration($totalWorkSeconds);
 
             /* ──────────────────────────────
              | ATTENDANCE LOG
@@ -231,6 +237,7 @@ class MyAttendanceController extends Controller
                 'totalHours',
                 'attendancePercentage',
                 'todayProgress',
+                'todayNetSeconds',
                 'attendanceLog',
                 'currentMonth',
                 'todayRecord',
@@ -286,13 +293,29 @@ class MyAttendanceController extends Controller
             $defaultLocation = 'Location not available';
             $employee = Auth::user(); // Added this to get company details
 
+            // 1. Check Wi-Fi IP first (Combo logic)
+            $officeIp = $employee->company->office_ip_address ?? null;
+            $userIp = $request->ip();
+
+            \Log::info("IP Check: User IP = '{$userIp}', Office IP = '{$officeIp}'");
+
+            if ($officeIp && $userIp === $officeIp) {
+                return [
+                    'location' => 'Office Wi-Fi',
+                    'latitude' => $request->latitude ?? null,
+                    'longitude' => $request->longitude ?? null,
+                    'accuracy' => $request->accuracy ?? null,
+                    'distance' => 0,
+                    'is_within_range' => true
+                ];
+            }
+
+            // 2. Fallback to GPS Location Check
+            // If IP check failed, and NO location coordinates are provided,
+            // we MUST request location from the frontend.
             if (!$request->latitude || !$request->longitude) {
                 return [
-                    'location' => $request->location ?? $defaultLocation,
-                    'latitude' => null,
-                    'longitude' => null,
-                    'accuracy' => null,
-                    'distance' => null,
+                    'location_required' => true,
                     'is_within_range' => false
                 ];
             }
@@ -442,6 +465,9 @@ class MyAttendanceController extends Controller
                 return response()->json(['error' => 'Punching allowed only from mobile devices'], 403);
             }
             $locationData = $this->processLocationData($request);
+            if (isset($locationData['location_required']) && $locationData['location_required']) {
+                return response()->json(['error' => 'location_required'], 428);
+            }
             if (!$locationData['is_within_range']) {
                 return response()->json(['error' => 'Out of allowed range (500m)'], 403);
             }
@@ -510,6 +536,9 @@ class MyAttendanceController extends Controller
                 return response()->json(['error' => 'Punching allowed only from mobile devices'], 403);
             }
             $locationData = $this->processLocationData($request);
+            if (isset($locationData['location_required']) && $locationData['location_required']) {
+                return response()->json(['error' => 'location_required'], 428);
+            }
             if (!$locationData['is_within_range']) {
                 return response()->json(['error' => 'Out of allowed range (500m)'], 403);
             }
@@ -571,6 +600,9 @@ class MyAttendanceController extends Controller
                 return response()->json(['error' => 'Punching allowed only from mobile devices'], 403);
             }
             $locationData = $this->processLocationData($request);
+            if (isset($locationData['location_required']) && $locationData['location_required']) {
+                return response()->json(['error' => 'location_required'], 428);
+            }
             if (!$locationData['is_within_range']) {
                 return response()->json(['error' => 'Out of allowed range (500m)'], 403);
             }
@@ -705,8 +737,8 @@ class MyAttendanceController extends Controller
 
     private function isMobileRequest(Request $request)
     {
-        $agent = $request->header('User-Agent', '');
-        return preg_match('/Android|iPhone|iPod/i', $agent) === 1;
+        // Always allow punching (IP/Location logic handles security)
+        return true;
     }
 
     public function breakIn(Request $request)
@@ -716,6 +748,9 @@ class MyAttendanceController extends Controller
                 return response()->json(['error' => 'Punching allowed only from mobile devices'], 403);
             }
             $locationData = $this->processLocationData($request);
+            if (isset($locationData['location_required']) && $locationData['location_required']) {
+                return response()->json(['error' => 'location_required'], 428);
+            }
             if (!$locationData['is_within_range']) {
                 return response()->json(['error' => 'Out of allowed range (500m)'], 403);
             }
@@ -788,6 +823,9 @@ class MyAttendanceController extends Controller
                 return response()->json(['error' => 'Punching allowed only from mobile devices'], 403);
             }
             $locationData = $this->processLocationData($request);
+            if (isset($locationData['location_required']) && $locationData['location_required']) {
+                return response()->json(['error' => 'location_required'], 428);
+            }
             if (!$locationData['is_within_range']) {
                 return response()->json(['error' => 'Out of allowed range (500m)'], 403);
             }

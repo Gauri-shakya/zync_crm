@@ -31,6 +31,7 @@ class Company extends Model
         'office_start_time',
         'office_end_time',
         'total_working_days',
+        'office_ip_address',
     ];
 
 
