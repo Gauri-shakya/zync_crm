@@ -1725,6 +1725,9 @@
 
                     if (locationData.error) {
                         console.warn('Location access denied or unavailable.');
+                        alert('Location access is required because you are not connected to the office Wi-Fi. Please enable location permissions in your browser settings and try again.');
+                        updateActionsOverlay(false);
+                        return { user_cancelled: true };
                     }
 
                     postData = createLocationPostData(locationData);
