@@ -85,10 +85,14 @@
                     </div>
 
                     <!-- METADATA GRID -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-10">
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 mt-10">
                         <div>
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Project Type</span>
                             <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg">{{ $client->project_type ?? 'N/A' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Industry</span>
+                            <span class="text-sm font-bold text-slate-800">{{ $client->industry ?? 'N/A' }}</span>
                         </div>
                         <div>
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Email</span>

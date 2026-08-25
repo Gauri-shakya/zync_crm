@@ -7,22 +7,22 @@
 
         <!-- Stats Overview -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
+            <a href="{{ route('ticket.record.index') }}" class="block bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer">
                 <p class="text-xs sm:text-sm text-gray-500 font-medium">Total Tickets</p>
                 <p class="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{{ $stats['total'] }}</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
-                <p class="text-xs sm:text-sm text-gray-500 font-medium">Open</p>
-                <p class="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{{ $stats['open'] }}</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
+            </a>
+            <a href="{{ route('ticket.record.index', ['status' => 'open']) }}" class="block bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer">
                 <p class="text-xs sm:text-sm text-gray-500 font-medium">Pending</p>
+                <p class="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{{ $stats['open'] }}</p>
+            </a>
+            <a href="{{ route('ticket.record.index', ['status' => 'in-progress']) }}" class="block bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer">
+                <p class="text-xs sm:text-sm text-gray-500 font-medium">In Progress</p>
                 <p class="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{{ $stats['pending'] }}</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
-                <p class="text-xs sm:text-sm text-gray-500 font-medium">Resolved</p>
+            </a>
+            <a href="{{ route('ticket.record.index', ['status' => 'completed']) }}" class="block bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer">
+                <p class="text-xs sm:text-sm text-gray-500 font-medium">Completed</p>
                 <p class="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{{ $stats['resolved'] }}</p>
-            </div>
+            </a>
         </div>
 
         <!-- Issue-Facing Items (Recurring Problems) -->
@@ -76,7 +76,7 @@
                     <select onchange="window.location.href=this.value"
                         class="text-sm border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full md:w-auto">
                         <option value="{{ route('ticket.record.index') }}">All Status</option>
-                        <option value="{{ route('ticket.record.index', ['status' => 'open']) }}" {{ request('status') == 'open' ? 'selected' : '' }}>Open</option>
+                        <option value="{{ route('ticket.record.index', ['status' => 'open']) }}" {{ request('status') == 'open' ? 'selected' : '' }}>Pending</option>
                         <option value="{{ route('ticket.record.index', ['status' => 'in-progress']) }}" {{ request('status') == 'in-progress' ? 'selected' : '' }}>In Progress</option>
                         <option value="{{ route('ticket.record.index', ['status' => 'completed']) }}" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
                     </select>
@@ -145,7 +145,7 @@
                                                                                                     {{ $ticket->status === 'open' ? 'bg-blue-100 text-blue-800' :
                             ($ticket->status === 'in-progress' ? 'bg-yellow-100 text-yellow-800' :
                                 ($ticket->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800')) }}">
-                                                    {{ ucfirst($ticket->status) }}
+                                                    {{ $ticket->status === 'open' ? 'Pending' : ($ticket->status === 'in-progress' ? 'In Progress' : ucfirst($ticket->status)) }}
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
@@ -186,7 +186,7 @@
                                     {{ $ticket->status === 'open' ? 'bg-blue-100 text-blue-800' :
                                     ($ticket->status === 'in-progress' ? 'bg-yellow-100 text-yellow-800' :
                                     ($ticket->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800')) }}">
-                                    {{ $ticket->status }}
+                                    {{ $ticket->status === 'open' ? 'Pending' : ($ticket->status === 'in-progress' ? 'In Progress' : $ticket->status) }}
                                 </span>
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase
                                     {{ $ticket->priority === 'urgent' ? 'bg-red-100 text-red-800' :

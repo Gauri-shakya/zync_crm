@@ -129,7 +129,6 @@
                                     Progress</option>
                                 <option value="completed" {{ $ticket->status == 'completed' ? 'selected' : '' }}>Completed
                                 </option>
-                                <option value="closed" {{ $ticket->status == 'closed' ? 'selected' : '' }}>Closed</option>
                             </select>
                         </div>
 

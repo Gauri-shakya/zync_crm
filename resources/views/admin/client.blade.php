@@ -99,6 +99,7 @@
         <p class="text-slate-500 mt-2">Manage your client relationships and pipeline</p>
     </div>
     <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+        @if(auth()->check() && auth()->user()->hasRole('admin'))
         <button id="import-client-btn" class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-green-600 hover:bg-green-700 shadow-lg shadow-green-500/30 text-white w-full sm:w-auto">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -107,6 +108,7 @@
             </svg>
             Import from Excel
         </button>
+        @endif
         <button id="add-client-btn" class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 text-white w-full sm:w-auto">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
                 <path d="M5 12h14"></path>
@@ -366,12 +368,74 @@
                     </div>
 
                     <!-- Search Input (Second on mobile, First on desktop) -->
-                    <div class="relative flex-1 w-full order-2 lg:order-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="m21 21-4.3-4.3"></path>
-                        </svg>
-                        <input id="search-input" class="flex h-9 sm:h-10 w-full rounded-md border border-slate-200 px-3 py-2 pl-9 sm:pl-10 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Search clients..." value="">
+                    <div class="relative flex-1 w-full order-2 lg:order-1 flex gap-2">
+                        <div class="relative flex-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.3-4.3"></path>
+                            </svg>
+                            <input id="search-input" class="flex h-9 sm:h-10 w-full rounded-md border border-slate-200 px-3 py-2 pl-9 sm:pl-10 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Search clients..." value="">
+                        </div>
+                        
+                        <!-- Advanced Filter Dropdown -->
+                        <div class="relative">
+                            <button type="button" id="adv-filter-toggle" class="flex items-center justify-center h-9 sm:h-10 w-9 sm:w-10 rounded-md border border-slate-200 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-500 transition-colors" title="Advanced Filters">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                            </button>
+                            
+                            <!-- Dropdown Panel -->
+                            <div id="adv-filter-panel" class="hidden absolute right-0 top-full mt-2 w-72 bg-white rounded-lg shadow-xl border border-slate-200 z-50 p-4">
+                                <h4 class="font-bold text-slate-800 mb-3 text-sm border-b pb-2">Advanced Filters</h4>
+                                
+                                <div class="space-y-4">
+                                    <!-- Date Range -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-500 mb-1">Created Date Range</label>
+                                        <div class="flex flex-col gap-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-slate-400 text-xs w-8">From</span>
+                                                <input type="date" id="filter-date-from" class="flex-1 w-full text-xs rounded-md border border-slate-200 px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700">
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-slate-400 text-xs w-8">To</span>
+                                                <input type="date" id="filter-date-to" class="flex-1 w-full text-xs rounded-md border border-slate-200 px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    @if(auth()->check() && auth()->user()->hasRole('admin'))
+                                    <!-- Sales Executive -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-500 mb-1">Sales Executive</label>
+                                        <select id="filter-executive" class="w-full text-sm rounded-md border border-slate-200 px-2 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700">
+                                            <option value="">All Executives</option>
+                                            @foreach($users as $user)
+                                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    @endif
+                                    
+                                    <!-- Status -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-500 mb-1">Lead Status</label>
+                                        <select id="filter-status" class="w-full text-sm rounded-md border border-slate-200 px-2 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700">
+                                            <option value="">All Statuses</option>
+                                            <option value="follow up">Follow Up</option>
+                                            <option value="closed">Closed</option>
+                                            <option value="not interested">Not Interested</option>
+                                            <option value="non-contactable">Non-contactable</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Actions -->
+                                    <div class="flex gap-2 pt-2 border-t mt-4">
+                                        <button type="button" id="apply-filters-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded transition-colors">Apply</button>
+                                        <button type="button" id="reset-filters-btn" class="px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold py-2 rounded transition-colors">Reset</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -587,7 +651,6 @@
 <div id="clients-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
     @foreach($clients as $client)
     @php
-        $canSeeFullCompanyName = auth()->user()->hasRole('admin');
         $isClaimed = isset($client->leadAction);
         
         $canSeeFullDetails = true;
@@ -597,6 +660,8 @@
                 $canSeeFullDetails = true;
             }
         }
+        
+        $canSeeFullCompanyName = $canSeeFullDetails;
 
         $cStatus = strtolower($client->status ?? '');
         $aStatus = strtolower($client->leadAction->status ?? '');
@@ -614,6 +679,8 @@
     <div class="client-card relative rounded-lg border border-slate-200/60 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group cursor-pointer" 
          data-status="{{ $client->status }}" 
          data-category="{{ $dashboardCategory }}" 
+         data-created-at="{{ $client->created_at ? $client->created_at->format('Y-m-d') : '' }}"
+         data-detailed-status="{{ strtolower($client->leadAction->status ?? $client->status ?? '') }}"
          data-assigned-user="{{ ($client->leadAction && $client->leadAction->status !== 'unlocked') ? $client->leadAction->user_id : '' }}"
          onclick="if(!event.target.closest('button, a, [role=menu], .dropdown-menu, input, select')) { 
              @if($isClaimed)
@@ -623,7 +690,7 @@
              @endif
          }">
         <div class="flex flex-col space-y-1.5 p-6 pb-3">
-            @if(!$isClaimed && $client->created_at && $client->created_at->diffInHours(now()) < 24)
+            @if(!$isClaimed)
                 <div class="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg border-2 border-white animate-bounce z-10">
                     NEW
                 </div>
@@ -953,17 +1020,17 @@
         <tbody id="clients-table-body">
             @foreach($clients as $client)
             @php
-                $canSeeFullCompanyName = auth()->user()->hasRole('admin');
-                
                 $canSeeFullDetails = true;
                 $isClaimed = false;
-                if ($client->leadAction && $client->leadAction->status !== 'unlocked') {
+                if (isset($client->leadAction)) {
                     $isClaimed = true;
                     $canSeeFullDetails = false;
                     if (auth()->user()->hasRole('admin') || $client->leadAction->user_id == auth()->id()) {
                         $canSeeFullDetails = true;
                     }
                 }
+                
+                $canSeeFullCompanyName = $canSeeFullDetails;
 
                 $avatarColors = 'from-blue-100 to-indigo-200 text-blue-700 ring-blue-100';
                 if(strtolower($client->priority) == 'high') $avatarColors = 'from-rose-100 to-red-200 text-rose-700 ring-rose-100';
@@ -983,7 +1050,7 @@
                     $dashboardCategory = 'follow_up';
                 }
             @endphp
-            <tr class="client-table-row border-b border-slate-100 hover:bg-slate-50/80 transition-all duration-200 group" data-status="{{ $client->status }}" data-category="{{ $dashboardCategory }}" data-assigned-user="{{ ($client->leadAction && $client->leadAction->status !== 'unlocked') ? $client->leadAction->user_id : '' }}">
+            <tr class="client-table-row border-b border-slate-100 hover:bg-slate-50/80 transition-all duration-200 group" data-status="{{ $client->status }}" data-category="{{ $dashboardCategory }}" data-created-at="{{ $client->created_at ? $client->created_at->format('Y-m-d') : '' }}" data-detailed-status="{{ strtolower($client->leadAction->status ?? $client->status ?? '') }}" data-assigned-user="{{ ($client->leadAction && $client->leadAction->status !== 'unlocked') ? $client->leadAction->user_id : '' }}">
                 <td class="px-5 py-4">
                     <div class="flex items-center gap-3.5">
                         <div class="hidden sm:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br {{ $avatarColors }} font-bold shadow-sm ring-4">
@@ -1600,6 +1667,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const isUserDashboard = currentFilter.startsWith('my_');
         const actualFilter = isUserDashboard ? currentFilter.replace('my_', '') : currentFilter;
         
+        // Advanced filters
+        const advDateFrom = document.getElementById('filter-date-from') ? document.getElementById('filter-date-from').value : '';
+        const advDateTo = document.getElementById('filter-date-to') ? document.getElementById('filter-date-to').value : '';
+        const advExec = document.getElementById('filter-executive') ? document.getElementById('filter-executive').value : '';
+        const advStatus = document.getElementById('filter-status') ? document.getElementById('filter-status').value : '';
+        
         // Handle Closed Summary Table visibility
         const closedSummary = document.getElementById('closed-summary-container');
         if (closedSummary) {
@@ -1617,6 +1690,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const clientStatus = card.getAttribute('data-status');
             const clientCategory = card.getAttribute('data-category');
             const assignedUserId = card.getAttribute('data-assigned-user');
+            const createdAt = card.getAttribute('data-created-at');
+            const detailedStatus = card.getAttribute('data-detailed-status');
 
             const matchesSearch = clientText.includes(searchTerm);
             let matchesFilter = false;
@@ -1630,8 +1705,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 matchesFilter = (clientStatus === actualFilter || clientCategory === actualFilter);
             }
             const matchesUser = !isUserDashboard || (assignedUserId === currentUserId);
+            
+            let matchesAdvDate = true;
+            if (advDateFrom && createdAt) matchesAdvDate = matchesAdvDate && (createdAt >= advDateFrom);
+            if (advDateTo && createdAt) matchesAdvDate = matchesAdvDate && (createdAt <= advDateTo);
+            
+            let matchesAdvExec = true;
+            if (advExec) matchesAdvExec = (assignedUserId === advExec);
+            
+            let matchesAdvStatus = true;
+            if (advStatus) matchesAdvStatus = (detailedStatus === advStatus);
 
-            card.style.display = (matchesSearch && matchesFilter && matchesUser) ? 'block' : 'none';
+            card.style.display = (matchesSearch && matchesFilter && matchesUser && matchesAdvDate && matchesAdvExec && matchesAdvStatus) ? 'block' : 'none';
         });
 
         // Filter Table View
@@ -1641,6 +1726,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const clientStatus = row.getAttribute('data-status');
             const clientCategory = row.getAttribute('data-category');
             const assignedUserId = row.getAttribute('data-assigned-user');
+            const createdAt = row.getAttribute('data-created-at');
+            const detailedStatus = row.getAttribute('data-detailed-status');
 
             const matchesSearch = clientText.includes(searchTerm);
             let matchesFilter = false;
@@ -1654,9 +1741,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 matchesFilter = (clientStatus === actualFilter || clientCategory === actualFilter);
             }
             const matchesUser = !isUserDashboard || (assignedUserId === currentUserId);
+            
+            let matchesAdvDate = true;
+            if (advDateFrom && createdAt) matchesAdvDate = matchesAdvDate && (createdAt >= advDateFrom);
+            if (advDateTo && createdAt) matchesAdvDate = matchesAdvDate && (createdAt <= advDateTo);
+            
+            let matchesAdvExec = true;
+            if (advExec) matchesAdvExec = (assignedUserId === advExec);
+            
+            let matchesAdvStatus = true;
+            if (advStatus) matchesAdvStatus = (detailedStatus === advStatus);
 
-            row.style.display = (matchesSearch && matchesFilter && matchesUser) ? 'table-row' : 'none';
+            row.style.display = (matchesSearch && matchesFilter && matchesUser && matchesAdvDate && matchesAdvExec && matchesAdvStatus) ? 'table-row' : 'none';
         });
+    }
+
+    // Advanced Filters UI Logic
+    const advFilterToggle = document.getElementById('adv-filter-toggle');
+    const advFilterPanel = document.getElementById('adv-filter-panel');
+    const applyFiltersBtn = document.getElementById('apply-filters-btn');
+    const resetFiltersBtn = document.getElementById('reset-filters-btn');
+
+    if (advFilterToggle && advFilterPanel) {
+        advFilterToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            advFilterPanel.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!advFilterToggle.contains(e.target) && !advFilterPanel.contains(e.target)) {
+                advFilterPanel.classList.add('hidden');
+            }
+        });
+        
+        if (applyFiltersBtn) {
+            applyFiltersBtn.addEventListener('click', () => {
+                filterClients();
+                advFilterPanel.classList.add('hidden');
+            });
+        }
+        
+        if (resetFiltersBtn) {
+            resetFiltersBtn.addEventListener('click', () => {
+                if(document.getElementById('filter-date-from')) document.getElementById('filter-date-from').value = '';
+                if(document.getElementById('filter-date-to')) document.getElementById('filter-date-to').value = '';
+                if(document.getElementById('filter-executive')) document.getElementById('filter-executive').value = '';
+                if(document.getElementById('filter-status')) document.getElementById('filter-status').value = '';
+                filterClients();
+                advFilterPanel.classList.add('hidden');
+            });
+        }
     }
 
     window.setDashboardFilter = function(filterValue, element) {

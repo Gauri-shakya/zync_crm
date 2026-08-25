@@ -152,6 +152,8 @@ public function destroy($id)
 
     public function import(Request $request): JsonResponse
     {
+        abort_if(!auth()->user()->hasRole('admin'), 403, 'Only admins can import clients.');
+        
         $request->validate([
             'excel_file' => [
                 'required',
