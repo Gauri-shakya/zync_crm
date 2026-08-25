@@ -271,37 +271,6 @@
             }
         }
 
-        async function postWithLocationFallback(route, actionType) {
-            let postData = { _token: csrfToken };
-            try {
-                return await ajaxPost(route, postData);
-            } catch (err) {
-                if (err.message === 'location_required') {
-                    updateActionsOverlay(false);
-                    const confirmLocation = await showLocationConfirmation(actionType);
-                    if (!confirmLocation) {
-                        return { user_cancelled: true };
-                    }
-                    
-                    updateActionsOverlay(true, 'Fetching location...');
-                    const locationData = await getLocation();
-
-                    if (locationData.error) {
-                        console.warn('Location access denied or unavailable.');
-                    }
-
-                    postData = createLocationPostData(locationData);
-                    postData._token = csrfToken;
-                    updateActionsOverlay(true, 'Processing action...');
-                    let result = await ajaxPost(route, postData);
-                    result.locationData = locationData; // pass this back so we can update display if needed
-                    return result;
-                } else {
-                    throw err;
-                }
-            }
-        }
-
         /* Location Modal */
         @media (max-width: 768px) {
             #location-modal .bg-white {
@@ -1736,6 +1705,37 @@
     elements.currentDate.textContent = `${dd}-${mm}-${yyyy}`;
 }
 
+
+        async function postWithLocationFallback(route, actionType) {
+            let postData = { _token: csrfToken };
+            try {
+                return await ajaxPost(route, postData);
+            } catch (err) {
+                if (err.message === 'location_required') {
+                    updateActionsOverlay(false);
+                    const confirmLocation = await showLocationConfirmation(actionType);
+                    if (!confirmLocation) {
+                        return { user_cancelled: true };
+                    }
+                    
+                    updateActionsOverlay(true, 'Fetching location...');
+                    const locationData = await getLocation();
+
+                    if (locationData.error) {
+                        console.warn('Location access denied or unavailable.');
+                    }
+
+                    postData = createLocationPostData(locationData);
+                    postData._token = csrfToken;
+                    updateActionsOverlay(true, 'Processing action...');
+                    let result = await ajaxPost(route, postData);
+                    result.locationData = locationData; // pass this back so we can update display if needed
+                    return result;
+                } else {
+                    throw err;
+                }
+            }
+        }
 
         async function ajaxPost(route, data = {}) {
             const response = await fetch(route, {
