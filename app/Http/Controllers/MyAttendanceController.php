@@ -295,11 +295,22 @@ class MyAttendanceController extends Controller
 
             // 1. Check Wi-Fi IP first (Combo logic)
             $officeIp = $employee->company->office_ip_address ?? null;
-            $userIp = $request->ip();
+            $userIp = $request->header('CF-Connecting-IP') ?? $request->header('X-Forwarded-For') ?? $request->ip();
+            if (str_contains($userIp, ',')) {
+                $userIp = trim(explode(',', $userIp)[0]);
+            }
 
             \Log::info("IP Check: User IP = '{$userIp}', Office IP = '{$officeIp}'");
 
-            if ($officeIp && $userIp === $officeIp) {
+            // Check if already punched in with Wi-Fi today
+            $today = \Carbon\Carbon::today('Asia/Kolkata');
+            $existingAttendance = \App\Models\MyAttendance::where('employee_id', $employee->id)
+                ->whereDate('date', $today)
+                ->first();
+
+            $punchedInViaWifi = $existingAttendance && $existingAttendance->location === 'Office Wi-Fi';
+
+            if (($officeIp && $userIp === $officeIp) || $punchedInViaWifi) {
                 return [
                     'location' => 'Office Wi-Fi',
                     'latitude' => $request->latitude ?? null,
@@ -391,6 +402,9 @@ class MyAttendanceController extends Controller
 
             // Process location data with fallback
             $locationData = $this->processLocationData($request);
+            if (isset($locationData['location_required']) && $locationData['location_required']) {
+                return response()->json(['error' => 'location_required'], 428);
+            }
             if (!$locationData['is_within_range']) {
                 return response()->json(['error' => 'Out of allowed range (500m)'], 403);
             }
