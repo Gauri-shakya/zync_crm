@@ -1409,7 +1409,9 @@
                 // SUCCESS: API call succeeded
                 // ────────────────────────────────
 
-                updateLocationDisplay(locationData);
+                if (result.locationData) {
+                    updateLocationDisplay(result.locationData);
+                }
 
                 let message = `✅ Break Ended Successfully!`;
                 if (result.break_duration) message += `\nBreak Duration: ${result.break_duration}`;
@@ -1514,7 +1516,7 @@
                 if (result.work_hours) successMessage += `\nTotal Work Hours: ${result.work_hours}`;
                 if (result.break_duration) successMessage += `\nBreak Duration: ${result.break_duration}`;
                 if (result.total_break_time) successMessage += `\nTotal Break Today: ${result.total_break_time}`;
-                if (locationData.distance) successMessage += `\nDistance: ${locationData.distance}km`;
+                if (result.locationData && result.locationData.distance) successMessage += `\nDistance: ${result.locationData.distance}km`;
 
 
                 // alert(successMessage); // Optional: removing alert if we want smoother UX, or keep it. Keeping for now.
