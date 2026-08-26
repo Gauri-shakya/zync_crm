@@ -37,10 +37,26 @@
 <header class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 sticky top-0 z-50">
     <div class="flex justify-between items-center">
 
-        <!-- Dynamic Title -->
-        <h1 class="text-lg sm:text-xl font-bold text-gray-900">
-            {{ $title ?? 'Dashboard' }}
-        </h1>
+        <!-- Dynamic Title & Mobile Logo -->
+        <div class="flex items-center">
+            <!-- Mobile Logo -->
+            <div class="block sm:hidden flex-shrink-0">
+                @if(auth()->check() && auth()->user()->company && auth()->user()->company->logo)
+                    <img src="{{ asset('storage/' . auth()->user()->company->logo) }}" 
+                         alt="{{ auth()->user()->company->name }}" 
+                         class="max-h-8 w-auto object-contain rounded">
+                @else
+                    <img src="{{ asset('images/social-cults-logo.png') }}" 
+                         alt="Company Logo" 
+                         class="max-h-8 w-auto object-contain">
+                @endif
+            </div>
+
+            <!-- Desktop Title -->
+            <h1 class="hidden sm:block text-lg sm:text-xl font-bold text-gray-900">
+                {{ $title ?? 'Dashboard' }}
+            </h1>
+        </div>
 
         <!-- Right Section -->
         <div class="flex items-center gap-3 relative">
@@ -293,6 +309,8 @@
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (!dropdown.classList.contains('hidden')) {
+            dropdown.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => dropdown.classList.add('hidden'), 300);
             return;
         }
         dropdown.classList.remove('hidden');

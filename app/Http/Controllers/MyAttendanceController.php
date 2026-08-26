@@ -99,8 +99,9 @@ class MyAttendanceController extends Controller
                 'join_date' => $employee->join_date
                     ? Carbon::parse($employee->join_date)->format('d M Y')
                     : 'N/A',
-                'avatar' => $employee->avatar
-                    ?? 'https://ui-avatars.com/api/?name=' . urlencode($employee->name),
+                'avatar' => $employee->profile_image 
+                    ? asset('storage/' . $employee->profile_image) 
+                    : 'https://ui-avatars.com/api/?name=' . urlencode($employee->name),
             ];
 
             /* ──────────────────────────────

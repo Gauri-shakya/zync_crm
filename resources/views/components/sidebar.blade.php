@@ -714,11 +714,15 @@
         <div class="flex flex-col gap-2 border-t border-slate-200/60 p-4 sidebar-footer">
             <div class="group relative overflow-hidden rounded-xl">
                 <div class="flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer">
-                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center">
-                        <span class="text-white font-semibold text-sm">
-                           {{ strtoupper(substr(Auth::user()->username ?? Auth::user()->name, 0, 2)) }}
-                        </span>
-                    </div>
+                    @if(Auth::user()->profile_image)
+                        <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border border-gray-200 flex-shrink-0">
+                    @else
+                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-white font-semibold text-sm">
+                               {{ strtoupper(substr(Auth::user()->username ?? Auth::user()->name, 0, 2)) }}
+                            </span>
+                        </div>
+                    @endif
                     <div class="flex-1 min-w-0">
                         <p class="font-semibold text-slate-900 text-sm truncate">
                             {{ Auth::user()->name }}
@@ -1196,7 +1200,7 @@ if ($crmAccessible) {
     $navItems[] = [
         'name' => 'Profile',
         'route' => route('profile.view'),
-        'icon' => '<div class="w-5 h-2 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center"><span class="text-white font-semibold text-[8px]">' . strtoupper(substr(Auth::user()->username, 0, 2)) . '</span></div>',
+        'icon' => Auth::user()->profile_image ? '<img src="' . asset('storage/' . Auth::user()->profile_image) . '" class="w-5 h-5 rounded-full object-cover border border-gray-200">' : '<div class="w-5 h-2 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center"><span class="text-white font-semibold text-[8px]">' . strtoupper(substr(Auth::user()->username ?? Auth::user()->name, 0, 2)) . '</span></div>',
         'active' => request()->routeIs('profile.view'),
         'index' => $index++
     ];

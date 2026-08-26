@@ -25,6 +25,7 @@ class User extends Authenticatable
         'password',
         'salary',
         'dashboard_preferences',
+        'profile_image',
     ];
 
     /**

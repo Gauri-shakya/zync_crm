@@ -65,6 +65,7 @@ class UserController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
             'salary' => 'nullable|numeric',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $authUser = Auth::user();
@@ -95,12 +96,18 @@ class UserController extends Controller
             }
         }
 
+        $profileImagePath = null;
+        if ($request->hasFile('profile_image')) {
+            $profileImagePath = $request->file('profile_image')->store('profile_images', 'public');
+        }
+
         $user = User::create([
             'company_id' => $authUser->company_id,
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'salary' => $request->salary,
+            'profile_image' => $profileImagePath,
         ]);
 
         if (!empty($requestedRoles)) {
@@ -160,6 +167,7 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|min:6',  // Made password optional for updates
             'salary' => 'nullable|numeric',  // Made salary optional if not always updated
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         // Enforce single role selection and one admin per company on update
@@ -197,6 +205,10 @@ class UserController extends Controller
 
         if ($request->filled('salary')) {
             $updateData['salary'] = $request->salary;
+        }
+
+        if ($request->hasFile('profile_image')) {
+            $updateData['profile_image'] = $request->file('profile_image')->store('profile_images', 'public');
         }
 
         $user->update($updateData);

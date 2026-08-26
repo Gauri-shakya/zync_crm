@@ -80,9 +80,13 @@
                                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $loop->iteration }}</td>
                                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        <div class="w-8 h-8 lg:w-9 lg:h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-sm flex-shrink-0">
-                                            {{ strtoupper(substr($user->name, 0, 2)) }}
-                                        </div>
+                                        @if($user->profile_image)
+                                            <img src="{{ asset('storage/' . $user->profile_image) }}" alt="{{ $user->name }}" class="w-8 h-8 lg:w-9 lg:h-9 rounded-full object-cover flex-shrink-0 border border-gray-200">
+                                        @else
+                                            <div class="w-8 h-8 lg:w-9 lg:h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-sm flex-shrink-0">
+                                                {{ strtoupper(substr($user->name, 0, 2)) }}
+                                            </div>
+                                        @endif
                                         <div class="ml-2 lg:ml-3 min-w-0">
                                             <p class="text-sm font-medium text-gray-900 truncate">{{ $user->name }}</p>
                                         </div>
@@ -155,9 +159,13 @@
                         <!-- Card Header -->
                         <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center">
-                                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                                    {{ strtoupper(substr($user->name, 0, 2)) }}
-                                </div>
+                                @if($user->profile_image)
+                                    <img src="{{ asset('storage/' . $user->profile_image) }}" alt="{{ $user->name }}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                                @else
+                                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                        {{ strtoupper(substr($user->name, 0, 2)) }}
+                                    </div>
+                                @endif
                                 <div class="ml-3">
                                     <p class="text-sm font-medium text-gray-900">{{ $user->name }}</p>
                                     <p class="text-xs text-gray-500 mt-0.5">ID: {{ $loop->iteration }}</p>

@@ -11,7 +11,7 @@
 
         <!-- Form Card -->
         <div class="bg-white shadow-sm rounded-xl border border-gray-200 p-6 sm:p-8">
-            <form action="{{ route('users.store') }}" method="POST" novalidate>
+            <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" novalidate>
                 @csrf
 
                 <!-- Name Field -->
@@ -75,6 +75,27 @@
                            placeholder="••••••••"
                            required>
                     @error('password')
+                        <p class="mt-1.5 text-sm text-red-600 flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <!-- Profile Image Field -->
+                <div class="mb-6">
+                    <label for="profile_image" class="block text-sm font-medium text-gray-700 mb-2">
+                        <svg class="inline w-4 h-4 mr-1 -mt-0.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        Profile Image (Optional)
+                    </label>
+                    <input type="file" 
+                           name="profile_image" 
+                           id="profile_image"
+                           accept="image/*"
+                           class="w-full px-4 py-2.5 border {{ $errors->has('profile_image') ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors">
+                    @error('profile_image')
                         <p class="mt-1.5 text-sm text-red-600 flex items-center">
                             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
                             {{ $message }}

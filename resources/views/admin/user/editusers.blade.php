@@ -41,7 +41,7 @@
         <!-- Edit Form -->
         <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
             <div class="px-6 py-8">
-                <form action="{{ route('users.update', $user) }}" method="POST">
+                <form action="{{ route('users.update', $user) }}" method="POST" enctype="multipart/form-data">
                     @csrf @method('PUT')
 
                     <div class="space-y-6">
@@ -81,6 +81,21 @@
                             <input type="number" name="salary" id="salary" value="{{ old('salary', $user->salary) }}" step="0.01" min="0"
                                    class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('salary') border-red-500 @enderror">
                             @error('salary')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Profile Image -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Profile Image (Optional)</label>
+                            @if($user->profile_image)
+                                <div class="mb-3">
+                                    <img src="{{ asset('storage/' . $user->profile_image) }}" alt="Current Profile" class="h-16 w-16 object-cover rounded-full border border-gray-200">
+                                </div>
+                            @endif
+                            <input type="file" name="profile_image" accept="image/*"
+                                   class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('profile_image') border-red-500 @enderror">
+                            @error('profile_image')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
