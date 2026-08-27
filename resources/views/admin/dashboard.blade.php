@@ -135,7 +135,7 @@
             <!-- Users Chart -->
             <div class="bg-white rounded-lg sm:rounded-xl border border-gray-200 shadow-sm">
                 <div class="p-3 sm:p-4 md:p-5 lg:p-6 border-b border-gray-200">
-                    <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 leading-tight">Users (last 12 months)</h3>
+                    <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 leading-tight">Closed Clients (last 12 months)</h3>
                 </div>
                 <div class="p-3 sm:p-4 md:p-5 lg:p-6">
                     <div class="relative h-40 sm:h-48 md:h-56 lg:h-64">
@@ -262,28 +262,9 @@
                         @endforeach
                     @endif
 
-                    @forelse($recentTasks as $task)
-                        <div class="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 pb-3 sm:pb-4 border-b border-gray-100 last:border-0 last:pb-0">
-                            <div class="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
-                                <div class="p-1.5 sm:p-2 rounded-lg sm:rounded-lg bg-blue-100 flex-shrink-0">
-                                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs sm:text-sm font-medium text-gray-900 truncate">{{ $task->title ?? 'Untitled task' }}</p>
-                                    <p class="text-xs text-gray-500 mt-0.5 sm:mt-1 leading-relaxed">{{ \Carbon\Carbon::parse($task->created_at)->format('M d, Y • h:i A') }}</p>
-                                </div>
-                            </div>
-                            <span class="text-xs font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gray-100 text-gray-700 rounded-full self-start sm:self-auto mt-1 sm:mt-0">
-                                {{ $task->type ?? 'Task' }}
-                            </span>
-                        </div>
-                    @empty
-                        @if(!isset($pendingPayments) || count($pendingPayments) === 0)
-                            <p class="text-xs sm:text-sm text-gray-500 text-center py-3 sm:py-4">No recent activity found.</p>
-                        @endif
-                    @endforelse
+                    @if(!isset($pendingPayments) || count($pendingPayments) === 0)
+                        <p class="text-xs sm:text-sm text-gray-500 text-center py-3 sm:py-4">No recent activity found.</p>
+                    @endif
                 </div>
             </div>
         </div>

@@ -25,7 +25,7 @@ class DashboardController extends Controller
 
         // Top-card counts
         $totalUsers    = User::where('company_id', $companyId)->count();
-        $totalClients  = Client::where('company_id', $companyId)->count();
+        $totalClients  = ClosedLead::where('company_id', $companyId)->count();
         $totalContacts = Contact::where('company_id', $companyId)->count();
 
         // Comparison Data (Growth vs Start of Month)
@@ -38,7 +38,7 @@ class DashboardController extends Controller
             : ($totalUsers > 0 ? 100 : 0);
 
         // 2. Clients Growth
-        $clientsLastMonthTotal = Client::where('company_id', $companyId)
+        $clientsLastMonthTotal = ClosedLead::where('company_id', $companyId)
             ->where('created_at', '<', Carbon::now()->startOfMonth())
             ->count();
         $clientGrowth = $clientsLastMonthTotal > 0 
@@ -84,8 +84,8 @@ class DashboardController extends Controller
             $year = $dt->year;
             $month = $dt->month;
 
-            // users created in that month
-            $usersCount = User::where('company_id', $companyId)
+            // closed clients in that month
+            $usersCount = ClosedLead::where('company_id', $companyId)
                 ->whereYear('created_at', $year)
                 ->whereMonth('created_at', $month)
                 ->count();
@@ -146,7 +146,16 @@ class DashboardController extends Controller
             ];
         });
 
-        $clientsList = Client::where('company_id', $companyId)->get(['company_name', 'industry', 'status']);
+        $clientsList = ClosedLead::with('lead.client')
+            ->where('company_id', $companyId)
+            ->get()
+            ->map(function($closedLead) {
+                return [
+                    'company_name' => optional(optional($closedLead->lead)->client)->company_name ?? 'Unknown',
+                    'industry' => $closedLead->service_name ?? 'N/A',
+                    'status' => 'Closed'
+                ];
+            });
         
         $contactsList = Contact::where('company_id', $companyId)->get(['name', 'phone', 'email']);
 

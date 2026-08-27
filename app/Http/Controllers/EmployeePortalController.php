@@ -17,7 +17,11 @@ class EmployeePortalController extends Controller
      */
     public function index()
     {
-        return view('admin.employeeportal');
+        $companyUsers = \App\Models\User::with('roles')
+            ->where('company_id', auth()->user()->company_id)
+            ->get();
+            
+        return view('admin.employeeportal', compact('companyUsers'));
     }
 
     /**

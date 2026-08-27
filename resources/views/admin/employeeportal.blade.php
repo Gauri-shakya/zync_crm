@@ -8,7 +8,12 @@
     <title>Employee Portal | Leave Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <style>
+        .ts-dropdown {
+            z-index: 9999 !important;
+        }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
       
         * {
@@ -392,70 +397,97 @@
                         </button>
                     </div>
                 </div>
-                <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-8">
-                    <form id="leaveForm" class="space-y-6">
-                        @csrf
-                        <div class="form-grid-mobile md:grid md:grid-cols-2 md:gap-6">
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                                    <input type="text" id="employeeName" name="employee_name" required
-                                           class="form-input-mobile w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                           placeholder="Enter your full name">
-                                    <div id="employeeNameError" class="text-red-500 text-xs mt-1 hidden"></div>
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8 relative">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+                    <div class="p-4 md:p-8">
+                        <form id="leaveForm" class="space-y-6">
+                            @csrf
+                            <div class="form-grid-mobile md:grid md:grid-cols-2 md:gap-8">
+                                <div class="space-y-5">
+                                    <div class="relative group">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <i class="fas fa-user text-gray-400"></i>
+                                            </div>
+                                            <input type="text" id="employeeName" name="employee_name" required readonly
+                                                   value="{{ Auth::user()->name }}"
+                                                   class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-600 cursor-not-allowed shadow-inner transition-all focus:outline-none">
+                                        </div>
+                                        <div id="employeeNameError" class="text-red-500 text-xs mt-1 hidden"></div>
+                                    </div>
+                                    <div class="relative group">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <i class="fas fa-envelope text-gray-400"></i>
+                                            </div>
+                                            <input type="email" id="employeeEmail" name="employee_email" required readonly
+                                                   value="{{ Auth::user()->email }}"
+                                                   class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-600 cursor-not-allowed shadow-inner transition-all focus:outline-none">
+                                        </div>
+                                        <div id="employeeEmailError" class="text-red-500 text-xs mt-1 hidden"></div>
+                                    </div>
+                                    <div class="relative group hover:transform hover:-translate-y-1 transition-transform duration-300">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">From Date *</label>
+                                        <input type="date" id="fromDate" name="from_date" required
+                                               class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:shadow-md transition-shadow">
+                                        <div id="fromDateError" class="text-red-500 text-xs mt-1 hidden"></div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
-                                    <input type="email" id="employeeEmail" name="employee_email" required
-                                           class="form-input-mobile w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                           placeholder="Enter your email">
-                                    <div id="employeeEmailError" class="text-red-500 text-xs mt-1 hidden"></div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">From Date *</label>
-                                    <input type="date" id="fromDate" name="from_date" required
-                                           class="form-input-mobile w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <div id="fromDateError" class="text-red-500 text-xs mt-1 hidden"></div>
+                                <div class="space-y-5">
+                                    <div class="relative group">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Position/Role</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <i class="fas fa-briefcase text-gray-400"></i>
+                                            </div>
+                                            <input type="text" id="employeePosition" name="employee_position" required readonly
+                                                    value="{{ Auth::user()->roles->first()->name ?? 'Employee' }}"
+                                                    class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-600 cursor-not-allowed shadow-inner transition-all focus:outline-none">
+                                        </div>
+                                        <div id="employeePositionError" class="text-red-500 text-xs mt-1 hidden"></div>
+                                    </div>
+                                    <div class="relative group">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">Mobile Number</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <i class="fas fa-phone text-gray-400"></i>
+                                            </div>
+                                            <input type="tel" id="employeeMobile" name="employee_mobile" required readonly
+                                                   value="{{ Auth::user()->phone ?? 'N/A' }}"
+                                                   class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-600 cursor-not-allowed shadow-inner transition-all focus:outline-none">
+                                        </div>
+                                        <div id="employeeMobileError" class="text-red-500 text-xs mt-1 hidden"></div>
+                                    </div>
+                                    <div class="relative group hover:transform hover:-translate-y-1 transition-transform duration-300">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-1">To Date *</label>
+                                        <input type="date" id="toDate" name="to_date" required
+                                               class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:shadow-md transition-shadow">
+                                        <div id="toDateError" class="text-red-500 text-xs mt-1 hidden"></div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Position/Role *</label>
-                                    <select id="employeePosition" name="employee_position" required
-                                            class="form-input-mobile w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                        <option value="">Select a role</option>
-                                    </select>
-                                    <div id="employeePositionError" class="text-red-500 text-xs mt-1 hidden"></div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Mobile Number *</label>
-                                    <input type="tel" id="employeeMobile" name="employee_mobile" required
-                                           class="form-input-mobile w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                           placeholder="Enter your mobile number">
-                                    <div id="employeeMobileError" class="text-red-500 text-xs mt-1 hidden"></div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">To Date *</label>
-                                    <input type="date" id="toDate" name="to_date" required
-                                           class="form-input-mobile w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <div id="toDateError" class="text-red-500 text-xs mt-1 hidden"></div>
-                                </div>
-                            </div>
-                        </div>
                       
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">To (Recipient) *</label>
-                                <input type="text" id="sentTo" name="sent_to"
-                                       class="form-input-mobile w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                       placeholder="e.g., HR Manager, Department Head" required>
+                        <div class="space-y-5">
+                            <div class="relative z-50 group hover:transform hover:-translate-y-1 transition-transform duration-300">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">To (Recipient) *</label>
+                                <select id="sentTo" name="sent_to" required
+                                       class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:shadow-md transition-shadow">
+                                    <option value="">Select a Recipient...</option>
+                                    @if(isset($companyUsers))
+                                        @foreach($companyUsers as $u)
+                                            <option value="{{ $u->name }} ({{ $u->roles->first()->name ?? 'Employee' }})">{{ $u->name }} ({{ $u->roles->first()->name ?? 'Employee' }})</option>
+                                        @endforeach
+                                    @endif
+                                </select>
                                 <div id="sentToError" class="text-red-500 text-xs mt-1 hidden"></div>
                             </div>
                           
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
+                            <div class="relative group hover:transform hover:-translate-y-1 transition-transform duration-300">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Subject *</label>
                                 <input type="text" id="subject" name="subject"
-                                       class="form-input-mobile w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:shadow-md transition-shadow"
                                        placeholder="e.g., Leave Application for Family Event" required>
                                 <div id="subjectError" class="text-red-500 text-xs mt-1 hidden"></div>
                             </div>
@@ -655,7 +687,18 @@
             document.getElementById('fromDate').value = today;
             document.getElementById('toDate').value = today;
             calculateTotalDays();
-          
+            
+            if (document.getElementById('sentTo')) {
+                new TomSelect('#sentTo', {
+                    create: false,
+                    sortField: {
+                        field: "text",
+                        direction: "asc"
+                    },
+                    placeholder: "Select a Recipient..."
+                });
+            }
+
             initializeReasonEditor();
           
             document.getElementById('addLeaveBtn').addEventListener('click', showApplyLeavePage);
@@ -785,10 +828,10 @@
             document.getElementById('toDate').value = today;
             calculateTotalDays();
           
-            document.getElementById('employeeName').value = '';
-            document.getElementById('employeeEmail').value = '';
-            document.getElementById('employeeMobile').value = '';
-            document.getElementById('sentTo').value = '';
+            if (document.getElementById('sentTo') && document.getElementById('sentTo').tomselect) {
+                document.getElementById('sentTo').tomselect.clear();
+            }
+            
             document.getElementById('subject').value = '';
           
             const reasonEditor = document.getElementById('reason');
