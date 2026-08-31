@@ -1,8 +1,9 @@
 {{-- Updated resources/views/myattendance/my-attendance.blade.php --}}
 {{-- Changes: Fully responsive design for mobile, tablet, and desktop --}}
 
-@extends('components.layout')
-@section('content')
+@extends('components.hrms-layout')
+
+@section('hrms-content')
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

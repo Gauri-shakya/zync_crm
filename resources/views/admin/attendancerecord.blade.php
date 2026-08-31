@@ -1,5 +1,5 @@
-@extends('components.layout')
-@section('content')
+@extends('components.hrms-layout')
+@section('hrms-content')
     <div class="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         
         @if(session('success'))

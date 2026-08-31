@@ -1,6 +1,6 @@
-@extends('components.layout')
+@extends('components.hrms-layout')
 
-@section('content')
+@section('hrms-content')
 
 <!DOCTYPE html>
 <html lang="en">
