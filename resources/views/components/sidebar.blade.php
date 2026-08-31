@@ -721,8 +721,8 @@
             @endif
 
             <!-- My Tickets -->
-            @if(auth()->user()->hasRole('admin') || auth()->user()->can('help and support'))
-            <a href="{{ route('helpandsupport.index') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ request()->routeIs('helpandsupport.index') ? 'text-indigo-600' : 'text-gray-500 hover:text-indigo-500' }}">
+            @if(auth()->user()->hasRole('admin') || auth()->user()->can('Raise Ticket'))
+            <a href="{{ route('user.support.ticket.index') }}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {{ request()->routeIs('user.support.ticket.*') ? 'text-indigo-600' : 'text-gray-500 hover:text-indigo-500' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                 </svg>
