@@ -16,17 +16,35 @@ class SalaryController extends Controller
      ========================================================= */
     private function baseSalaryQuery()
     {
-        return Salary::where('company_id', auth()->user()->company_id);
+        $query = Salary::where('company_id', auth()->user()->company_id);
+        
+        if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('superadmin')) {
+            $query->where('employee_id', auth()->id());
+        }
+        
+        return $query;
     }
 
     private function baseAttendanceQuery()
     {
-        return MyAttendance::where('company_id', auth()->user()->company_id);
+        $query = MyAttendance::where('company_id', auth()->user()->company_id);
+        
+        if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('superadmin')) {
+            $query->where('user_id', auth()->id());
+        }
+        
+        return $query;
     }
 
     private function baseEmployeeQuery()
     {
-        return User::where('company_id', auth()->user()->company_id);
+        $query = User::where('company_id', auth()->user()->company_id);
+        
+        if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('superadmin')) {
+            $query->where('id', auth()->id());
+        }
+        
+        return $query;
     }
 
     /* =========================================================
