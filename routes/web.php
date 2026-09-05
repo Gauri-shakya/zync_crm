@@ -113,6 +113,7 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
         Route::get('/clients/{id}/notes', [ClientController::class, 'getNotes'])->name('clients.notes.get');
         Route::post('/clients/{id}/notes', [ClientController::class, 'addNote'])->name('clients.notes.add');
         
+        Route::post('/clients/{id}/log-contact', [ClientController::class, 'logContact'])->name('clients.log-contact');
         // Admin Unlock Lead
         Route::post('/clients/{id}/unlock', [ClientController::class, 'unlockLead'])->name('clients.unlock');
         // Admin Assign Lead

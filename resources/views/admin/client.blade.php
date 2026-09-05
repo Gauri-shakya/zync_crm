@@ -848,6 +848,30 @@
                     </span>
                 </div>
                 @endif
+                @if($client->alternate_email)
+                <div class="flex items-center gap-2 text-slate-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 flex-shrink-0 opacity-70">
+                        <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                    </svg>
+                    <span class="truncate text-xs">Alt: {{ $client->alternate_email }}</span>
+                </div>
+                @endif
+                @if($client->alternate_phone)
+                <div class="flex items-center gap-2 text-slate-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 flex-shrink-0 opacity-70">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    <span class="text-xs">
+                        Alt: 
+                        @if($canSeeFullDetails)
+                            {{ $client->alternate_phone }}
+                        @else
+                            {{ str_repeat('*', max(0, strlen($client->alternate_phone) - 3)) . substr($client->alternate_phone, -3) }}
+                        @endif
+                    </span>
+                </div>
+                @endif
                 @if($client->next_follow_up)
                 <div class="flex items-center gap-2 text-slate-600">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 flex-shrink-0">
@@ -926,7 +950,7 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-xs text-slate-500">Lead Source</p>
-                        <p class="text-lg font-semibold text-slate-900">{{ $client->source }}</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ ucwords(str_replace('_', ' ', $client->source)) }}</p>
                         <p class="text-xs text-slate-500"> <strong>Notes:</strong> {{ $client->notes }}</p>
                     </div>
                     <div class="mt-1">
@@ -1496,6 +1520,33 @@
                             class="w-full h-10 px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                         />
                     </div>
+                    
+                    <!-- Alternate Phone -->
+                    <div class="space-y-2">
+                        <label for="alternate_phone" class="text-sm font-medium text-gray-700">Alternate Phone</label>
+                        <input
+                            id="alternate_phone"
+                            name="alternate_phone"
+                            type="tel"
+                            minlength="10"
+                            maxlength="10"
+                            pattern="[0-9]{10}"
+                            placeholder="Optional 10-digit number"
+                            class="w-full h-10 px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        />
+                    </div>
+                    
+                    <!-- Alternate Email -->
+                    <div class="space-y-2">
+                        <label for="alternate_email" class="text-sm font-medium text-gray-700">Alternate Email</label>
+                        <input
+                            id="alternate_email"
+                            name="alternate_email"
+                            type="email"
+                            placeholder="Optional email"
+                            class="w-full h-10 px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        />
+                    </div>
 
 
                     <!-- Status -->
@@ -1547,6 +1598,7 @@
                             <option value="social_media">Social Media</option>
                             <option value="event">Event</option>
                             <option value="other">Other</option>
+                            <option value="uploaded_by_admin">Uploaded By Admin</option>
                         </select>
                     </div>
 

@@ -70,6 +70,24 @@
                         <p class="text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
+                <!-- Alternate Phone -->
+                <div class="space-y-2">
+                    <label for="alternate_phone" class="text-sm font-medium text-gray-700">Alternate Phone</label>
+                    <input id="alternate_phone" name="alternate_phone" type="tel" value="{{ old('alternate_phone', $client->alternate_phone) }}"
+                           class="w-full h-10 px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none @error('alternate_phone') border-red-500 @enderror" />
+                    @error('alternate_phone')
+                        <p class="text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+                <!-- Alternate Email -->
+                <div class="space-y-2">
+                    <label for="alternate_email" class="text-sm font-medium text-gray-700">Alternate Email</label>
+                    <input id="alternate_email" name="alternate_email" type="email" value="{{ old('alternate_email', $client->alternate_email) }}"
+                           class="w-full h-10 px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none @error('alternate_email') border-red-500 @enderror" />
+                    @error('alternate_email')
+                        <p class="text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
                 <!-- Status -->
                 <div class="space-y-2">
                     <label for="status" class="text-sm font-medium text-gray-700">Status</label>

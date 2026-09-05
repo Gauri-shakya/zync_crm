@@ -281,6 +281,10 @@ $this->authorize('manage', $lead);
         }
 
         // Optional: Redirect with success message
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         if ($request->has('redirect_to') && $request->redirect_to === 'show') {
             return redirect()->back()->with('success', 'Lead updated and closed successfully!');
         }

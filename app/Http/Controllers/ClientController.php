@@ -51,12 +51,14 @@ class ClientController extends Controller
             'company_name' => 'required|string|max:255',
             'contact_person' => 'required|string|max:255',
             'email' => 'required|email|unique:clients,email',
+            'alternate_email' => 'nullable|email',
             'phone' => 'nullable|string|max:20',
+            'alternate_phone' => 'nullable|string|max:20',
             'status' => 'required|in:lead,qualified,proposal,negotiation,client,lost',
             'priority' => 'required|in:low,medium,high',
             'industry' => 'nullable|string|max:255',
             'budget' => 'nullable|numeric|min:0',
-            'source' => 'required|in:website,referral,cold_outreach,social_media,event,other',
+            'source' => 'required|in:website,referral,cold_outreach,social_media,event,other,uploaded_by_admin',
             'next_follow_up' => 'nullable|date',
             'notes' => 'nullable|string'
         ]);
@@ -114,12 +116,14 @@ public function update(Request $request, Client $client)
         'company_name' => 'required|string|max:255',
         'contact_person' => 'required|string|max:255',
         'email' => ['required', 'email', Rule::unique('clients')->ignore($client->id)],
+        'alternate_email' => 'nullable|email',
         'phone' => 'nullable|string|max:20',
+        'alternate_phone' => 'nullable|string|max:20',
         'status' => 'required|in:lead,qualified,proposal,negotiation,client,lost',
         'priority' => 'required|in:low,medium,high',
         'industry' => 'nullable|string|max:255',
         'budget' => 'nullable|numeric|min:0',
-        'source' => 'required|in:website,referral,cold_outreach,social_media,event,other',
+        'source' => 'required|in:website,referral,cold_outreach,social_media,event,other,uploaded_by_admin',
         'next_follow_up' => 'nullable|date',
         'notes' => 'nullable|string'
     ]);
@@ -191,11 +195,17 @@ public function destroy($id)
                 'skipped_rows' => $results['skipped_rows']
             ]);
             
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Import error: ' . $e->getMessage());
+            
+            $errorMessage = 'An error occurred while importing the file.';
+            if (str_contains($e->getMessage(), 'ZipArchive')) {
+                $errorMessage = 'Your server is missing the PHP ZIP extension required for Excel (.xlsx) files. Please upload a .CSV file instead.';
+            }
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Error importing file: ' . $e->getMessage()
+                'message' => $errorMessage
             ], 500);
         }
     }
@@ -296,6 +306,10 @@ public function destroy($id)
 
     private function convertXlsxToCsv($xlsxPath, $csvPath)
     {
+        if (!class_exists('ZipArchive')) {
+            return $this->convertXlsxToCsvWithoutZipArchive($xlsxPath, $csvPath);
+        }
+
         $zip = new \ZipArchive();
         $data = [];
         
@@ -331,6 +345,62 @@ public function destroy($id)
         
         $data = $this->parseWorksheet($worksheetXml, $sharedStrings);
         $this->writeDataToCsv($data, $csvPath);
+    }
+
+    private function convertXlsxToCsvWithoutZipArchive($xlsxPath, $csvPath)
+    {
+        $extractDir = sys_get_temp_dir() . '/xlsx_ext_' . uniqid();
+        mkdir($extractDir, 0777, true);
+        
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            exec("tar -xf " . escapeshellarg($xlsxPath) . " -C " . escapeshellarg($extractDir));
+        } else {
+            exec("unzip -q " . escapeshellarg($xlsxPath) . " -d " . escapeshellarg($extractDir));
+        }
+        
+        $sheetFile = null;
+        if (file_exists($extractDir . '/xl/worksheets/sheet1.xml')) {
+            $sheetFile = $extractDir . '/xl/worksheets/sheet1.xml';
+        } else {
+            $worksheetsDir = $extractDir . '/xl/worksheets';
+            if (is_dir($worksheetsDir)) {
+                $files = scandir($worksheetsDir);
+                foreach ($files as $file) {
+                    if (str_contains($file, 'sheet') && str_contains($file, '.xml')) {
+                        $sheetFile = $worksheetsDir . '/' . $file;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (!$sheetFile) {
+            $this->deleteDirectory($extractDir);
+            throw new \Exception('No worksheet found in XLSX file (ZipArchive fallback)');
+        }
+        
+        $sharedStrings = [];
+        $sharedStringsFile = $extractDir . '/xl/sharedStrings.xml';
+        if (file_exists($sharedStringsFile)) {
+            $sharedStringsXml = file_get_contents($sharedStringsFile);
+            $sharedStrings = $this->parseSharedStrings($sharedStringsXml);
+        }
+        
+        $worksheetXml = file_get_contents($sheetFile);
+        $data = $this->parseWorksheet($worksheetXml, $sharedStrings);
+        $this->writeDataToCsv($data, $csvPath);
+        
+        $this->deleteDirectory($extractDir);
+    }
+    
+    private function deleteDirectory($dir) {
+        if (!file_exists($dir)) return true;
+        if (!is_dir($dir)) return unlink($dir);
+        foreach (scandir($dir) as $item) {
+            if ($item == '.' || $item == '..') continue;
+            if (!$this->deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) return false;
+        }
+        return rmdir($dir);
     }
 
     private function convertXlsToCsv($xlsPath, $csvPath)
@@ -467,13 +537,40 @@ public function destroy($id)
                     continue;
                 }
                 
+                // Check for duplicate company
+                $existingClient = Client::where('company_id', auth()->user()->company_id)
+                    ->where('company_name', $row['company_name'])
+                    ->first();
+
+                if ($existingClient) {
+                    $updated = false;
+                    $newPhone = $row['phone'] ?? $row['phone_number'] ?? null;
+                    
+                    if (empty($existingClient->alternate_phone) && !empty($newPhone) && $existingClient->phone != $newPhone) {
+                        $existingClient->alternate_phone = $newPhone;
+                        $updated = true;
+                    }
+
+                    if (empty($existingClient->alternate_email) && !empty($row['email']) && $existingClient->email != $row['email']) {
+                        $existingClient->alternate_email = $row['email'];
+                        $updated = true;
+                    }
+
+                    if ($updated) {
+                        $existingClient->save();
+                    }
+                    
+                    $skipped++;
+                    $skippedRows[] = "Row " . ($index + 2) . ": Merged alternate contact into existing company " . $row['company_name'];
+                    continue;
+                }
+
                 // Check for duplicate email
-               if (
-    Client::where('company_id', auth()->user()->company_id)
-        ->where('email', $row['email'])
-        ->exists()
-)
- {
+                if (
+                    Client::where('company_id', auth()->user()->company_id)
+                        ->where('email', $row['email'])
+                        ->exists()
+                ) {
                     $skipped++;
                     $skippedRows[] = "Row " . ($index + 2) . ": Duplicate email - " . $row['email'];
                     continue;
@@ -489,9 +586,9 @@ public function destroy($id)
                     'priority' => $this->validatePriority($row['priority'] ?? 'medium'),
                     'industry' => $row['industry'] ?? null,
                     'budget' => $this->parseBudget($row['budget'] ?? null),
-                    'source' => $this->validateSource($row['source'] ?? 'other'),
-                    'next_follow_up' => $this->parseDate($row['next_follow_up'] ?? $row['follow_up'] ?? null),
-                    'notes' => $row['notes'] ?? $row['note'] ?? null,
+                    'source' => $this->validateSource(!empty($row['source']) ? $row['source'] : 'uploaded_by_admin'),
+                    'next_follow_up' => $this->parseDate(!empty($row['next_follow_up']) ? $row['next_follow_up'] : (!empty($row['follow_up']) ? $row['follow_up'] : null)),
+                    'notes' => !empty($row['notes']) ? $row['notes'] : (!empty($row['note']) ? $row['note'] : 'Uploaded by admin'),
                 ];
                 
                 Client::create($clientData);
@@ -539,7 +636,7 @@ public function destroy($id)
 
     private function validateSource($source)
     {
-        $validSources = ['website', 'referral', 'cold_outreach', 'social_media', 'event', 'other'];
+        $validSources = ['website', 'referral', 'cold_outreach', 'social_media', 'event', 'other', 'uploaded_by_admin'];
         // Convert to lowercase and replace spaces with underscores (e.g. 'Social Media' -> 'social_media')
         $source = str_replace(' ', '_', strtolower(trim($source)));
         return in_array($source, $validSources) ? $source : 'other';
@@ -703,5 +800,32 @@ public function destroy($id)
         ]));
 
         return response()->json(['success' => true, 'message' => 'Lead successfully assigned to ' . $assignedUser->name . '!']);
+    }
+
+    /**
+     * Log a contact action (email / call / whatsapp) from the client detail page via AJAX.
+     */
+    public function logContact(Request $request, $id)
+    {
+        $client = Client::findOrFail($id);
+
+        $action = $request->input('action', 'Contact Action');
+
+        // If client has an assigned lead, log to that lead's history
+        if ($client->leadAction) {
+            \App\Models\MyleadHistory::create([
+                'company_id' => auth()->user()->company_id,
+                'mylead_id'  => $client->leadAction->id,
+                'user_id'    => auth()->id(),
+                'response'   => $action,
+                'changes'    => json_encode(['action_taken' => $action]),
+            ]);
+        } else {
+            // No lead assigned yet – create a quick note via MyleadHistory linked through store
+            // Fallback: just use the notes system or log silently
+            \Illuminate\Support\Facades\Log::info("Contact action logged for client #{$id}: {$action}");
+        }
+
+        return response()->json(['success' => true]);
     }
 }

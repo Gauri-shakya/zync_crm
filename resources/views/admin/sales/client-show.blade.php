@@ -65,42 +65,61 @@
                             </div>
                         </div>
                         
-                        <div class="flex items-center gap-3">
+                        <!-- Contact buttons: LOCKED until Take Action is done -->
+                        <div class="flex items-center gap-3 relative group/locked">
+                            <!-- Lock overlay tooltip -->
+                            <div class="absolute -top-10 right-0 bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover/locked:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-20 shadow-lg">
+                                🔒 Take Action first to contact this lead
+                                <div class="absolute top-full right-4 border-4 border-transparent border-t-slate-800"></div>
+                            </div>
+
                             @if($client->email)
-                                <a href="mailto:{{ $client->email }}" onclick="logContactAction('Sent Email')" class="w-11 h-11 rounded-xl bg-white border-2 border-slate-100 flex items-center justify-center text-indigo-500 hover:bg-indigo-50 hover:border-indigo-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
+                                <span title="Take Action first to contact" class="w-11 h-11 rounded-xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-300 cursor-not-allowed opacity-60 select-none">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                                </a>
+                                </span>
                             @endif
                             @if($client->phone)
-                                <a href="tel:{{ $client->phone }}" onclick="logContactAction('Initiated Phone Call')" class="w-11 h-11 rounded-xl bg-white border-2 border-slate-100 flex items-center justify-center text-indigo-500 hover:bg-indigo-50 hover:border-indigo-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
+                                <span title="Take Action first to contact" class="w-11 h-11 rounded-xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-300 cursor-not-allowed opacity-60 select-none">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                                </a>
-                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $client->phone) }}" target="_blank" onclick="logContactAction('Initiated WhatsApp Conversation')" class="w-11 h-11 rounded-xl bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 hover:border-emerald-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
+                                </span>
+                                <span title="Take Action first to contact" class="w-11 h-11 rounded-xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-300 cursor-not-allowed opacity-60 select-none">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.209-3.553-8.485"/>
                                     </svg>
-                                </a>
+                                </span>
                             @endif
+
+                            <!-- Lock Icon Badge -->
+                            <div class="w-8 h-8 rounded-lg bg-amber-50 border-2 border-amber-200 flex items-center justify-center" title="Contact locked until action is taken">
+                                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            </div>
                         </div>
+
                     </div>
 
                     <!-- METADATA GRID -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 mt-10">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mt-10">
                         <div>
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Project Type</span>
                             <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg">{{ $client->project_type ?? 'N/A' }}</span>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Industry</span>
-                            <span class="text-sm font-bold text-slate-800">{{ $client->industry ?? 'N/A' }}</span>
+                            <div class="text-sm font-bold text-slate-800 break-words">{{ $client->industry ?? 'N/A' }}</div>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Email</span>
-                            <span class="text-sm font-bold text-slate-800 break-all">{{ $client->email ?? 'N/A' }}</span>
+                            <div class="text-sm font-bold text-slate-800 break-all">{{ $client->email ?? 'N/A' }}</div>
+                            @if($client->alternate_email)
+                            <div class="text-[11px] font-semibold text-slate-500 mt-1 break-all">Alt: {{ $client->alternate_email }}</div>
+                            @endif
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Phone</span>
-                            <span class="text-sm font-bold text-slate-800">{{ $client->phone ?? 'N/A' }}</span>
+                            <div class="text-sm font-bold text-slate-800 break-all">{{ $client->phone ?? 'N/A' }}</div>
+                            @if($client->alternate_phone)
+                            <div class="text-[11px] font-semibold text-slate-500 mt-1 break-all">Alt: {{ $client->alternate_phone }}</div>
+                            @endif
                         </div>
                         <div>
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Created At</span>
@@ -108,7 +127,7 @@
                         </div>
                         <div>
                             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Next Follow-Up</span>
-                            <span class="text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg">{{ $client->next_follow_up ? $client->next_follow_up->format('d M, Y') : 'N/A' }}</span>
+                            <span class="inline-block text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg">{{ $client->next_follow_up ? $client->next_follow_up->format('d M, Y') : 'N/A' }}</span>
                         </div>
                     </div>
                 </div>
@@ -500,38 +519,21 @@
 @if($client)
 <script>
     function logContactAction(actionType) {
-        // Find existing CSRF token
-        let token = document.querySelector('input[name="_token"]');
-        token = token ? token.value : '';
+        // Use fetch (AJAX) to log silently without navigating away from the page
+        // This allows the browser to also open the native app (phone/email/whatsapp)
+        const token = document.querySelector('meta[name="csrf-token"]')
+            ? document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            : (document.querySelector('input[name="_token"]')?.value || '');
 
-        // Simple form post to log it without needing complex fetch headers
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = "{{ route('myleads.update', $client->id) }}";
-        form.style.display = 'none';
-
-        const fields = {
-            _token: token,
-            _method: 'PUT',
-            redirect_to: 'show',
-            response: actionType,
-            status: "{{ $client->status }}",
-            project_type: "{{ $client->project_type }}",
-            next_follow_up: "{{ $client->next_follow_up ? $client->next_follow_up->format('Y-m-d') : '' }}",
-            follow_up_time: "{{ $client->follow_up_time }}"
-        };
-
-        for (const key in fields) {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = fields[key];
-            form.appendChild(input);
-        }
-
-        document.body.appendChild(form);
-        // Add a slight delay so the link (href) opens the native app first
-        setTimeout(() => form.submit(), 1000);
+        fetch("{{ route('clients.log-contact', $client->id) }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ action: actionType })
+        }).catch(() => {}); // Silently ignore errors
     }
 </script>
 @endif
