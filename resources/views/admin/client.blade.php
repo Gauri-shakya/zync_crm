@@ -14,7 +14,10 @@
     $lastMonthStart = $now->copy()->subMonth()->startOfMonth();
     $lastMonthEnd = $now->copy()->subMonth()->endOfMonth();
 
-    $totalLeadsCount = method_exists($clients, 'total') ? $clients->total() : $clients->count();
+    // Fetch all clients to calculate accurate dashboard stats for the whole company, not just the current paginated page
+    $allClientsForStats = \App\Models\Client::with('leadAction')->where('company_id', auth()->user()->company_id)->get();
+
+    $totalLeadsCount = $allClientsForStats->count();
     $followUpCount = 0;
     $closedCount = 0;
     $notInterestedCount = 0;
@@ -23,7 +26,7 @@
     $thisMonth = ['total' => 0, 'followUp' => 0, 'closed' => 0, 'notInterested' => 0, 'nonContactable' => 0];
     $lastMonth = ['total' => 0, 'followUp' => 0, 'closed' => 0, 'notInterested' => 0, 'nonContactable' => 0];
 
-    foreach($clients as $c) {
+    foreach($allClientsForStats as $c) {
         $cStatus = strtolower($c->status ?? '');
         $aStatus = strtolower($c->leadAction->status ?? '');
         
