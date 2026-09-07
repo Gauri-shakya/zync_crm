@@ -16,13 +16,71 @@ class ClientController extends Controller
     return Client::where('company_id', auth()->user()->company_id);
 }
 
-    public function index()
+    public function index(Request $request)
     {
-        $clients = $this->baseQuery()
-            ->with(['leadAction.user'])
-            ->latest()
-            ->paginate(50)
-            ->withQueryString();
+        $query = $this->baseQuery()->with(['leadAction.user'])->latest();
+
+        $filter = $request->input('filter');
+        $search = $request->input('search');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('company_name', 'like', "%{$search}%")
+                  ->orWhere('contact_person', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        if ($filter) {
+            $actualFilter = str_replace('my_', '', $filter);
+            $isMy = str_starts_with($filter, 'my_');
+
+            if ($isMy) {
+                $query->whereHas('leadAction', function($q) {
+                    $q->where('user_id', auth()->id());
+                });
+            }
+
+            if ($actualFilter === 'all') {
+                if (!$isMy) {
+                    $query->whereDoesntHave('leadAction');
+                }
+            } elseif ($actualFilter === 'lead') {
+                $query->whereHas('leadAction');
+            } elseif ($actualFilter === 'closed') {
+                $query->where(function($q) {
+                    $q->whereIn('status', ['client', 'purchased', 'closed'])
+                      ->orWhereHas('leadAction', function($q2) {
+                          $q2->whereIn('status', ['client', 'purchased', 'closed']);
+                      });
+                });
+            } elseif ($actualFilter === 'not_interested') {
+                $query->where(function($q) {
+                    $q->whereIn('status', ['not interested', 'lost'])
+                      ->orWhereHas('leadAction', function($q2) {
+                          $q2->whereIn('status', ['not interested', 'lost']);
+                      });
+                });
+            } elseif ($actualFilter === 'non_contactable') {
+                $query->where(function($q) {
+                    $q->whereIn('status', ['non-contactable', 'not reachable'])
+                      ->orWhereHas('leadAction', function($q2) {
+                          $q2->whereIn('status', ['non-contactable', 'not reachable']);
+                      });
+                });
+            } elseif ($actualFilter === 'follow_up') {
+                $query->where(function($q) {
+                    $q->whereNotNull('next_follow_up')
+                      ->orWhereHas('leadAction', function($q2) {
+                          $q2->whereNotNull('next_follow_up')
+                             ->orWhereIn('status', ['will call back', 'interested', 'missed booked']);
+                      });
+                });
+            }
+        }
+
+        $clients = $query->paginate(50)->withQueryString();
 
         $closedLeads = \App\Models\ClosedLead::with(['lead.client', 'user', 'updater'])
             ->where('company_id', auth()->user()->company_id)

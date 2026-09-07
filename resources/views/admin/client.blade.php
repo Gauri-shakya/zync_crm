@@ -260,7 +260,7 @@
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-5">
                     
                     <!-- Total Leads -->
-                    <div class="filter-dashboard-card active-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('all', this)">
+                    <div class="filter-dashboard-card {{ request('filter', 'all') == 'all' ? 'active-dashboard-card' : '' }} relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('all', this)">
                         <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <div class="relative z-10 flex items-start gap-3 sm:gap-4">
                             <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-blue-200 text-blue-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-blue-50 transition-all duration-300 shrink-0 bg-white">
@@ -277,7 +277,7 @@
                     </div>
 
                     <!-- Follow Up -->
-                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('follow_up', this)">
+                    <div class="filter-dashboard-card {{ request('filter', 'all') == 'follow_up' ? 'active-dashboard-card' : '' }} relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('follow_up', this)">
                         <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <div class="relative z-10 flex items-start gap-3 sm:gap-4">
                             <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-indigo-200 text-indigo-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-indigo-50 transition-all duration-300 shrink-0 bg-white">
@@ -294,7 +294,7 @@
                     </div>
 
                     <!-- Closed Leads -->
-                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('closed', this)">
+                    <div class="filter-dashboard-card {{ request('filter', 'all') == 'closed' ? 'active-dashboard-card' : '' }} relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('closed', this)">
                         <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-teal-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <div class="relative z-10 flex items-start gap-3 sm:gap-4">
                             <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-teal-200 text-teal-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-teal-50 transition-all duration-300 shrink-0 bg-white">
@@ -311,7 +311,7 @@
                     </div>
 
                     <!-- Not Interested -->
-                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('not_interested', this)">
+                    <div class="filter-dashboard-card {{ request('filter', 'all') == 'not_interested' ? 'active-dashboard-card' : '' }} relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('not_interested', this)">
                         <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-rose-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <div class="relative z-10 flex items-start gap-3 sm:gap-4">
                             <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-rose-200 text-rose-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-rose-50 transition-all duration-300 shrink-0 bg-white">
@@ -328,7 +328,7 @@
                     </div>
 
                     <!-- Non-contactable -->
-                    <div class="filter-dashboard-card relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('non_contactable', this)">
+                    <div class="filter-dashboard-card {{ request('filter', 'all') == 'non_contactable' ? 'active-dashboard-card' : '' }} relative bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group" onclick="setDashboardFilter('non_contactable', this)">
                         <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-orange-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <div class="relative z-10 flex items-start gap-3 sm:gap-4">
                             <div class="w-11 h-11 flex items-center justify-center rounded-xl rounded-bl-[4px] border border-orange-200 text-orange-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-orange-50 transition-all duration-300 shrink-0 bg-white">
@@ -445,17 +445,17 @@
                 <div class="w-full lg:w-auto order-2">
                     <div class="h-auto lg:h-10 items-center justify-center rounded-md p-1 bg-white w-full lg:w-auto grid grid-cols-3 sm:grid-cols-5 lg:flex gap-1 border border-slate-200 shadow-sm">
                         @if(auth()->check() && auth()->user()->hasRole('admin'))
-                            <button class="filter-btn active inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors" data-status="all">All</button>
-                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="lead">Leads</button>
-                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="follow_up">Follow Up</button>
-                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="closed">Closed</button>
-                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="not_interested">Not Interested</button>
+                            <button class="filter-btn {{ request('filter', 'all') == 'all' ? 'active bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50' }} inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-colors" data-status="all">All</button>
+                            <button class="filter-btn {{ request('filter', 'all') == 'lead' ? 'active bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50' }} inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-colors" data-status="lead">Leads</button>
+                            <button class="filter-btn {{ request('filter', 'all') == 'follow_up' ? 'active bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50' }} inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-colors" data-status="follow_up">Follow Up</button>
+                            <button class="filter-btn {{ request('filter', 'all') == 'closed' ? 'active bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50' }} inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-colors" data-status="closed">Closed</button>
+                            <button class="filter-btn {{ request('filter', 'all') == 'not_interested' ? 'active bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50' }} inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-colors" data-status="not_interested">Not Interested</button>
                         @elseif(auth()->check())
-                            <button class="filter-btn active inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors" data-status="all">All</button>
-                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="my_all">Leads</button>
-                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="my_follow_up">Follow Up</button>
-                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="my_closed">Closed</button>
-                            <button class="filter-btn inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors" data-status="my_not_interested">Not Interest</button>
+                            <button class="filter-btn {{ request('filter', 'all') == 'all' ? 'active bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50' }} inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-colors" data-status="all">All</button>
+                            <button class="filter-btn {{ request('filter', 'all') == 'my_all' ? 'active bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50' }} inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-colors" data-status="my_all">Leads</button>
+                            <button class="filter-btn {{ request('filter', 'all') == 'my_follow_up' ? 'active bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50' }} inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-colors" data-status="my_follow_up">Follow Up</button>
+                            <button class="filter-btn {{ request('filter', 'all') == 'my_closed' ? 'active bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50' }} inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-colors" data-status="my_closed">Closed</button>
+                            <button class="filter-btn {{ request('filter', 'all') == 'my_not_interested' ? 'active bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50' }} inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-colors" data-status="my_not_interested">Not Interest</button>
                         @endif
                     </div>
                 </div>
@@ -1686,8 +1686,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const successToast = document.getElementById('success-toast');
     const toastMessage = document.getElementById('toast-message');
 
-    let currentFilter = 'all';
-    let currentSearch = '';
+    let currentFilter = '{{ request("filter", "all") }}';
+    let currentSearch = '{{ request("search", "") }}';
     let currentView = 'grid';
 
     // View switching functionality
@@ -1737,16 +1737,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Filter and search clients
     function filterClients() {
         const searchTerm = currentSearch.toLowerCase();
-        const currentUserId = "{{ auth()->id() }}";
         const isUserDashboard = currentFilter.startsWith('my_');
         const actualFilter = isUserDashboard ? currentFilter.replace('my_', '') : currentFilter;
-        
-        // Advanced filters
-        const advDateFrom = document.getElementById('filter-date-from') ? document.getElementById('filter-date-from').value : '';
-        const advDateTo = document.getElementById('filter-date-to') ? document.getElementById('filter-date-to').value : '';
-        const advExec = document.getElementById('filter-executive') ? document.getElementById('filter-executive').value : '';
-        const advStatus = document.getElementById('filter-status') ? document.getElementById('filter-status').value : '';
-        
+
         // Handle Closed Summary Table visibility
         const closedSummary = document.getElementById('closed-summary-container');
         if (closedSummary) {
@@ -1756,29 +1749,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 closedSummary.classList.add('hidden');
             }
         }
+        
+        // Advanced filters
+        const advDateFrom = document.getElementById('filter-date-from') ? document.getElementById('filter-date-from').value : '';
+        const advDateTo = document.getElementById('filter-date-to') ? document.getElementById('filter-date-to').value : '';
+        const advExec = document.getElementById('filter-executive') ? document.getElementById('filter-executive').value : '';
+        const advStatus = document.getElementById('filter-status') ? document.getElementById('filter-status').value : '';
 
         // Filter Grid View
         const clientCards = document.querySelectorAll('.client-card');
         clientCards.forEach(card => {
             const clientText = card.textContent.toLowerCase();
-            const clientStatus = card.getAttribute('data-status');
-            const clientCategory = card.getAttribute('data-category');
             const assignedUserId = card.getAttribute('data-assigned-user');
             const createdAt = card.getAttribute('data-created-at');
             const detailedStatus = card.getAttribute('data-detailed-status');
 
             const matchesSearch = clientText.includes(searchTerm);
-            let matchesFilter = false;
-            if (actualFilter === 'closed') {
-                matchesFilter = false; // Hide cards, use the detailed table instead
-            } else if (currentFilter === 'all') {
-                matchesFilter = (assignedUserId === '');
-            } else if (currentFilter === 'lead' || currentFilter === 'my_all') {
-                matchesFilter = (assignedUserId !== '');
-            } else {
-                matchesFilter = (clientStatus === actualFilter || clientCategory === actualFilter);
-            }
-            const matchesUser = !isUserDashboard || (assignedUserId === currentUserId);
+            
+            // If closed filter, hide regular cards to use the summary table
+            const matchesFilter = (actualFilter === 'closed') ? false : true;
             
             let matchesAdvDate = true;
             if (advDateFrom && createdAt) matchesAdvDate = matchesAdvDate && (createdAt >= advDateFrom);
@@ -1790,31 +1779,21 @@ document.addEventListener('DOMContentLoaded', function() {
             let matchesAdvStatus = true;
             if (advStatus) matchesAdvStatus = (detailedStatus === advStatus);
 
-            card.style.display = (matchesSearch && matchesFilter && matchesUser && matchesAdvDate && matchesAdvExec && matchesAdvStatus) ? 'block' : 'none';
+            card.style.display = (matchesSearch && matchesFilter && matchesAdvDate && matchesAdvExec && matchesAdvStatus) ? 'block' : 'none';
         });
 
         // Filter Table View
         const clientTableRows = document.querySelectorAll('.client-table-row');
         clientTableRows.forEach(row => {
             const clientText = row.textContent.toLowerCase();
-            const clientStatus = row.getAttribute('data-status');
-            const clientCategory = row.getAttribute('data-category');
             const assignedUserId = row.getAttribute('data-assigned-user');
             const createdAt = row.getAttribute('data-created-at');
             const detailedStatus = row.getAttribute('data-detailed-status');
 
             const matchesSearch = clientText.includes(searchTerm);
-            let matchesFilter = false;
-            if (actualFilter === 'closed') {
-                matchesFilter = false; // Hide list rows, use the detailed table instead
-            } else if (currentFilter === 'all') {
-                matchesFilter = (assignedUserId === '');
-            } else if (currentFilter === 'lead' || currentFilter === 'my_all') {
-                matchesFilter = (assignedUserId !== '');
-            } else {
-                matchesFilter = (clientStatus === actualFilter || clientCategory === actualFilter);
-            }
-            const matchesUser = !isUserDashboard || (assignedUserId === currentUserId);
+            
+            // If closed filter, hide regular rows to use the summary table
+            const matchesFilter = (actualFilter === 'closed') ? false : true;
             
             let matchesAdvDate = true;
             if (advDateFrom && createdAt) matchesAdvDate = matchesAdvDate && (createdAt >= advDateFrom);
@@ -1826,7 +1805,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let matchesAdvStatus = true;
             if (advStatus) matchesAdvStatus = (detailedStatus === advStatus);
 
-            row.style.display = (matchesSearch && matchesFilter && matchesUser && matchesAdvDate && matchesAdvExec && matchesAdvStatus) ? 'table-row' : 'none';
+            row.style.display = (matchesSearch && matchesFilter && matchesAdvDate && matchesAdvExec && matchesAdvStatus) ? 'table-row' : 'none';
         });
     }
 
@@ -1868,20 +1847,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.setDashboardFilter = function(filterValue, element) {
-        // Update active state of dashboard cards
-        document.querySelectorAll('.filter-dashboard-card').forEach(card => {
-            card.classList.remove('active-dashboard-card');
-        });
-        if(element) element.classList.add('active-dashboard-card');
-        
-        // Clear standard filters visually
-        document.querySelectorAll('.filter-btn').forEach(b => {
-            b.classList.remove('active', 'bg-indigo-600', 'text-white', 'shadow-sm', 'hover:bg-indigo-700');
-            b.classList.add('bg-white', 'text-slate-600', 'hover:bg-slate-50');
-        });
-
-        currentFilter = filterValue;
-        filterClients();
+        window.location.href = "{{ route('clients.index') }}?filter=" + filterValue;
     };
 
     // Search functionality
@@ -1896,26 +1862,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (filterBtns) {
         filterBtns.forEach(btn => {
             btn.addEventListener('click', function() {
-                filterBtns.forEach(b => {
-                    b.classList.remove('active', 'bg-indigo-600', 'text-white', 'shadow-sm', 'hover:bg-indigo-700');
-                    b.classList.add('bg-white', 'text-slate-600', 'hover:bg-slate-50');
-                });
-                
-                this.classList.remove('bg-white', 'text-slate-600', 'hover:bg-slate-50');
-                this.classList.add('active', 'bg-indigo-600', 'text-white', 'shadow-sm', 'hover:bg-indigo-700');
-                
-                currentFilter = this.getAttribute('data-status');
-                filterClients();
+                const filterValue = this.getAttribute('data-status');
+                window.location.href = "{{ route('clients.index') }}?filter=" + filterValue;
             });
         });
     }
 
     // Run filter on page load to apply default "All" logic
     filterClients();
-
-    // Open modal for editing client
-    // Use event delegation on document (works for dynamic elements)
-
 
     // Open modal for adding new client
     if (addClientBtn) {
