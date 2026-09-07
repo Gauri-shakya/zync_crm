@@ -14,7 +14,7 @@
     $lastMonthStart = $now->copy()->subMonth()->startOfMonth();
     $lastMonthEnd = $now->copy()->subMonth()->endOfMonth();
 
-    $totalLeadsCount = $clients->count();
+    $totalLeadsCount = method_exists($clients, 'total') ? $clients->total() : $clients->count();
     $followUpCount = 0;
     $closedCount = 0;
     $notInterestedCount = 0;
@@ -885,7 +885,7 @@
                 @endif
             </div>
              <!-- Communication Options -->
-                    <div class="flex items-center gap-1 mr-4">
+                    <div class="flex flex-wrap items-center gap-2 mt-3">
                         @if($client->phone)
                         <!-- WhatsApp -->
                         <div class="relative group inline-block">
@@ -896,9 +896,6 @@
                                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.209-3.553-8.485"/>
                                 </svg>
                             </a>
-                            {{-- <span class="absolute left-1/2 -translate-x-1/2 -bottom-8 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                                WhatsApp
-                            </span> --}}
                         </div>
 
                         <!-- Call -->
@@ -909,9 +906,6 @@
                                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                                 </svg>
                             </a>
-                            {{-- <span class="absolute left-1/2 -translate-x-1/2 -bottom-8 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                                Call
-                            </span> --}}
                         </div>
                         @endif
 
@@ -925,9 +919,6 @@
                                     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
                                 </svg>
                             </a>
-                            {{-- <span class="absolute left-1/2 -translate-x-1/2 -bottom-8 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                                Email
-                            </span> --}}
                         </div>
                         @endif
 
@@ -940,13 +931,28 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                                 </svg>
                             </a>
-                            {{-- <span class="absolute left-1/2 -translate-x-1/2 -bottom-8 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
-                                Message
-                            </span> --}}
                         </div>
                         @endif
+                        
+                        <!-- Book Button -->
+                        @php
+                            $isBooked = $client->leadAction && $client->leadAction->booked_by;
+                            $isBookedByMe = $isBooked && $client->leadAction->booked_by == auth()->id();
+                        @endphp
+                        
+                        @if($isBooked)
+                            <button type="button" id="btn-book-{{ $client->id }}" class="inline-flex items-center justify-center h-8 px-3 rounded-md bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-xs cursor-default flex-shrink-0 shadow-sm">
+                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                Booked
+                            </button>
+                        @else
+                            <button type="button" onclick="bookClientLead({{ $client->id }})" id="btn-book-{{ $client->id }}" class="inline-flex items-center justify-center h-8 px-3 rounded-md bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 text-yellow-800 font-bold text-xs transition-colors flex-shrink-0 shadow-sm">
+                                Book
+                            </button>
+                        @endif
+
                     </div>
-            <div class="pt-3 border-t border-slate-200">
+            <div class="pt-3 border-t border-slate-200 mt-2">
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-xs text-slate-500">Lead Source</p>
@@ -965,7 +971,7 @@
 
 
         <!-- Take Action Button -->
-        <!-- Take Action Button -->
+        <div id="action-area-{{ $client->id }}">
 @php
     $isClaimed = $client->leadAction && $client->leadAction->status !== 'unlocked';
 @endphp
@@ -996,6 +1002,13 @@
   </div>
   @endif
 
+@elseif($isBooked && !$isBookedByMe)
+  <!-- Button disabled if booked by someone else -->
+  <button
+    class="block w-full text-center px-4 py-2 text-sm font-medium border border-gray-400 text-gray-400 rounded-lg cursor-not-allowed bg-gray-100"
+    disabled>
+    Booked by {{ $client->leadAction->bookedByUser->name ?? 'Another Executive' }}
+  </button>
 @else
   <!-- Button active if no action yet or if unlocked -->
   <button
@@ -1020,6 +1033,7 @@
     @endif
   </div>
 @endif
+        </div>
 
 
 
@@ -1176,6 +1190,11 @@
     </table>
 </div>
         </div>
+        @if(method_exists($clients, 'links'))
+            <div class="mt-6">
+                {{ $clients->links() }}
+            </div>
+        @endif
     </div>
 
 
@@ -2875,8 +2894,116 @@ document.getElementById('deleteForm')?.addEventListener('submit', function(e) {
                     Cancel
                 </button>
             </div>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+    function bookClientLead(clientId) {
+        const btn = document.getElementById('btn-book-' + clientId);
+        if(!btn) return;
+        
+        btn.innerHTML = 'Booking...';
+        btn.disabled = true;
+
+        fetch(`/clients/${clientId}/book`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                // Update button UI immediately
+                btn.className = 'inline-flex items-center justify-center h-8 px-3 rounded-md bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-xs cursor-default ml-2 shadow-sm';
+                btn.innerHTML = '<svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Booked';
+                btn.removeAttribute('onclick');
+                
+                // Update Take Action button immediately
+                const actionArea = document.getElementById('action-area-' + clientId);
+                if (actionArea) {
+                    actionArea.innerHTML = `
+                        <button onclick="openActionModal(${clientId})" class="block w-full text-center px-4 py-2 text-sm font-medium border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200">
+                            Take Action
+                        </button>
+                    `;
+                }
+            } else {
+                alert(data.message || 'Error booking lead.');
+                btn.innerHTML = 'Book';
+                btn.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('An error occurred while booking.');
+            btn.innerHTML = 'Book';
+            btn.disabled = false;
+        });
+    }
+
+    // Polling logic every 10 seconds
+    setInterval(() => {
+        // Collect all client IDs on page that are NOT yet actioned/claimed
+        const actionAreas = document.querySelectorAll('[id^="action-area-"]');
+        const clientIds = [];
+        actionAreas.forEach(area => {
+            const id = area.id.replace('action-area-', '');
+            clientIds.push(id);
+        });
+
+        if (clientIds.length > 0) {
+            fetch(`/clients/all/statuses?` + new URLSearchParams({ client_ids: clientIds }).toString(), {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    Object.keys(data.data).forEach(clientId => {
+                        const statusData = data.data[clientId];
+                        const btn = document.getElementById('btn-book-' + clientId);
+                        const actionArea = document.getElementById('action-area-' + clientId);
+
+                        // If it got booked
+                        if (statusData.is_booked && btn && btn.innerText !== 'Booked') {
+                            btn.className = 'inline-flex items-center justify-center h-8 px-3 rounded-md bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-xs cursor-default ml-2 shadow-sm';
+                            btn.innerHTML = '<svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Booked';
+                            btn.removeAttribute('onclick');
+                        }
+
+                        // If claimed (action taken)
+                        if (statusData.is_claimed && actionArea && !actionArea.innerHTML.includes('Action Taken')) {
+                            actionArea.innerHTML = `
+                                <button class="block w-full text-center px-4 py-2 text-sm font-medium border border-gray-400 text-gray-400 rounded-lg cursor-not-allowed bg-gray-100" disabled>
+                                    Action Taken
+                                </button>
+                                <div class="mt-2 px-3 py-1 bg-green-50 border border-green-300 rounded-md text-green-700 text-sm">
+                                    ✅ Action taken by <strong>${statusData.action_taken_by || 'Unknown User'} , &nbsp; ${statusData.created_at_human}</strong>
+                                </div>
+                            `;
+                        }
+                        // If booked by SOMEONE ELSE
+                        else if (statusData.is_booked && !statusData.booked_by_me && actionArea && !actionArea.innerHTML.includes('Booked by')) {
+                            actionArea.innerHTML = `
+                                <button class="block w-full text-center px-4 py-2 text-sm font-medium border border-gray-400 text-gray-400 rounded-lg cursor-not-allowed bg-gray-100" disabled>
+                                    Booked by ${statusData.booked_by_name || 'Another Executive'}
+                                </button>
+                            `;
+                        }
+                    });
+                }
+            })
+            .catch(err => console.error('Polling error:', err));
+        }
+    }, 10000);
+</script>
 
 @endsection

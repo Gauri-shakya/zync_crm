@@ -1,11 +1,16 @@
 <?php
+
 namespace App\Http\Controllers\Sales;
+
 use App\Http\Controllers\Controller;
 use App\Models\Mylead;
-use App\Models\MyleadHistory; // Add this import
+use App\Models\MyleadHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Events\LeadBooked;
+use App\Events\LeadUnbooked;
+
 class MyLeadsController extends Controller
 {
     /**
@@ -46,7 +51,7 @@ class MyLeadsController extends Controller
             $query->whereDate('next_follow_up', $request->next_follow_up_date);
         }
 
-        $myleads = $query->latest()->paginate(20)->withQueryString();
+        $myleads = $query->latest()->paginate(50)->withQueryString();
 
         return view('admin.sales.myleads', compact('myleads'));
     }
@@ -353,4 +358,53 @@ $this->authorize('manage', $lead);
         //
     }
   
+
+    // ------------------------------------------------------------
+    // Booking actions
+    // ------------------------------------------------------------
+    public function book(Request $request, string $id)
+    {
+        $lead = $this->baseQuery()->findOrFail($id);
+        // Ensure executive does not already have a booked lead within the company
+        $existing = Mylead::where('company_id', Auth::user()->company_id)
+            ->where('booked_by', Auth::id())
+            ->whereNotNull('booked_by')
+            ->first();
+        if ($existing) {
+            return response()->json(['error' => 'You already have a booked lead.'], 422);
+        }
+        $lead->update([
+            'booked_by' => Auth::id(),
+            'booked_at' => now(),
+        ]);
+        // Log history
+        MyleadHistory::create([
+            'company_id' => Auth::user()->company_id,
+            'mylead_id' => $lead->id,
+            'user_id'   => Auth::id(),
+            'changes'   => json_encode(['action_taken' => 'Lead Booked']),
+            'response'  => 'Booked by '.Auth::user()->name,
+        ]);
+        event(new LeadBooked($lead));
+        return response()->json(['success' => true, 'message' => 'Lead booked']);
+    }
+
+    public function unbook(Request $request, string $id)
+    {
+        $lead = $this->baseQuery()->findOrFail($id);
+        $this->authorize('unbook', $lead); // policy allows only admin/superadmin
+        $lead->update([
+            'booked_by' => null,
+            'booked_at' => null,
+        ]);
+        MyleadHistory::create([
+            'company_id' => Auth::user()->company_id,
+            'mylead_id' => $lead->id,
+            'user_id'   => Auth::id(),
+            'changes'   => json_encode(['action_taken' => 'Lead Unbooked']),
+            'response'  => 'Unbooked by '.Auth::user()->name,
+        ]);
+        event(new LeadUnbooked($lead));
+        return response()->json(['success' => true, 'message' => 'Lead unbooked']);
+    }
 }

@@ -21,7 +21,8 @@ class ClientController extends Controller
         $clients = $this->baseQuery()
             ->with(['leadAction.user'])
             ->latest()
-            ->get();
+            ->paginate(50)
+            ->withQueryString();
 
         $closedLeads = \App\Models\ClosedLead::with(['lead.client', 'user', 'updater'])
             ->where('company_id', auth()->user()->company_id)
@@ -800,6 +801,82 @@ public function destroy($id)
         ]));
 
         return response()->json(['success' => true, 'message' => 'Lead successfully assigned to ' . $assignedUser->name . '!']);
+    }
+
+    public function bookLead(Request $request, $id)
+    {
+        $client = Client::findOrFail($id);
+        
+        // Ensure user hasn't already booked another lead that is still open
+        $existing = \App\Models\Mylead::where('company_id', auth()->user()->company_id)
+            ->where('booked_by', auth()->id())
+            ->whereNotIn('status', ['closed', 'not interested', 'non-contactable'])
+            ->first();
+            
+        // We will just allow them to book for now to not overly restrict, but if strict:
+        // if ($existing) {
+        //     return response()->json(['success' => false, 'message' => 'You already have a booked lead.'], 422);
+        // }
+
+        if ($client->leadAction && $client->leadAction->booked_by && $client->leadAction->booked_by != auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'Already booked by someone else.'], 422);
+        }
+
+        if ($client->leadAction) {
+            $client->leadAction->update([
+                'booked_by' => auth()->id(),
+                'booked_at' => now(),
+            ]);
+            $leadAction = $client->leadAction;
+        } else {
+            $leadAction = \App\Models\Mylead::create([
+                'company_id' => auth()->user()->company_id,
+                'client_id' => $client->id,
+                'user_id' => auth()->id(),
+                'status' => 'lead',
+                'response' => 'Lead booked by ' . auth()->user()->name,
+                'booked_by' => auth()->id(),
+                'booked_at' => now(),
+            ]);
+        }
+        
+        \App\Models\MyleadHistory::create([
+            'company_id' => auth()->user()->company_id,
+            'mylead_id' => $leadAction->id,
+            'user_id' => auth()->id(),
+            'response' => 'Lead booked by ' . auth()->user()->name,
+            'changes' => json_encode(['action_taken' => 'Lead Booked'])
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Lead booked successfully!']);
+    }
+
+    public function getStatuses(Request $request)
+    {
+        $clientIds = $request->input('client_ids', []);
+        
+        if (empty($clientIds)) {
+            return response()->json(['success' => true, 'data' => []]);
+        }
+        
+        $leads = \App\Models\Mylead::with('bookedByUser', 'user')
+                    ->whereIn('client_id', $clientIds)
+                    ->get();
+                    
+        $data = [];
+        foreach ($leads as $lead) {
+            $data[$lead->client_id] = [
+                'status' => $lead->status,
+                'is_claimed' => $lead->status !== 'unlocked',
+                'is_booked' => !empty($lead->booked_by),
+                'booked_by_me' => $lead->booked_by == auth()->id(),
+                'booked_by_name' => $lead->bookedByUser ? $lead->bookedByUser->name : null,
+                'action_taken_by' => $lead->user ? $lead->user->name : null,
+                'created_at_human' => \Carbon\Carbon::parse($lead->created_at)->setTimezone('Asia/Kolkata')->diffForHumans()
+            ];
+        }
+        
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     /**

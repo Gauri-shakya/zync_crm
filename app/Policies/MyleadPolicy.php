@@ -11,4 +11,12 @@ class MyleadPolicy
     {
         return $user->company_id === $lead->company_id;
     }
+
+    /**
+     * Only admins (or superadmin) can unbook a lead.
+     */
+    public function unbook(User $user, Mylead $lead)
+    {
+        return $user->hasRole('admin') || $user->hasRole('superadmin');
+    }
 }

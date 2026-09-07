@@ -99,6 +99,8 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
         Route::get('/clients/{client}', [ClientController::class, 'show'])->name('clients.show');
         Route::get('/clients/{client}/details', [ClientController::class, 'details'])->name('clients.details');
         Route::get('/clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit'); // NEW
+        Route::post('/clients/{id}/book', [ClientController::class, 'bookLead'])->name('clients.bookLead'); // NEW BOOK BUTTON
+        Route::get('/clients/all/statuses', [ClientController::class, 'getStatuses'])->name('clients.statuses'); // POLLING
         Route::put('/clients/{client}', [ClientController::class, 'update'])->name('clients.update');
         Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
         Route::post('/clients/import', [ClientController::class, 'import'])->name('clients.import');
@@ -255,10 +257,14 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
         Route::post('/myleads/store', [MyLeadsController::class, 'store'])->name('myleads.store');
         Route::get('/myleads/edit/{id}', [MyLeadsController::class, 'edit'])->name('myleads.edit');
         Route::put('/myleads/closed/{id}', [MyLeadsController::class, 'updateClosedLead'])->name('myleads.closed.update');
+        // Booking routes
+        Route::post('/leads/{lead}/book', [MyLeadsController::class, 'book'])->name('leads.book');
+        Route::post('/leads/{lead}/unbook', [MyLeadsController::class, 'unbook'])->name('leads.unbook');
+        Route::get('/leads/{lead}/status', [MyLeadsController::class, 'status'])->name('leads.status');
+        Route::put('/myleads/history/{id}', [MyLeadsController::class, 'updateHistory'])->name('myleads.history.update');
         Route::put('/myleads/{id}', [MyLeadsController::class, 'update'])->name('myleads.update');
         Route::get('/myleads/{id}', [MyLeadsController::class, 'show'])->name('myleads.show');
         Route::get('/myleads/{id}/history', [MyLeadsController::class, 'history'])->name('myleads.history');
-        Route::put('/myleads/history/{id}', [MyLeadsController::class, 'updateHistory'])->name('myleads.history.update');
     });
 
     Route::post('/dashboard/dismiss-pending-payment/{id}', [DashboardController::class, 'dismissPendingPayment'])->name('dashboard.dismiss-pending-payment');

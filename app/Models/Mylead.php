@@ -14,6 +14,8 @@ class Mylead extends Model
         'follow_up_time',
         'project_type',
         'status',
+        'booked_by',
+        'booked_at',
     ];
    
    protected $casts = [
@@ -32,10 +34,15 @@ class Mylead extends Model
 {
     return $this->belongsTo(\App\Models\User::class);
 }
-public function client()
-{
-    return $this->belongsTo(\App\Models\Client::class, 'client_id');
-}
+    public function client()
+    {
+        return $this->belongsTo(\App\Models\Client::class, 'client_id');
+    }
+
+    public function bookedByUser()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'booked_by');
+    }
 
 public function histories()
 {
