@@ -124,6 +124,23 @@
                                         Edit
                                     </a>
 
+                                    <form action="{{ route('users.toggle-status', $user->id) }}" method="POST" class="inline">
+                                        @csrf @method('PATCH')
+                                        <button type="submit" 
+                                            class="inline-flex items-center px-2.5 py-1.5 rounded-md transition-colors text-xs {{ $user->is_active ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-red-50 text-red-700 hover:bg-red-100' }}"
+                                            onclick="return confirm('Are you sure you want to {{ $user->is_active ? 'deactivate' : 'activate' }} this user?')"
+                                            {{ Auth::id() === $user->id ? 'disabled' : '' }}>
+                                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                @if($user->is_active)
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                @else
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                                                @endif
+                                            </svg>
+                                            {{ $user->is_active ? 'Active' : 'Deactivated' }}
+                                        </button>
+                                    </form>
+
                                     <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline"
                                           onsubmit="return confirm('Are you sure you want to delete this user?')">
                                         @csrf @method('DELETE')

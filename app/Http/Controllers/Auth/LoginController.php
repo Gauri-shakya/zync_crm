@@ -21,6 +21,16 @@ class LoginController extends Controller
             'password' => 'required|string',
         ]);
 
+        $user = \App\Models\User::where('email', $credentials['email'])->first();
+
+        if ($user && !\Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
+             // Let Auth::attempt handle invalid password
+        } elseif ($user && !$user->is_active) {
+            return back()->withErrors([
+                'email' => 'Your account has been deactivated. Please contact an administrator.',
+            ])->withInput()->with('form', 'login');
+        }
+
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
 

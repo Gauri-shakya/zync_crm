@@ -167,6 +167,7 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
         Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');  // Fixed path
         Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');  // Fixed path
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');  // Fixed to DELETE
+        Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
     });
 
 

@@ -241,5 +241,23 @@ class UserController extends Controller
         ->with('success', 'User deleted successfully!');
 }
 
+    public function toggleStatus(User $user)
+    {
+        $this->authorize('manage', $user);
 
+        if (Auth::id() === $user->id) {
+            return redirect()
+                ->route('users')
+                ->with('error', 'You cannot change your own status.');
+        }
+
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        $statusMessage = $user->is_active ? 'activated' : 'deactivated';
+
+        return redirect()
+            ->route('users')
+            ->with('success', "User $statusMessage successfully!");
+    }
 }
