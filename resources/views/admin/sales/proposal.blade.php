@@ -375,6 +375,7 @@
                                     <p class="text-[10px] text-gray-500 px-2 mt-0.5 flex items-center gap-1.5 font-medium">
                                         <i class="fa-regular fa-clock text-indigo-400"></i> Last saved: <span id="lastSavedTime" class="text-gray-700">Just now</span>
                                     </p>
+                                    <p id="headerClientInfo" class="text-xs text-indigo-600 px-2 mt-1 font-semibold hidden"></p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
@@ -393,6 +394,9 @@
                                     </button>
                                     <button id="exportPDF" class="w-10 h-10 sm:w-auto sm:px-4 sm:py-2 hidden flex items-center justify-center bg-red-50 text-red-600 border border-red-100 rounded-xl text-xs font-bold hover:bg-red-100 transition-all gap-1.5 active:scale-95 shadow-sm hover:shadow-red-100">
                                         <i class="fas fa-file-pdf"></i> <span class="hidden sm:inline">PDF</span>
+                                    </button>
+                                    <button id="sendWhatsAppBtn" onclick="openWhatsAppModal()" class="w-10 h-10 sm:w-auto sm:px-4 sm:py-2 flex items-center justify-center bg-green-50 text-green-600 border border-green-100 rounded-xl text-xs font-bold hover:bg-green-100 transition-all gap-1.5 active:scale-95 shadow-sm hover:shadow-green-100">
+                                        <i class="fab fa-whatsapp text-lg"></i> <span class="hidden sm:inline">WhatsApp</span>
                                     </button>
                                 </div>
                             </div>
@@ -778,6 +782,7 @@
             </style>
 
             <script>
+                const crmClients = @json($clients ?? []);
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
                 // Blank template for custom proposals
@@ -1129,13 +1134,166 @@
                                                                                                 <p><strong>Your Digital Agency</strong> | hello@agency.com | +91 98765 43210</p>
                                                                                             </div>
                                                                                         </div>
-                                                                                    </div>`
+                                                                                    </div>`,
+                    social_cults_premium: `
+<div class="pdf-export-container" style="background-color: #0A0F24; color: #e2e8f0; font-family: 'Inter', sans-serif;">
+   <!-- Cover Page -->
+   <div class="pdf-section" style="padding: 60px 40px; min-height: 1000px; display: flex; flex-direction: column; justify-content: center; position: relative; background: linear-gradient(135deg, #0A0F24 0%, #171941 100%); page-break-after: always;">
+       <div style="background: rgba(99, 102, 241, 0.2); padding: 5px 15px; border-radius: 20px; display: inline-block; margin-bottom: 30px; font-size: 12px; font-weight: 600; color: #a5b4fc;">⚡ VIRGO DIGITAL WORLD PRESENTATION</div>
+       <h1 contenteditable="true" style="font-size: 48px; font-weight: bold; color: #ffffff; line-height: 1.2; margin-bottom: 20px;">Social Media Marketing &<br><span style="color: #818cf8;">Leads Generation Proposal</span></h1>
+       <p contenteditable="true" style="font-size: 18px; color: #94a3b8; max-width: 600px; line-height: 1.6; margin-bottom: 100px;">Comprehensive digital strategy, performance campaigns, and audience engagement blueprint tailored for accelerated business growth.</p>
+       
+       <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px; margin-top: auto;">
+           <div>
+               <div style="font-size: 12px; color: #64748b; margin-bottom: 5px; font-weight: 600; text-transform: uppercase;">Prepared For</div>
+               <div contenteditable="true" style="font-size: 18px; color: #ffffff; font-weight: 500;">Womn Foundation</div>
+           </div>
+           <div>
+               <div style="font-size: 12px; color: #64748b; margin-bottom: 5px; font-weight: 600; text-transform: uppercase;">Agency</div>
+               <div contenteditable="true" style="font-size: 16px; color: #ffffff; font-weight: 500;">SOCIAL CULTS <span style="color: #818cf8;">by Virgo Digital World</span></div>
+           </div>
+           <div style="text-align: right;">
+               <div style="font-size: 12px; color: #64748b; margin-bottom: 5px; font-weight: 600; text-transform: uppercase;">Classification</div>
+               <div contenteditable="true" style="font-size: 16px; color: #10b981; font-weight: 500;">Strictly Confidential</div>
+           </div>
+       </div>
+   </div>
+
+   <!-- Objectives Page -->
+   <div class="pdf-section" style="padding: 60px 40px; min-height: 1000px; background: #0A0F24; page-break-after: always;">
+       <h2 contenteditable="true" style="font-size: 32px; font-weight: 700; color: #ffffff; margin-bottom: 50px; text-transform: uppercase; letter-spacing: 1px;">Core Strategic Objectives</h2>
+       
+       <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+           <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 30px;">
+               <div style="width: 40px; height: 40px; background: rgba(99, 102, 241, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #818cf8;">💎</div>
+               <h3 contenteditable="true" style="color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 15px; text-transform: uppercase;">Brand Building</h3>
+               <p contenteditable="true" style="color: #94a3b8; font-size: 14px; line-height: 1.6;">Establish a commanding online authority and premium visual presence across key digital touchpoints to elevate brand recall and trust.</p>
+           </div>
+           
+           <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 30px;">
+               <div style="width: 40px; height: 40px; background: rgba(168, 85, 247, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #c084fc;">💬</div>
+               <h3 contenteditable="true" style="color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 15px; text-transform: uppercase;">Active Engagement</h3>
+               <p contenteditable="true" style="color: #94a3b8; font-size: 14px; line-height: 1.6;">Cultivate an active, loyal community through interactive content, rapid response management, and value-driven messaging.</p>
+           </div>
+           
+           <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 30px;">
+               <div style="width: 40px; height: 40px; background: rgba(236, 72, 153, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #f472b6;">📈</div>
+               <h3 contenteditable="true" style="color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 15px; text-transform: uppercase;">Lead Generation</h3>
+               <p contenteditable="true" style="color: #94a3b8; font-size: 14px; line-height: 1.6;">Deploy high-converting B2B and B2C performance ad funnels designed to deliver qualified, high-intent sales leads consistently.</p>
+           </div>
+       </div>
+   </div>
+
+   <!-- Pricing Page -->
+   <div class="pdf-section" style="padding: 60px 40px; min-height: 1000px; background: linear-gradient(135deg, #0A0F24 0%, #171941 100%); page-break-after: always;">
+       <h2 contenteditable="true" style="font-size: 32px; font-weight: 700; color: #ffffff; margin-bottom: 50px; text-transform: uppercase; letter-spacing: 1px;">Investment & Campaign Structure</h2>
+       
+       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+           <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 16px; padding: 30px;">
+               <div style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 12px; font-weight: bold; padding: 5px 12px; border-radius: 20px; display: inline-block; margin-bottom: 30px;">3-MONTH SERVICE PACKAGE</div>
+               
+               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                   <h3 contenteditable="true" style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0;">Channel Package</h3>
+                   <div contenteditable="true" style="background: #10b981; color: white; padding: 8px 16px; border-radius: 30px; font-weight: bold;">1 Lakh + GST</div>
+               </div>
+               
+               <ul contenteditable="true" style="color: #e2e8f0; list-style: none; padding: 0; margin-bottom: 30px; line-height: 2;">
+                   <li style="position: relative; padding-left: 20px;">• 1 Long video (more than 1 hour)</li>
+                   <li style="position: relative; padding-left: 20px;">• 5-6 Reels</li>
+                   <li style="position: relative; padding-left: 20px;">• 1 Article in Website and LinkedIn</li>
+               </ul>
+
+               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                   <h3 contenteditable="true" style="color: #ffffff; font-size: 20px; font-weight: 600; margin: 0;">Social Media Management</h3>
+                   <div contenteditable="true" style="background: #10b981; color: white; padding: 6px 14px; border-radius: 30px; font-weight: bold; font-size: 14px;">35,000 + GST</div>
+               </div>
+
+               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                   <h3 contenteditable="true" style="color: #ffffff; font-size: 20px; font-weight: 600; margin: 0;">Podcast</h3>
+                   <div contenteditable="true" style="background: #10b981; color: white; padding: 6px 14px; border-radius: 30px; font-weight: bold; font-size: 14px;">1 Lakh + GST</div>
+               </div>
+               
+               <div contenteditable="true" style="font-size: 12px; color: #94a3b8; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                   ℹ️ Note: Media Ad Budget will be borne directly by the client.
+               </div>
+           </div>
+           
+           <div style="display: flex; flex-direction: column; gap: 20px;">
+               <h3 contenteditable="true" style="color: #ffffff; font-size: 20px; font-weight: 600; margin-bottom: 10px; text-transform: uppercase;">Paid Campaign Execution</h3>
+               
+               <div contenteditable="true" style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; display: flex; gap: 15px; align-items: flex-start;">
+                   <div style="color: #3b82f6; font-size: 24px;">f</div>
+                   <div>
+                       <div style="color: #ffffff; font-weight: 600; margin-bottom: 5px;">Facebook & Instagram Ads:</div>
+                       <div style="color: #94a3b8; font-size: 14px;">Complete setup and daily optimization.</div>
+                   </div>
+               </div>
+               
+               <div contenteditable="true" style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; display: flex; gap: 15px; align-items: flex-start;">
+                   <div style="color: #ec4899; font-size: 24px;">◎</div>
+                   <div>
+                       <div style="color: #ffffff; font-weight: 600; margin-bottom: 5px;">Campaign Types:</div>
+                       <div style="color: #94a3b8; font-size: 14px;">Brand Awareness, Lead Generation, Page Likes/Followers.</div>
+                   </div>
+               </div>
+
+               <div contenteditable="true" style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; display: flex; gap: 15px; align-items: flex-start;">
+                   <div style="color: #f59e0b; font-size: 24px;">👥</div>
+                   <div>
+                       <div style="color: #ffffff; font-weight: 600; margin-bottom: 5px;">Influencer Marketing:</div>
+                       <div style="color: #94a3b8; font-size: 14px;">Strategic tie-ups with niche content creators.</div>
+                   </div>
+               </div>
+               
+               <div contenteditable="true" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 15px; text-align: center; color: #34d399; font-weight: 600; margin-top: auto;">
+                   100% Business Commitment & Service Guarantee
+               </div>
+           </div>
+       </div>
+   </div>
+   
+   <!-- Next Steps Page -->
+   <div class="pdf-section" style="padding: 60px 40px; min-height: 1000px; background: #0A0F24;">
+       <h2 contenteditable="true" style="font-size: 32px; font-weight: 700; color: #ffffff; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">Next Steps</h2>
+       <p contenteditable="true" style="color: #94a3b8; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 40px;">From Strategy to Execution</p>
+       
+       <p contenteditable="true" style="color: #cbd5e1; font-size: 14px; text-transform: uppercase; line-height: 1.6; margin-bottom: 50px;">Once <span style="font-weight: bold; color: white; font-size: 18px;">Womn Foundation</span> accepts the proposal, Social Cults will move through a structured onboarding process designed to ensure a smooth and measurable launch.</p>
+       
+       <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-bottom: 40px;">
+           <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 25px; text-align: center;">
+               <h3 contenteditable="true" style="color: #ffffff; font-size: 16px; font-weight: 500; margin-bottom: 15px; text-transform: uppercase; line-height: 1.4;">Proposal<br>Review</h3>
+               <p contenteditable="true" style="color: #94a3b8; font-size: 12px; text-transform: uppercase; line-height: 1.5;">Review the proposed strategy, deliverables, roadmap and objectives together.</p>
+           </div>
+           
+           <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 25px; text-align: center;">
+               <h3 contenteditable="true" style="color: #ffffff; font-size: 16px; font-weight: 500; margin-bottom: 15px; text-transform: uppercase; line-height: 1.4;">Strategy<br>Discussion</h3>
+               <p contenteditable="true" style="color: #94a3b8; font-size: 12px; text-transform: uppercase; line-height: 1.5;">A dedicated meeting with the <span style="color: white; font-weight: bold;">Womn Foundation</span> teams to understand.</p>
+           </div>
+           
+           <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 25px; text-align: center;">
+               <h3 contenteditable="true" style="color: #ffffff; font-size: 16px; font-weight: 500; margin-bottom: 15px; text-transform: uppercase; line-height: 1.4;">Commercial<br>Finalization</h3>
+               <p contenteditable="true" style="color: #94a3b8; font-size: 12px; text-transform: uppercase; line-height: 1.5;">Finalize the scope, commercials, timelines, responsibilities and engagement terms.</p>
+           </div>
+           
+           <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 25px; text-align: center;">
+               <h3 contenteditable="true" style="color: #ffffff; font-size: 16px; font-weight: 500; margin-bottom: 15px; text-transform: uppercase; line-height: 1.4;">Onboarding &<br>Access</h3>
+               <p contenteditable="true" style="color: #94a3b8; font-size: 12px; text-transform: uppercase; line-height: 1.5;">Collect the required access and business assets:<br>Website • Meta Business Manager • Google Ads • Analytics • Search Console • Social Profiles • CRM • Brand Assets</p>
+           </div>
+       </div>
+       
+       <div contenteditable="true" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; text-align: center; color: #e2e8f0; font-size: 14px;">
+           Maximizing ROI through Low Management Costs & High-Impact Ad Funnels
+       </div>
+   </div>
+</div>
+`
                 };
 
 
 
                 // Default templates (cannot be deleted)
                 const defaultTemplates = [
+                    { id: 'premium_deck', name: "Social Cults Premium Deck", description: "Dark themed premium pitch deck matching the PDF presentation", key: "social_cults_premium", icon: "gem", color: "purple", isDefault: true },
                     { id: 1, name: "Social Media Marketing Proposal", description: "Complete social media strategy, content calendar, and performance tracking", key: "social", icon: "hashtag", color: "indigo", isDefault: true },
                     { id: 2, name: "Website Development Proposal", description: "Custom website design, development, and ongoing maintenance", key: "website", icon: "globe", color: "blue", isDefault: true },
                     { id: 3, name: "Google Ads Proposal", description: "PPC campaign setup, management, and optimization for maximum ROI", key: "ads", icon: "ad", color: "green", isDefault: true },
@@ -1520,14 +1678,8 @@
                         </div>`;
 
                     card.onclick = () => {
-                        // Prompt for client details or start with defaults
-                        const clientName = prompt("Enter Client Name:", "New Client");
-                        if (clientName === null) return; // Msg: Cancelled
-
-                        const companyName = prompt("Enter Company Name:", "New Company");
-                        if (companyName === null) return;
-
-                        openFullEditor(template, { name: clientName, company: companyName });
+                        // Open the custom client search modal
+                        openClientSearchModal(template);
                     };
 
                     proposalCardsGrid.appendChild(card);
@@ -1583,6 +1735,17 @@
 
                     // Show formatting toolbar
                     showFormattingToolbar();
+
+                    // Display Client Info in Header
+                    const headerInfo = document.getElementById('headerClientInfo');
+                    if(client.name !== 'Client Name' && client.company !== 'Company Name') {
+                        let infoText = `${client.company} - ${client.name}`;
+                        if(client.phone) infoText += ` | 📱 ${client.phone}`;
+                        headerInfo.textContent = infoText;
+                        headerInfo.classList.remove('hidden');
+                    } else {
+                        headerInfo.classList.add('hidden');
+                    }
 
                     // Check if we have a saved proposal for this client and template
                     const savedProposal = savedProposals.find(p =>
@@ -2768,10 +2931,220 @@
                         window.location.reload();
                     });
                 }
+                function openWhatsAppModal() {
+                    if (!document.getElementById('editClientName').value) {
+                        alert("Please provide a client name first.");
+                        return;
+                    }
+                    const clientName = document.getElementById('editClientName').value;
+                    const clientCompany = document.getElementById('editClientCompany').value || "Company";
+                    
+                    // Try to find the client's phone number
+                    let phone = "";
+                    const client = crmClients.find(c => c.company_name === clientCompany || c.contact_person === clientName);
+                    if (client && client.phone) {
+                        phone = client.phone;
+                    }
+
+                    document.getElementById('waPhone').value = phone;
+                    document.getElementById('waMessage').value = `Hi ${clientName},\n\nHere is our proposal for your review. Let us know if you have any questions.\n\nThanks,\nSocial Cults`;
+                    
+                    document.getElementById('whatsappModal').classList.remove('hidden');
+                }
+
+                function closeWhatsAppModal() {
+                    document.getElementById('whatsappModal').classList.add('hidden');
+                }
+
+                async function sendViaWhatsApp() {
+                    const phone = document.getElementById('waPhone').value.replace(/[^0-9]/g, '');
+                    const message = document.getElementById('waMessage').value;
+                    const clientName = document.getElementById('editClientName').value;
+
+                    if (!phone) {
+                        alert('Please enter a valid phone number.');
+                        return;
+                    }
+
+                    const btn = document.getElementById('waSendBtn');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating Link...';
+                    btn.disabled = true;
+
+                    try {
+                        // Get HTML element for PDF
+                        const element = document.getElementById('documentContent');
+                        
+                        // Use html2pdf to generate a Blob instead of downloading
+                        const opt = {
+                            margin: 0,
+                            filename: 'proposal.pdf',
+                            image: { type: 'jpeg', quality: 0.98 },
+                            html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                        };
+
+                        const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+
+                        // Create form data to upload
+                        const formData = new FormData();
+                        formData.append('pdf', pdfBlob, 'proposal.pdf');
+                        formData.append('client_name', clientName);
+
+                        // Upload to server
+                        const response = await fetch('/proposals/upload-pdf', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            },
+                            body: formData
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            // Link generated successfully
+                            const publicLink = result.url;
+                            const finalMessage = encodeURIComponent(`${message}\n\nView Proposal: ${publicLink}`);
+                            const waUrl = `https://wa.me/${phone}?text=${finalMessage}`;
+                            
+                            // Open WhatsApp Web
+                            window.open(waUrl, '_blank');
+                            closeWhatsAppModal();
+                        } else {
+                            alert('Failed to generate PDF link.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('An error occurred while preparing the WhatsApp message.');
+                    } finally {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                }
+
+                // Client Search Modal Logic
+                let selectedTemplateForModal = null;
+
+                function openClientSearchModal(template) {
+                    selectedTemplateForModal = template;
+                    document.getElementById('clientSearchModal').classList.remove('hidden');
+                    populateClientSearchList(crmClients);
+                    // Focus the search input automatically
+                    setTimeout(() => document.getElementById('clientSearchInput').focus(), 100);
+                }
+
+                function closeClientSearchModal() {
+                    document.getElementById('clientSearchModal').classList.add('hidden');
+                    selectedTemplateForModal = null;
+                }
+
+                function populateClientSearchList(clients) {
+                    const list = document.getElementById('clientSearchList');
+                    list.innerHTML = '';
+
+                    if (clients.length === 0) {
+                        list.innerHTML = '<div class="text-center py-4 text-gray-500 text-sm">No clients found. Click "Create New" to start fresh.</div>';
+                        return;
+                    }
+
+                    clients.forEach(client => {
+                        const div = document.createElement('div');
+                        div.className = 'p-3 hover:bg-indigo-50 border-b border-gray-100 cursor-pointer flex justify-between items-center transition-colors';
+                        div.innerHTML = `
+                            <div>
+                                <div class="font-semibold text-gray-800">${client.company_name || 'N/A'}</div>
+                                <div class="text-xs text-gray-500">${client.contact_person || 'N/A'} • ${client.phone || 'No phone'}</div>
+                            </div>
+                            <button class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full font-bold hover:bg-indigo-200">Select</button>
+                        `;
+                        div.onclick = () => {
+                            closeClientSearchModal();
+                            openFullEditor(selectedTemplateForModal, { 
+                                name: client.contact_person || 'Client Name', 
+                                company: client.company_name || 'Company Name',
+                                phone: client.phone || ''
+                            });
+                        };
+                        list.appendChild(div);
+                    });
+                }
+
+                function handleClientSearch(term) {
+                    term = term.toLowerCase();
+                    const filtered = crmClients.filter(c => 
+                        (c.company_name && c.company_name.toLowerCase().includes(term)) || 
+                        (c.contact_person && c.contact_person.toLowerCase().includes(term)) ||
+                        (c.phone && c.phone.includes(term))
+                    );
+                    populateClientSearchList(filtered);
+                }
+
+                function continueWithNewClient() {
+                    closeClientSearchModal();
+                    const name = prompt("Enter Client Name:", "New Client");
+                    if (name === null) return;
+                    const company = prompt("Enter Company Name:", "New Company");
+                    if (company === null) return;
+                    openFullEditor(selectedTemplateForModal, { name: name, company: company });
+                }
             </script>
 
+            <!-- Client Search Modal -->
+            <div id="clientSearchModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+                    <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50 backdrop-blur-sm" onclick="closeClientSearchModal()"></div>
+                    <div class="relative inline-block w-full max-w-md overflow-hidden text-left align-middle transition-all transform bg-white shadow-2xl rounded-2xl">
+                        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-gray-900">Select Client</h3>
+                            <button onclick="closeClientSearchModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="p-6">
+                            <div class="mb-4 relative">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="clientSearchInput" oninput="handleClientSearch(this.value)" class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Search by name, company, or phone...">
+                            </div>
+                            <div id="clientSearchList" class="max-h-60 overflow-y-auto border border-gray-100 rounded-lg mb-4">
+                                <!-- List populated by JS -->
+                            </div>
+                            <button onclick="continueWithNewClient()" class="w-full py-2 bg-gray-50 border border-dashed border-gray-300 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-plus mr-1"></i> Or Create New Client
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-
+            <!-- WhatsApp Share Modal -->
+            <div id="whatsappModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+                    <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50 backdrop-blur-sm" onclick="closeWhatsAppModal()"></div>
+                    <div class="relative inline-block w-full max-w-lg overflow-hidden text-left align-middle transition-all transform bg-white shadow-2xl rounded-2xl">
+                        <div class="px-6 py-4 bg-green-50 border-b border-green-100 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-green-800"><i class="fab fa-whatsapp mr-2 text-green-600"></i>Send via WhatsApp</h3>
+                            <button onclick="closeWhatsAppModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <p class="text-sm text-gray-600">This will generate a public link for the PDF and open WhatsApp Web to send it.</p>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Client Phone Number (with Country Code)</label>
+                                <input type="text" id="waPhone" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="e.g. 919876543210">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Message Text</label>
+                                <textarea id="waMessage" rows="4" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"></textarea>
+                            </div>
+                        </div>
+                        <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+                            <button onclick="closeWhatsAppModal()" class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-50">Cancel</button>
+                            <button id="waSendBtn" onclick="sendViaWhatsApp()" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 flex items-center">
+                                Send & Generate Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 @endsection

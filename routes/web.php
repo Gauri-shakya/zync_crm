@@ -241,6 +241,7 @@ Route::middleware(['auth', CheckCompanyAccess::class])->group(function () {
         Route::get('/proposals/create', [ProposalController::class, 'create'])->name('proposals.create');
         Route::post('/proposals', [ProposalController::class, 'store'])->name('proposals.store');
         Route::post('/proposals/background-save', [ProposalController::class, 'backgroundSave'])->name('proposals.background-save');
+        Route::post('/proposals/upload-pdf', [ProposalController::class, 'uploadPdf'])->name('proposals.upload-pdf');
         Route::get('/proposals/hidden-templates', [ProposalController::class, 'getHiddenTemplates'])->name('proposals.hidden-templates');
         Route::post('/proposals/hide-template', [ProposalController::class, 'hideTemplate'])->name('proposals.hide-template');
         Route::post('/proposals/unhide-template', [ProposalController::class, 'unhideTemplate'])->name('proposals.unhide-template');

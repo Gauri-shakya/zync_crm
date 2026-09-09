@@ -11,11 +11,41 @@ class ProposalController extends Controller
 {
     public function index()
     {
+        $company_id = Auth::user()->company_id;
         $proposals = Proposal::with('client', 'user')
-            ->where('company_id', Auth::user()->company_id)
+            ->where('company_id', $company_id)
             ->latest()
             ->get();
-        return view('admin.sales.proposal', compact('proposals'));
+            
+        $clients = Client::where('company_id', $company_id)->get(['id', 'company_name', 'contact_person', 'email', 'phone']);
+        
+        return view('admin.sales.proposal', compact('proposals', 'clients'));
+    }
+
+    public function uploadPdf(Request $request)
+    {
+        $request->validate([
+            'pdf' => 'required|file|mimes:pdf|max:10240', // 10MB max
+            'client_name' => 'nullable|string'
+        ]);
+
+        if ($request->hasFile('pdf')) {
+            $clientName = preg_replace('/[^A-Za-z0-9]/', '_', $request->client_name ?? 'Proposal');
+            $fileName = 'Proposal_' . $clientName . '_' . time() . '.pdf';
+            
+            // Store in the public disk so it's accessible via URL
+            $path = $request->file('pdf')->storeAs('public/proposals/shared', $fileName);
+            
+            // Generate public URL
+            $url = asset('storage/proposals/shared/' . $fileName);
+            
+            return response()->json([
+                'success' => true,
+                'url' => $url
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'No file uploaded'], 400);
     }
 
     public function create()
